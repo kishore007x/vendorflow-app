@@ -1,0 +1,13 @@
+project_id = "omtjwinoxbrzeqvdckyg"
+
+[functions.chat]
+verify_jwt = false
+
+[functions.ai-insights]
+verify_jwt = false
+
+[functions.seed-test-users]
+verify_jwt = false
+
+[functions.map-columns]
+verify_jwt = false
