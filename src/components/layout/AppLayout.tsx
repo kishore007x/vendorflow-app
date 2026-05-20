@@ -103,7 +103,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <SidebarInset className="flex-1 flex flex-col">
+        <SidebarInset className="flex-1 min-h-0 flex flex-col">
           {/* Top Header – Liquid Glass */}
           <header
             className="h-14 px-4 flex items-center justify-between sticky top-0 z-10 rounded-none"
@@ -262,7 +262,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
           <AIAccessBanner />
 
-          <main className="flex-1 p-6 overflow-auto">
+          <main className="flex-1 min-h-0 p-6 overflow-y-auto">
             {!hasAccess ? (
               <div className="flex items-center justify-center min-h-[60vh]">
                 <Alert variant="destructive" className="max-w-md rounded-2xl">

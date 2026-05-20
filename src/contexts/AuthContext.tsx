@@ -46,16 +46,13 @@ async function fetchProfile(userId: string): Promise<{ name: string; avatar_url:
 
 async function buildAppUser(session: Session): Promise<AppUser | null> {
   const supaUser = session.user;
-  
-  // Block unverified email users
-  if (!supaUser.email_confirmed_at) {
+  // Fetch role first so admins can be allowed even if email isn't confirmed
+  const role = await fetchUserRole(supaUser.id);
+  // Block unverified email users for non-admins
+  if (!supaUser.email_confirmed_at && role !== 'admin') {
     return null;
   }
-  
-  const [role, profile] = await Promise.all([
-    fetchUserRole(supaUser.id),
-    fetchProfile(supaUser.id),
-  ]);
+  const profile = await fetchProfile(supaUser.id);
   return {
     id: supaUser.id,
     name: profile?.name || supaUser.user_metadata?.name || supaUser.email?.split('@')[0] || 'User',

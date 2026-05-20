@@ -116,7 +116,7 @@ function ExecutiveDashboard() {
     (async () => {
       try {
         const [ords, prds] = await Promise.all([
-          ordersDb.getAll({ portal: 'firstcry' }).catch(() => []),
+          ordersDb.getAll().catch(() => []),
           productsDb.getAll().catch(() => []),
         ]);
         if (!mounted) return;
@@ -342,7 +342,7 @@ function SupportDashboard() {
         <CardHeader><CardTitle className="text-base">Issue Categories</CardTitle></CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {ticketData.map(t => (
+            {ticketDataLocal.map(t => (
               <div key={t.category} className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium">{t.category}</span>
@@ -353,7 +353,7 @@ function SupportDashboard() {
                     </Badge>
                   </div>
                 </div>
-                <Progress value={(t.count / totalTickets) * 100} className="h-2" />
+                <Progress value={totalTickets > 0 ? (t.count / totalTickets) * 100 : 0} className="h-2" />
               </div>
             ))}
           </div>
@@ -367,15 +367,13 @@ function SupportDashboard() {
 function FinancialDashboard() {
   const [channel, setChannel] = useState('all');
   const [sortBy, setSortBy] = useState('date');
-  const latest = profitTrend[profitTrend.length - 1];
-  const marginWarning = latest.margin < 25;
   const [profitTrendLocal, setProfitTrendLocal] = useState(() => Array.from({ length: 6 }, (_, i) => ({ month: `M${i+1}`, revenue: 0, cost: 0, profit: 0, margin: 0 })));
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        const orders = await ordersDb.getAll({ portal: 'firstcry' }).catch(() => []);
+        const orders = await ordersDb.getAll().catch(() => []);
         if (!mounted) return;
         // compute last 6 months revenue/cost
         const now = new Date();
@@ -406,12 +404,12 @@ function FinancialDashboard() {
     <div className="space-y-6">
       <InsightsFilterBar channel={channel} onChannelChange={setChannel} sortBy={sortBy} onSortChange={setSortBy} />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={IndianRupee} label="Revenue (Latest)" value={fmt(latest.revenue)} change={8.3} variant="success" />
-        <StatCard icon={TrendingDown} label="Total Cost" value={fmt(latest.cost)} change={4.1} variant="warning" />
-        <StatCard icon={TrendingUp} label="Net Profit" value={fmt(latest.profit)} change={12.6} variant="success" />
-        <StatCard icon={AlertTriangle} label="Profit Margin" value={`${latest.margin}%`} variant={marginWarning ? 'danger' : 'success'} />
+        <StatCard icon={IndianRupee} label="Revenue (Latest)" value={fmt(latestLocal.revenue || 0)} change={8.3} variant="success" />
+        <StatCard icon={TrendingDown} label="Total Cost" value={fmt(latestLocal.cost || 0)} change={4.1} variant="warning" />
+        <StatCard icon={TrendingUp} label="Net Profit" value={fmt(latestLocal.profit || 0)} change={12.6} variant="success" />
+        <StatCard icon={AlertTriangle} label="Profit Margin" value={`${latestLocal.margin || 0}%`} variant={marginWarningLocal ? 'danger' : 'success'} />
       </div>
-      {marginWarning && (
+      {marginWarningLocal && (
         <Card className="border-rose-500/30 bg-rose-500/5">
           <CardContent className="pt-4 pb-3 flex items-center gap-3">
             <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
@@ -431,7 +429,7 @@ function FinancialDashboard() {
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={profitTrend}>
+            <LineChart data={profitTrendLocal}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
               <YAxis tick={{ fontSize: 11 }} className="fill-muted-foreground" />
@@ -448,7 +446,7 @@ function FinancialDashboard() {
         <CardHeader><CardTitle className="text-base">Profit Margin Trend</CardTitle></CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={profitTrend}>
+            <AreaChart data={profitTrendLocal}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
               <YAxis tick={{ fontSize: 11 }} domain={[0, 50]} className="fill-muted-foreground" />
@@ -472,7 +470,7 @@ function OperationsDashboard() {
     let mounted = true;
     (async () => {
       try {
-        const orders = await ordersDb.getAll({ portal: 'firstcry' }).catch(() => []);
+        const orders = await ordersDb.getAll().catch(() => []);
         if (!mounted) return;
         setOpsDataLocal({ automationRate: 70, workflowLoad: 60, processingVolume: (orders || []).length, bottlenecks: [] });
       } catch (e) { console.debug('failed ops', e); }
@@ -484,10 +482,10 @@ function OperationsDashboard() {
     <div className="space-y-6">
       <InsightsFilterBar channel={channel} onChannelChange={setChannel} sortBy={sortBy} onSortChange={setSortBy} />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={Zap} label="Automation Rate" value={`${opsData.automationRate}%`} change={5} variant="success" />
-        <StatCard icon={Activity} label="Workflow Load" value={`${opsData.workflowLoad}%`} variant={opsData.workflowLoad > 80 ? 'danger' : 'default'} />
-        <StatCard icon={ShoppingCart} label="Orders Processed" value={opsData.processingVolume.toString()} change={9.3} />
-        <StatCard icon={AlertTriangle} label="Active Bottlenecks" value={opsData.bottlenecks.filter(b => b.status !== 'ok').length.toString()} variant="warning" />
+        <StatCard icon={Zap} label="Automation Rate" value={`${opsDataLocal.automationRate}%`} change={5} variant="success" />
+        <StatCard icon={Activity} label="Workflow Load" value={`${opsDataLocal.workflowLoad}%`} variant={opsDataLocal.workflowLoad > 80 ? 'danger' : 'default'} />
+        <StatCard icon={ShoppingCart} label="Orders Processed" value={opsDataLocal.processingVolume.toString()} change={9.3} />
+        <StatCard icon={AlertTriangle} label="Active Bottlenecks" value={(opsDataLocal.bottlenecks || []).filter(b => b.status !== 'ok').length.toString()} variant="warning" />
       </div>
       <Card>
         <CardHeader>
@@ -496,7 +494,7 @@ function OperationsDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-5">
-            {opsData.bottlenecks.map(b => (
+            {(opsDataLocal.bottlenecks || []).map(b => (
               <div key={b.area} className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
@@ -526,7 +524,7 @@ function OperationsDashboard() {
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={dailySales}>
+            <BarChart data={defaultDaily}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis dataKey="day" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
               <YAxis tick={{ fontSize: 11 }} className="fill-muted-foreground" />

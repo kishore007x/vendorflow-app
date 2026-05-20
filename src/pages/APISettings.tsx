@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,7 +39,7 @@ export default function APISettings() {
       try {
         const { apiLogsDb } = await import('@/services/database');
         const rows = await apiLogsDb.getAll(50);
-        if (mounted) setApiLogs(rows || []);
+        if (mounted) setApiLogs(Array.isArray(rows) ? rows : []);
       } catch (e) {
         console.debug('api_logs fetch failed:', e);
       } finally {
