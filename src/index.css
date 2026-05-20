@@ -27,7 +27,7 @@
     --secondary-foreground: 270 30% 15%;
 
     --muted: 280 30% 90%;
-    --muted-foreground: 270 20% 30%;
+    --muted-foreground: 270 20% 20%;
 
     /* #7A3F91 */
     --accent: 284 40% 41%;
@@ -365,6 +365,13 @@
     @apply text-xs font-bold tracking-widest uppercase px-3 py-1 rounded-full;
     color: white;
     box-shadow: var(--shadow-glow);
+  }
+
+  /* Ensure sidebar menu text is pure white for readability */
+  [data-sidebar="menu"] [data-sidebar="menu-button"] span,
+  [data-sidebar="menu"] a span,
+  [data-sidebar="menu-sub"] [data-sidebar="menu-sub-button"] span {
+    color: #ffffff !important;
   }
 }
 

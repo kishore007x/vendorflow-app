@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { getChannels } from '@/services/channelManager';
 import { ChannelIcon } from '@/components/ChannelIcon';
@@ -94,13 +94,21 @@ const mockLifecycleData: ReturnLifecycle[] = [];
 
 const getReturnType = (reason?: string | null): ReturnType => {
   const value = (reason || '').toLowerCase();
+  if (value.includes('rto')) return 'rto';
+  if (value.includes('courier')) return 'courier_return';
   if (value.includes('damage') || value.includes('defect')) return 'damaged_product';
+  if (value.includes('missing') || value.includes('partial')) return 'missing_product';
+  return 'customer_return';
+};
+
+const getReturnReason = (reason?: string | null): ReturnReason => {
+  const value = (reason || '').toLowerCase();
   if (value.includes('size') || value.includes('fit')) return 'size_issue';
   if (value.includes('wrong')) return 'wrong_item';
   if (value.includes('quality') || value.includes('fabric')) return 'quality_issue';
   if (value.includes('changed') || value.includes('mind')) return 'changed_mind';
-  if (value.includes('missing') || value.includes('partial')) return 'missing_product';
-  return 'customer_return';
+  if (value.includes('damage') || value.includes('defect')) return 'damaged';
+  return 'not_as_described';
 };
 
 const mapStageFromStatus = (status?: string | null): LifecycleStage => {
@@ -127,12 +135,12 @@ const mapAppReturn = (row: any): ReturnLifecycle => {
   const returnType = getReturnType(row.reason || row.metadata?.subreason || row.metadata?.subtype_reason);
 
   return {
-    returnId,
-    orderId: row.order_id || row.metadata?.poid || returnId,
+    returnId: String(returnId || ''),
+    orderId: String(row.order_id || row.metadata?.poid || returnId || ''),
     portal,
     productName,
     skuId,
-    reason: returnType,
+    reason: getReturnReason(row.reason || row.metadata?.subreason || row.metadata?.subtype_reason),
     returnType,
     refundAmount: quantity * 100,
     currentStage: stage,
@@ -179,7 +187,7 @@ export default function Returns() {
     (async () => {
       try {
         const rows = await returnsDb.getAll();
-        if (mounted) setLifecycleData((rows || []).map(mapAppReturn));
+        if (mounted) setLifecycleData((Array.isArray(rows) ? rows : []).map(mapAppReturn));
       } catch (error) {
         console.error('Failed to load returns', error);
       }
@@ -218,7 +226,9 @@ export default function Returns() {
   const searchFilter = (r: ReturnLifecycle) => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
-    return r.returnId.toLowerCase().includes(q) || r.orderId.toLowerCase().includes(q) || r.productName.toLowerCase().includes(q);
+    return (r.returnId?.toString().toLowerCase() || '').includes(q) || 
+           (r.orderId?.toString().toLowerCase() || '').includes(q) || 
+           (r.productName?.toString().toLowerCase() || '').includes(q);
   };
 
   // Tab 1: Returns
@@ -236,7 +246,7 @@ export default function Returns() {
   const filteredClaims = useMemo(() => {
     let data = portalFiltered.filter(r => {
       if (!searchFilter(r)) return false;
-      return claimStages.includes(r.currentStage) || r.claimEligibility.status !== 'ineligible';
+      return claimStages.includes(r.currentStage) || r.claimEligibility?.status !== 'ineligible';
     });
     return sortData(data);
   }, [portalFiltered, searchQuery, sortField, sortDir]);
@@ -332,10 +342,10 @@ export default function Returns() {
             </TableHeader>
             <TableBody>
               {data.map(r => {
-                const stage = stageConfig[r.currentStage];
+                const stage = stageConfig[r.currentStage] || { label: 'Unknown Stage', color: 'bg-muted', icon: Clock };
                 const StageIcon = stage.icon;
                 const portal = getChannels().find(p => p.id === r.portal);
-                const rtConfig = returnTypeConfig[r.returnType];
+                const rtConfig = returnTypeConfig[r.returnType] || returnTypeConfig['customer_return'];
                 const RTIcon = rtConfig.icon;
                 return (
                   <TableRow key={r.returnId} className={`hover:bg-muted/30 ${rowSelection.isSelected(r.returnId) ? 'bg-primary/5' : ''}`}>
@@ -645,7 +655,7 @@ export default function Returns() {
                 <div><span className="text-muted-foreground">Order:</span> <span className="font-medium">{selectedReturn.orderId}</span></div>
                 <div><span className="text-muted-foreground">Portal:</span> <span className="font-medium">{getChannels().find(p => p.id === selectedReturn.portal)?.name}</span></div>
                 <div><span className="text-muted-foreground">Product:</span> <span className="font-medium">{selectedReturn.productName}</span></div>
-                <div><span className="text-muted-foreground">Reason:</span> <span className="font-medium">{reasonLabels[selectedReturn.reason]}</span></div>
+                <div><span className="text-muted-foreground">Reason:</span> <span className="font-medium">{reasonLabels[selectedReturn.reason] || 'Other'}</span></div>
                 <div><span className="text-muted-foreground">Refund:</span> <span className="font-bold">₹{selectedReturn.refundAmount.toLocaleString()}</span></div>
                 <div><span className="text-muted-foreground">Responsible:</span> <Badge variant="secondary" className="text-xs ml-1">{selectedReturn.responsibleUser}</Badge></div>
               </div>

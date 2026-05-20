@@ -1,6 +1,19 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
+type OrdersCacheEntry = {
+  fetchedAt: number;
+  data: any[];
+};
+
+const ORDERS_CACHE_TTL_MS = 60_000;
+const ordersCache = new Map<string, OrdersCacheEntry>();
+const ordersInFlight = new Map<string, Promise<any[]>>();
+
+function buildOrdersCacheKey(filters?: { portal?: string; status?: string; from?: string; to?: string; search?: string }) {
+  return JSON.stringify(filters || {});
+}
+
 // Helper to get current user id for vendor_id
 async function getCurrentUserId(): Promise<string | null> {
   const { data } = await supabase.auth.getUser();
@@ -41,15 +54,34 @@ export const productsDb = {
 // ==================== ORDERS ====================
 export const ordersDb = {
   async getAll(filters?: { portal?: string; status?: string; from?: string; to?: string; search?: string }) {
-    let query = supabase.from('orders').select('*').order('order_date', { ascending: false });
+    const cacheKey = buildOrdersCacheKey(filters);
+    const cached = ordersCache.get(cacheKey);
+    if (cached && Date.now() - cached.fetchedAt < ORDERS_CACHE_TTL_MS) {
+      return cached.data;
+    }
+
+    const inFlight = ordersInFlight.get(cacheKey);
+    if (inFlight) {
+      return inFlight;
+    }
+
+    let query = supabase.from('orders').select('*').order('created_at', { ascending: false });
     if (filters?.portal) query = query.eq('portal', filters.portal);
     if (filters?.status) query = query.eq('status', filters.status as any);
     if (filters?.from) query = query.gte('order_date', filters.from);
     if (filters?.to) query = query.lte('order_date', filters.to);
     if (filters?.search) query = query.or(`order_number.ilike.%${filters.search}%,customer_name.ilike.%${filters.search}%`);
-    const { data, error } = await query;
-    if (error) throw error;
-    return data;
+    const request = query.then(({ data, error }) => {
+      if (error) throw error;
+      const result = data || [];
+      ordersCache.set(cacheKey, { fetchedAt: Date.now(), data: result });
+      return result;
+    }).finally(() => {
+      ordersInFlight.delete(cacheKey);
+    });
+
+    ordersInFlight.set(cacheKey, request);
+    return request;
   },
   async getById(id: string) {
     const { data, error } = await supabase.from('orders').select('*, order_items(*)').eq('id', id).single();

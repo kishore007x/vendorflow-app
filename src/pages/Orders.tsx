@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useDeferredValue } from 'react';
 import { getChannels } from '@/services/channelManager';
 import { ChannelIcon } from '@/components/ChannelIcon';
 import { ordersDb } from '@/services/database';
 import { Portal, Order, OrderStatus } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 import { PortalFilter } from '@/components/dashboard/PortalFilter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,14 @@ import {
 import { DateFilter, ExportButton, useRowSelection, SelectAllCheckbox, RowCheckbox } from '@/components/TableEnhancements';
 import { GlobalDateFilter, type DateRange } from '@/components/GlobalDateFilter';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 // Status config for orders
 const statusConfig: Record<OrderStatus, { label: string; color: string; icon: React.ElementType }> = {
@@ -142,7 +151,10 @@ const videoStatusLabels: Record<VideoStatus, { label: string; color: string }> =
   retained_for_return: { label: 'Retained (Return)', color: 'bg-blue-500/10 text-blue-600' },
 };
 
+const ORDERS_PAGE_SIZE = 50;
+
 export default function Orders() {
+  const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [selectedPortal, setSelectedPortal] = useState<Portal | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -153,11 +165,15 @@ export default function Orders() {
   const [dateFilter, setDateFilter] = useState('30days');
   const [activeTab, setActiveTab] = useState('orders');
   const [globalDateRange, setGlobalDateRange] = useState<DateRange>({ from: undefined, to: undefined });
+  const [currentPage, setCurrentPage] = useState(1);
+  const deferredSearchQuery = useDeferredValue(searchQuery);
 
   // DB-backed orders state
   const [allOrders, setAllOrders] = useState<Order[]>([]);
 
   useEffect(() => {
+    if (authLoading || !user) return;
+
     const fetchOrders = async () => {
       try {
         const data = await ordersDb.getAll();
@@ -184,8 +200,9 @@ export default function Orders() {
         }));
       } catch (e) { console.error(e); }
     };
+
     fetchOrders();
-  }, []);
+  }, [authLoading, user]);
 
   // Video reconciliation state
   const [videoRecords, setVideoRecords] = useState<Record<string, VideoRecord>>({});
@@ -198,6 +215,10 @@ export default function Orders() {
 
   const customerProfiles = useMemo(() => computeCustomerProfiles(allOrders), [allOrders]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedPortal, deferredSearchQuery, statusFilter, customerTypeFilter, dateFilter, globalDateRange.from, globalDateRange.to]);
+
   const getCustomerType = (customerId: string): 'new' | 'repeat' => {
     return (customerProfiles[customerId]?.orderCount ?? 0) > 1 ? 'repeat' : 'new';
   };
@@ -207,9 +228,10 @@ export default function Orders() {
   const filteredOrders = useMemo(() => {
     return allOrders.filter(order => {
       const matchesPortal = selectedPortal === 'all' || order.portal === selectedPortal;
-      const matchesSearch = order.orderId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           order.portalOrderId.toLowerCase().includes(searchQuery.toLowerCase());
+      const searchTerm = deferredSearchQuery.toLowerCase();
+      const matchesSearch = order.orderId.toLowerCase().includes(searchTerm) ||
+                           order.customerName.toLowerCase().includes(searchTerm) ||
+                           order.portalOrderId.toLowerCase().includes(searchTerm);
       const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
       const custType = getCustomerType(order.customerId);
       const matchesCustomerType = customerTypeFilter === 'all' ||
@@ -219,9 +241,16 @@ export default function Orders() {
       
       return matchesPortal && matchesSearch && matchesStatus && matchesCustomerType;
     });
-  }, [selectedPortal, searchQuery, statusFilter, customerTypeFilter, customerProfiles]);
+  }, [allOrders, selectedPortal, deferredSearchQuery, statusFilter, customerTypeFilter, customerProfiles]);
 
-  const rowSelection = useRowSelection(filteredOrders.map(o => o.orderId));
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / ORDERS_PAGE_SIZE));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const paginatedOrders = useMemo(() => {
+    const start = (safeCurrentPage - 1) * ORDERS_PAGE_SIZE;
+    return filteredOrders.slice(start, start + ORDERS_PAGE_SIZE);
+  }, [filteredOrders, safeCurrentPage]);
+
+  const rowSelection = useRowSelection(paginatedOrders.map(o => o.orderId));
 
   const processingStats = useMemo(() => {
     const orders = selectedPortal === 'all' ? allOrders : allOrders.filter(o => o.portal === selectedPortal);
@@ -398,6 +427,8 @@ export default function Orders() {
   }, [customerTypeFilter]);
 
   const selectedProfile = selectedCustomerId ? customerProfiles[selectedCustomerId] : null;
+  const pageStart = filteredOrders.length === 0 ? 0 : (safeCurrentPage - 1) * ORDERS_PAGE_SIZE + 1;
+  const pageEnd = Math.min(safeCurrentPage * ORDERS_PAGE_SIZE, filteredOrders.length);
 
   return (
     <TooltipProvider>
@@ -634,7 +665,7 @@ export default function Orders() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredOrders.map((order) => {
+                  {paginatedOrders.map((order) => {
                     const status = statusConfig[order.status];
                     const portal = getChannels().find(p => p.id === order.portal);
                     const StatusIcon = status.icon;
@@ -789,6 +820,40 @@ export default function Orders() {
               <div className="text-center py-12">
                 <ShoppingCart className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
                 <p className="text-muted-foreground">No orders found</p>
+              </div>
+            )}
+            {filteredOrders.length > 0 && (
+              <div className="flex flex-col gap-3 border-t px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-muted-foreground">
+                  Showing {pageStart}-{pageEnd} of {filteredOrders.length} orders
+                </p>
+                <Pagination className="mx-0 w-auto justify-end">
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          setCurrentPage(prev => Math.max(1, prev - 1));
+                        }}
+                        className={safeCurrentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                      />
+                    </PaginationItem>
+                    <PaginationItem>
+                      <PaginationLink href="#" isActive>{safeCurrentPage}</PaginationLink>
+                    </PaginationItem>
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          setCurrentPage(prev => Math.min(totalPages, prev + 1));
+                        }}
+                        className={safeCurrentPage >= totalPages ? 'pointer-events-none opacity-50' : ''}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
               </div>
             )}
           </CardContent>

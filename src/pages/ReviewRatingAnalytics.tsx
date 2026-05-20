@@ -49,8 +49,8 @@ export default function ReviewRatingAnalytics() {
     k.keyword.toLowerCase().includes(searchKeyword.toLowerCase())
   );
 
-  const overallAvg = (channelRatings.reduce((s, c) => s + c.avg * c.total, 0) / channelRatings.reduce((s, c) => s + c.total, 0)).toFixed(1);
   const totalReviews = channelRatings.reduce((s, c) => s + c.total, 0);
+  const overallAvg = totalReviews > 0 ? (channelRatings.reduce((s, c) => s + c.avg * c.total, 0) / totalReviews).toFixed(1) : "0.0";
   const totalNegative = negativeIssues.reduce((s, n) => s + n.mentions, 0);
 
   return (

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Package, Upload, ShoppingCart, BarChart3, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
@@ -78,13 +78,12 @@ export function OnboardingWizard() {
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
       <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent px-6 pt-6 pb-4">
+        <DialogHeader className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent px-6 pt-6 pb-4">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-bold text-foreground">Welcome to VendorFlow!</h2>
+            <DialogTitle className="text-xl font-bold text-foreground">Welcome to VendorFlow!</DialogTitle>
           </div>
-          <p className="text-sm text-muted-foreground">Let's get your business set up in 4 simple steps.</p>
+          <DialogDescription className="text-sm text-muted-foreground">Let's get your business set up in 4 simple steps.</DialogDescription>
           {/* Step indicators */}
           <div className="flex items-center gap-2 mt-4">
             {steps.map((_, idx) => (
@@ -100,7 +99,7 @@ export function OnboardingWizard() {
               Step {currentStep + 1} of {steps.length}
             </Badge>
           </div>
-        </div>
+        </DialogHeader>
 
         {/* Step Content */}
         <div className="px-6 py-6">
