@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { isSupabaseConfigured, supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 
 export type UserRole = 'admin' | 'vendor' | 'operations';
@@ -69,6 +69,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [emailNotVerified, setEmailNotVerified] = useState(false);
 
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setUser(null);
+      setEmailNotVerified(false);
+      setIsLoading(false);
+      return;
+    }
+
     // Set up auth listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
@@ -117,11 +124,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
+    if (!isSupabaseConfigured) {
+      throw new Error('Supabase authentication is not configured for this deployment.');
+    }
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw new Error(error.message);
   }, []);
 
   const signup = useCallback(async (email: string, password: string, name: string) => {
+    if (!isSupabaseConfigured) {
+      throw new Error('Supabase authentication is not configured for this deployment.');
+    }
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -134,6 +147,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
+    if (!isSupabaseConfigured) {
+      setUser(null);
+      return;
+    }
     await supabase.auth.signOut();
     setUser(null);
   }, []);

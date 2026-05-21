@@ -13,7 +13,12 @@ interface HealthScoreProps {
 
 export default function ReconciliationHealthScore({ matchedPct, mismatchPct, delayedPct, chargebackLossPct }: HealthScoreProps) {
   const { score, status, statusClass, icon: StatusIcon } = useMemo(() => {
-    const s = Math.max(0, Math.min(100, Math.round(matchedPct * 0.4 + (100 - mismatchPct) * 0.25 + (100 - delayedPct) * 0.2 + (100 - chargebackLossPct) * 0.15)));
+    const safe = (v: number) => (Number.isFinite(v) ? Math.max(0, Math.min(100, v)) : 0);
+    const m = safe(matchedPct);
+    const mm = safe(mismatchPct);
+    const d = safe(delayedPct);
+    const c = safe(chargebackLossPct);
+    const s = Math.max(0, Math.min(100, Math.round(m * 0.4 + (100 - mm) * 0.25 + (100 - d) * 0.2 + (100 - c) * 0.15)));
     if (s >= 80) return { score: s, status: 'Healthy', statusClass: 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30', icon: ShieldCheck };
     if (s >= 50) return { score: s, status: 'Monitor', statusClass: 'bg-amber-500/15 text-amber-600 border-amber-500/30', icon: AlertTriangle };
     return { score: s, status: 'High Risk', statusClass: 'bg-rose-500/15 text-rose-600 border-rose-500/30', icon: XCircle };
@@ -39,12 +44,12 @@ export default function ReconciliationHealthScore({ matchedPct, mismatchPct, del
             </div>
           </div>
           <div className="flex-1 space-y-2">
-            <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Matched</span><span className="font-medium">{matchedPct.toFixed(1)}%</span></div>
-            <Progress value={matchedPct} className={`h-2 ${progressColor}`} />
+            <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">Matched</span><span className="font-medium">{(Number.isFinite(matchedPct) ? matchedPct : 0).toFixed(1)}%</span></div>
+            <Progress value={Number.isFinite(matchedPct) ? Math.max(0, Math.min(100, matchedPct)) : 0} className={`h-2 ${progressColor}`} />
             <div className="grid grid-cols-3 gap-4 mt-3">
-              <div className="text-center"><p className="text-xs text-muted-foreground">Mismatch</p><p className="text-sm font-bold text-amber-600">{mismatchPct.toFixed(1)}%</p></div>
-              <div className="text-center"><p className="text-xs text-muted-foreground">Delayed</p><p className="text-sm font-bold text-orange-600">{delayedPct.toFixed(1)}%</p></div>
-              <div className="text-center"><p className="text-xs text-muted-foreground">Chargeback</p><p className="text-sm font-bold text-rose-600">{chargebackLossPct.toFixed(1)}%</p></div>
+              <div className="text-center"><p className="text-xs text-muted-foreground">Mismatch</p><p className="text-sm font-bold text-amber-600">{(Number.isFinite(mismatchPct) ? mismatchPct : 0).toFixed(1)}%</p></div>
+              <div className="text-center"><p className="text-xs text-muted-foreground">Delayed</p><p className="text-sm font-bold text-orange-600">{(Number.isFinite(delayedPct) ? delayedPct : 0).toFixed(1)}%</p></div>
+              <div className="text-center"><p className="text-xs text-muted-foreground">Chargeback</p><p className="text-sm font-bold text-rose-600">{(Number.isFinite(chargebackLossPct) ? chargebackLossPct : 0).toFixed(1)}%</p></div>
             </div>
           </div>
         </div>

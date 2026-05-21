@@ -76,31 +76,46 @@ function computeCustomerProfiles(orders: Order[]) {
   const map: Record<string, {
     name: string; phone: string; email: string; orderCount: number; totalSpend: number;
     lastOrderDate: string; addresses: string[]; pinCodes: string[]; cities: string[]; states: string[];
-    suspicious: boolean;
+    suspicious: boolean; returnCount: number;
   }> = {};
+
+  // Single-pass collection to avoid repeated filtering (O(n) instead of O(n^2))
   orders.forEach(o => {
     if (!map[o.customerId]) {
       map[o.customerId] = {
-        name: o.customerName, phone: o.customerPhone, email: o.customerEmail,
-        orderCount: 0, totalSpend: 0, lastOrderDate: o.orderDate,
-        addresses: [], pinCodes: [], cities: [], states: [], suspicious: false,
+        name: o.customerName || '',
+        phone: o.customerPhone || '',
+        email: o.customerEmail || '',
+        orderCount: 0,
+        totalSpend: 0,
+        lastOrderDate: o.orderDate,
+        addresses: [],
+        pinCodes: [],
+        cities: [],
+        states: [],
+        suspicious: false,
+        returnCount: 0,
       };
     }
     const p = map[o.customerId];
-    p.orderCount++;
-    p.totalSpend += o.totalAmount;
-    if (new Date(o.orderDate) > new Date(p.lastOrderDate)) p.lastOrderDate = o.orderDate;
+    p.orderCount += 1;
+    p.totalSpend += Number(o.totalAmount || 0);
+    if (!p.lastOrderDate || new Date(o.orderDate) > new Date(p.lastOrderDate)) p.lastOrderDate = o.orderDate;
     if (o.shippingAddress && !p.addresses.includes(o.shippingAddress)) p.addresses.push(o.shippingAddress);
     if (o.customerPinCode && !p.pinCodes.includes(o.customerPinCode)) p.pinCodes.push(o.customerPinCode);
     if (o.customerCity && !p.cities.includes(o.customerCity)) p.cities.push(o.customerCity);
     if (o.customerState && !p.states.includes(o.customerState)) p.states.push(o.customerState);
+    if (['returned', 'rto', 'customer_return', 'courier_return', 'cancelled'].includes(o.status)) p.returnCount += 1;
   });
+
+  // Post-process to flag suspicious profiles
   Object.values(map).forEach(p => {
-    const returnOrders = orders.filter(o => o.customerId === Object.keys(map).find(k => map[k] === p) && ['returned', 'rto', 'customer_return', 'courier_return', 'cancelled'].includes(o.status));
-    if (p.addresses.length >= 3 || (p.orderCount >= 3 && returnOrders.length / p.orderCount > 0.5)) {
-      p.suspicious = true;
-    }
+    if (p.addresses.length >= 3) p.suspicious = true;
+    else if (p.orderCount >= 3 && p.returnCount / p.orderCount > 0.5) p.suspicious = true;
+    // remove helper field before return
+    delete (p as any).returnCount;
   });
+
   return map;
 }
 
@@ -176,17 +191,27 @@ export default function Orders() {
 
     const fetchOrders = async () => {
       try {
-        const data = await ordersDb.getAll();
+        // fetch orders including related order_items when possible
+        const data = await ordersDb.getAllWithItems();
         setAllOrders(data.map((o: any) => {
           const orderDate = o.order_date ?? o.orderDate ?? o.created_at ?? o.createdAt ?? null;
-          const totalAmount = Number(o.total_amount ?? o.totalAmount ?? o.total ?? o.amount ?? 0) || 0;
+          const items = o.order_items || o.orderItems || [];
+          // compute total from DB field if present, otherwise derive from order_items
+          const rawTotal = o.total_amount ?? o.totalAmount ?? o.total ?? o.amount ?? null;
+          const computedFromItems = items.length > 0
+            ? items.reduce((s: number, it: any) => s + (Number(it.quantity ?? it.qty ?? 0) * Number(it.unit_price ?? it.price ?? it.selling_price ?? it.total_price ?? 0)), 0)
+            : 0;
+          const totalAmount = (rawTotal !== null && rawTotal !== undefined && String(rawTotal).trim() !== '')
+            ? Number(rawTotal)
+            : computedFromItems || 0;
+
           return {
             ...o,
             orderId: o.order_number || o.id || String(o.id || ''),
             orderDate,
             totalAmount,
             customerName: o.customer_name || o.customerName || '',
-            customerId: o.id || o.customer_id || o.customerId || String(o.id || ''),
+            customerId: o.customer_id || o.customerId || o.customer || (o.id ? String(o.id) : ''),
             customerEmail: o.customer_email || o.customerEmail || '',
             customerPhone: o.customer_phone || o.customerPhone || '',
             shippingAddress: o.customer_address || o.shipping_address || '',
@@ -195,7 +220,7 @@ export default function Orders() {
             customerState: o.customer_state || o.customerState || '',
             deliveryDate: o.delivered_date || o.delivery_date || null,
             portalOrderId: o.order_number || o.portal_order_id || null,
-            items: [],
+            items,
           };
         }));
       } catch (e) { console.error(e); }
@@ -204,14 +229,10 @@ export default function Orders() {
     fetchOrders();
   }, [authLoading, user]);
 
-  // Video reconciliation state
+  // Video reconciliation state (only for visible page to avoid heavy computation)
   const [videoRecords, setVideoRecords] = useState<Record<string, VideoRecord>>({});
   const [returnPolicyDays] = useState(30);
   const [videoRetentionDays] = useState(120);
-
-  useEffect(() => {
-    if (allOrders.length > 0) setVideoRecords(generateVideoRecords(allOrders));
-  }, [allOrders]);
 
   const customerProfiles = useMemo(() => computeCustomerProfiles(allOrders), [allOrders]);
 
@@ -249,6 +270,15 @@ export default function Orders() {
     const start = (safeCurrentPage - 1) * ORDERS_PAGE_SIZE;
     return filteredOrders.slice(start, start + ORDERS_PAGE_SIZE);
   }, [filteredOrders, safeCurrentPage]);
+
+  // Generate video records only for orders visible on the current page to reduce work
+  useEffect(() => {
+    if (paginatedOrders.length > 0) {
+      setVideoRecords(generateVideoRecords(paginatedOrders));
+    } else {
+      setVideoRecords({});
+    }
+  }, [paginatedOrders]);
 
   const rowSelection = useRowSelection(paginatedOrders.map(o => o.orderId));
 
