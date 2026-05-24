@@ -44,7 +44,23 @@ const daysAgo = (days: number) => {
   const d = new Date(); d.setDate(d.getDate() - days); return d.toISOString();
 };
 
-const mockReconData: ReconRecord[] = [];
+const mapReconciliationRow = (row: any): ReconRecord => ({
+  id: row.id || `${row.portal}-${row.date || row.created_at || Date.now()}`,
+  date: row.date || row.created_at || new Date().toISOString(),
+  marketplace: row.portal as Portal,
+  orderId: row.order_id || row.reference_id || row.portal || '—',
+  orderItem: row.notes || row.order_item || 'Reconciliation row',
+  skuId: row.sku_id || row.product_id || '—',
+  masterSku: row.master_sku || row.sku || '—',
+  batchId: row.batch_id || row.reference_id || '—',
+  expectedAmount: Number(row.expected_amount ?? row.expected_orders ?? 0),
+  settledAmount: Number(row.settled_amount ?? row.processed_orders ?? 0),
+  difference: Number(row.difference ?? 0),
+  expectedOrders: Number(row.expected_orders ?? 0),
+  processedOrders: Number(row.processed_orders ?? 0),
+  orderDifference: Number(row.expected_orders ?? 0) - Number(row.processed_orders ?? 0),
+  status: (row.status === 'matched' || row.status === 'minor_difference' || row.status === 'mismatch') ? row.status : 'mismatch',
+});
 
 const statusBadge = (status: ReconStatus) => {
   switch (status) {
@@ -62,6 +78,7 @@ export default function Reconciliation() {
   const [dateFilter, setDateFilter] = useState('30days');
   const [activeTab, setActiveTab] = useState('overview');
   const [globalDateRange, setGlobalDateRange] = useState<DateRange>({ from: undefined, to: undefined });
+  const [records, setRecords] = useState<ReconRecord[]>([]);
 
   // Get tolerance from shared settings
   const reconSettings = useSyncExternalStore(
@@ -69,6 +86,20 @@ export default function Reconciliation() {
     getReconciliationSettings,
   );
   const tolerance = reconSettings.toleranceValue;
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const rows = await reconciliationDb.getAll().catch(() => []);
+        if (!mounted) return;
+        setRecords((rows || []).map(mapReconciliationRow));
+      } catch (error) {
+        console.error('Failed to load reconciliation data', error);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   // Apply tolerance-based status reclassification
   const getEffectiveStatus = (record: ReconRecord): ReconStatus => {
@@ -78,9 +109,9 @@ export default function Reconciliation() {
   };
 
   const filtered = useMemo(() => {
-    const base = filterPortal === 'all' ? mockReconData : mockReconData.filter(r => r.marketplace === filterPortal);
+    const base = filterPortal === 'all' ? records : records.filter(r => r.marketplace === filterPortal);
     return base.map(r => ({ ...r, status: getEffectiveStatus(r) }));
-  }, [filterPortal, tolerance]);
+  }, [filterPortal, tolerance, records]);
 
   const rowSelection = useRowSelection(filtered.map(r => r.id));
 
@@ -195,6 +226,7 @@ export default function Reconciliation() {
                           </TableRow>
                         );
                       })}
+                      {filtered.length === 0 && <TableRow><TableCell colSpan={12} className="text-center py-6 text-muted-foreground">No reconciliation records found</TableCell></TableRow>}
                       <TableRow className="bg-muted/50 font-bold border-t-2">
                         <TableCell colSpan={8}>Totals</TableCell>
                         <TableCell className="text-right">₹{totalExpected.toLocaleString()}</TableCell>

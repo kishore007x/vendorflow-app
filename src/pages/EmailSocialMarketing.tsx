@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -10,40 +10,94 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
+import { broadcastsDb, socialMessagesDb } from '@/services/database';
 import {
   Mail, Send, Plus, Eye, Clock, CheckCircle2, XCircle, Users, BarChart3,
   Instagram, Facebook, Store, Sparkles, Target, TrendingUp, MessageCircle,
   Calendar, Image, FileText, Megaphone, PenTool, Layers, ArrowUpRight
 } from 'lucide-react';
 
-// Email Campaigns Mock Data
-const emailCampaigns = [
-  { id: 1, name: 'Flash Sale – 50% Off Everything', subject: '🔥 FLASH SALE: 50% Off Today Only!', status: 'sent', sent: 4520, opened: 2890, clicked: 856, bounced: 45, date: '2026-03-15', template: 'promotional' },
-  { id: 2, name: 'New Arrivals Weekly Digest', subject: 'This Week\'s Hottest New Arrivals 🆕', status: 'sent', sent: 3200, opened: 1920, clicked: 624, bounced: 32, date: '2026-03-12', template: 'newsletter' },
-  { id: 3, name: 'Abandoned Cart Recovery', subject: 'You left something behind! 🛒', status: 'active', sent: 890, opened: 534, clicked: 267, bounced: 12, date: '2026-03-10', template: 'automated' },
-  { id: 4, name: 'Festival Season Launch', subject: '🎉 Festival Collection is LIVE!', status: 'scheduled', sent: 0, opened: 0, clicked: 0, bounced: 0, date: '2026-03-20', template: 'promotional' },
-  { id: 5, name: 'Customer Feedback Survey', subject: 'We\'d love your feedback ⭐', status: 'draft', sent: 0, opened: 0, clicked: 0, bounced: 0, date: '', template: 'transactional' },
-  { id: 6, name: 'Re-engagement: Win Back', subject: 'We miss you! Here\'s 20% off 💝', status: 'sent', sent: 1240, opened: 496, clicked: 148, bounced: 28, date: '2026-03-08', template: 'automated' },
-];
+type CampaignRow = {
+  id: string | number;
+  name: string;
+  subject?: string;
+  status: string;
+  sent: number;
+  opened: number;
+  clicked: number;
+  bounced: number;
+  date: string;
+  template: string;
+};
 
-// Social Media Marketing Mock Data
-const socialCampaigns = [
-  { id: 1, platform: 'instagram', name: 'Product Showcase Reel', type: 'Reel', status: 'published', reach: 45200, engagement: 4.8, likes: 2170, comments: 189, shares: 342, spend: 2500, date: '2026-03-14' },
-  { id: 2, platform: 'facebook', name: 'Festival Sale Ad', type: 'Carousel Ad', status: 'active', reach: 67800, engagement: 3.2, likes: 2169, comments: 156, shares: 423, spend: 5000, date: '2026-03-13' },
-  { id: 3, platform: 'instagram', name: 'Behind the Scenes Story', type: 'Story', status: 'published', reach: 12300, engagement: 6.1, likes: 750, comments: 45, shares: 89, spend: 0, date: '2026-03-12' },
-  { id: 4, platform: 'facebook', name: 'Customer Testimonial Video', type: 'Video Post', status: 'published', reach: 23400, engagement: 5.4, likes: 1264, comments: 98, shares: 234, spend: 1500, date: '2026-03-11' },
-  { id: 5, platform: 'gmb', name: 'Weekly Product Update', type: 'GMB Post', status: 'published', reach: 8900, engagement: 2.8, likes: 249, comments: 34, shares: 0, spend: 0, date: '2026-03-10' },
-  { id: 6, platform: 'instagram', name: 'Influencer Collab Campaign', type: 'Sponsored Post', status: 'scheduled', reach: 0, engagement: 0, likes: 0, comments: 0, shares: 0, spend: 8000, date: '2026-03-22' },
-];
+type SocialRow = {
+  id: string | number;
+  platform: 'instagram' | 'facebook' | 'gmb';
+  name: string;
+  type: string;
+  status: string;
+  reach: number;
+  engagement: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  spend: number;
+  date: string;
+};
 
-// WhatsApp Marketing Mock Data
-const whatsappCampaigns = [
-  { id: 1, name: 'Flash Sale Broadcast', template: 'festive_offer', audience: 'All Customers', sent: 2450, delivered: 2380, read: 1820, replied: 234, date: '2026-03-14', status: 'completed' },
-  { id: 2, name: 'New Arrival Notification', template: 'product_catalog', audience: 'VIP + Wholesale', sent: 340, delivered: 335, read: 298, replied: 67, date: '2026-03-12', status: 'completed' },
-  { id: 3, name: 'Payment Reminder Batch', template: 'payment_reminder', audience: 'Pending Payments', sent: 156, delivered: 150, read: 134, replied: 45, date: '2026-03-10', status: 'completed' },
-  { id: 4, name: 'Feedback Collection', template: 'feedback_request', audience: 'Recent Buyers', sent: 0, delivered: 0, read: 0, replied: 0, date: '2026-03-20', status: 'scheduled' },
-  { id: 5, name: 'Cart Recovery Messages', template: 'abandoned_cart', audience: 'Abandoned Carts', sent: 0, delivered: 0, read: 0, replied: 0, date: '', status: 'draft' },
-];
+type WhatsAppRow = {
+  id: string | number;
+  name: string;
+  template: string;
+  audience: string;
+  sent: number;
+  delivered: number;
+  read: number;
+  replied: number;
+  date: string;
+  status: string;
+};
+
+const mapBroadcast = (row: any): CampaignRow => ({
+  id: row.id,
+  name: row.title || row.subject || row.name || row.channel || 'Broadcast',
+  subject: row.preview || row.subject || row.content || '',
+  status: row.status || 'sent',
+  sent: Number(row.sent_count ?? row.sent ?? 0),
+  opened: Number(row.opened_count ?? row.opened ?? 0),
+  clicked: Number(row.clicked_count ?? row.clicked ?? 0),
+  bounced: Number(row.bounced_count ?? row.bounced ?? 0),
+  date: row.created_at ? String(row.created_at).slice(0, 10) : '',
+  template: row.template || row.type || row.channel || 'broadcast',
+});
+
+const mapSocialMessage = (row: any): SocialRow => ({
+  id: row.id,
+  platform: (row.channel === 'facebook' || row.channel === 'instagram' || row.channel === 'gmb') ? row.channel : 'facebook',
+  name: row.subject || row.preview || row.sender || 'Social message',
+  type: row.category || row.task_category || row.auto_reply_flow || 'message',
+  status: row.status || 'sent',
+  reach: Number(row.reach ?? row.views ?? 0),
+  engagement: Number(row.ai_confidence ?? 0) || (row.human_replied ? 1.0 : 0),
+  likes: Number(row.likes ?? 0),
+  comments: Number(row.comments ?? 0),
+  shares: Number(row.shares ?? 0),
+  spend: Number(row.spend ?? 0),
+  date: row.created_at ? String(row.created_at).slice(0, 10) : '',
+});
+
+const mapWhatsApp = (row: any): WhatsAppRow => ({
+  id: row.id,
+  name: row.subject || row.preview || row.sender || 'WhatsApp message',
+  template: row.auto_reply_flow || row.category || 'whatsapp',
+  audience: row.task_category || row.escalated_to || 'Audience',
+  sent: Number(row.sent ?? 0),
+  delivered: Number(row.delivered ?? 0),
+  read: Number(row.read ?? 0),
+  replied: Number(row.replied ?? (row.human_replied ? 1 : 0)),
+  date: row.created_at ? String(row.created_at).slice(0, 10) : '',
+  status: row.status || 'sent',
+});
 
 const statusStyle: Record<string, string> = {
   sent: 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30',
@@ -59,19 +113,47 @@ const platformColor: Record<string, string> = { instagram: 'text-pink-500', face
 
 export default function EmailSocialMarketing() {
   const { toast } = useToast();
+  const [emailCampaigns, setEmailCampaigns] = useState<CampaignRow[]>([]);
+  const [socialCampaigns, setSocialCampaigns] = useState<SocialRow[]>([]);
+  const [whatsappCampaigns, setWhatsAppCampaigns] = useState<WhatsAppRow[]>([]);
 
-  const totalEmailsSent = emailCampaigns.reduce((s, c) => s + c.sent, 0);
-  const totalOpened = emailCampaigns.reduce((s, c) => s + c.opened, 0);
-  const totalClicked = emailCampaigns.reduce((s, c) => s + c.clicked, 0);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const [{ broadcastsDb, socialMessagesDb }] = await Promise.all([import('@/services/database')]);
+        const [broadcasts, messages] = await Promise.all([
+          broadcastsDb.getAll(50).catch(() => []),
+          socialMessagesDb.getAll({ limit: 200 }).catch(() => []),
+        ]);
+        if (!mounted) return;
+        setEmailCampaigns((broadcasts || []).map(mapBroadcast));
+        const socials = (messages || []).filter((row: any) => ['facebook', 'instagram', 'gmb'].includes(String(row.channel || '').toLowerCase())).map(mapSocialMessage);
+        const whatsapp = (messages || []).filter((row: any) => String(row.channel || '').toLowerCase() === 'whatsapp').map(mapWhatsApp);
+        setSocialCampaigns(socials);
+        setWhatsAppCampaigns(whatsapp);
+      } catch (error) {
+        console.error('Failed to load marketing data', error);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  const totalEmailsSent = useMemo(() => emailCampaigns.reduce((s, c) => s + c.sent, 0), [emailCampaigns]);
+  const totalOpened = useMemo(() => emailCampaigns.reduce((s, c) => s + c.opened, 0), [emailCampaigns]);
+  const totalClicked = useMemo(() => emailCampaigns.reduce((s, c) => s + c.clicked, 0), [emailCampaigns]);
   const openRate = totalEmailsSent > 0 ? ((totalOpened / totalEmailsSent) * 100).toFixed(1) : '0';
   const clickRate = totalOpened > 0 ? ((totalClicked / totalOpened) * 100).toFixed(1) : '0';
 
-  const totalSocialReach = socialCampaigns.reduce((s, c) => s + c.reach, 0);
-  const totalSocialSpend = socialCampaigns.reduce((s, c) => s + c.spend, 0);
-  const avgEngagement = (socialCampaigns.filter(c => c.engagement > 0).reduce((s, c) => s + c.engagement, 0) / socialCampaigns.filter(c => c.engagement > 0).length).toFixed(1);
+  const totalSocialReach = useMemo(() => socialCampaigns.reduce((s, c) => s + c.reach, 0), [socialCampaigns]);
+  const totalSocialSpend = useMemo(() => socialCampaigns.reduce((s, c) => s + c.spend, 0), [socialCampaigns]);
+  const avgEngagement = useMemo(() => {
+    const engaging = socialCampaigns.filter(c => c.engagement > 0);
+    return engaging.length ? (engaging.reduce((s, c) => s + c.engagement, 0) / engaging.length).toFixed(1) : '0';
+  }, [socialCampaigns]);
 
-  const totalWASent = whatsappCampaigns.reduce((s, c) => s + c.sent, 0);
-  const totalWARead = whatsappCampaigns.reduce((s, c) => s + c.read, 0);
+  const totalWASent = useMemo(() => whatsappCampaigns.reduce((s, c) => s + c.sent, 0), [whatsappCampaigns]);
+  const totalWARead = useMemo(() => whatsappCampaigns.reduce((s, c) => s + c.read, 0), [whatsappCampaigns]);
 
   return (
     <div className="space-y-6">
@@ -122,6 +204,7 @@ export default function EmailSocialMarketing() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
+                  {emailCampaigns.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-6 text-muted-foreground">No email campaigns yet</TableCell></TableRow>}
                   {emailCampaigns.map(c => (
                     <TableRow key={c.id}>
                       <TableCell>
@@ -215,6 +298,7 @@ export default function EmailSocialMarketing() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
+                  {whatsappCampaigns.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-6 text-muted-foreground">No WhatsApp campaigns yet</TableCell></TableRow>}
                   {whatsappCampaigns.map(c => (
                     <TableRow key={c.id}>
                       <TableCell className="font-medium">{c.name}</TableCell>
@@ -265,6 +349,7 @@ export default function EmailSocialMarketing() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
+                  {socialCampaigns.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-6 text-muted-foreground">No social campaigns yet</TableCell></TableRow>}
                   {socialCampaigns.map(c => {
                     const Icon = platformIcon[c.platform] || Store;
                     return (

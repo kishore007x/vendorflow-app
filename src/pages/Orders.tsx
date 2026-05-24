@@ -76,31 +76,46 @@ function computeCustomerProfiles(orders: Order[]) {
   const map: Record<string, {
     name: string; phone: string; email: string; orderCount: number; totalSpend: number;
     lastOrderDate: string; addresses: string[]; pinCodes: string[]; cities: string[]; states: string[];
-    suspicious: boolean;
+    suspicious: boolean; returnCount: number;
   }> = {};
+
+  // Single-pass collection to avoid repeated filtering (O(n) instead of O(n^2))
   orders.forEach(o => {
     if (!map[o.customerId]) {
       map[o.customerId] = {
-        name: o.customerName, phone: o.customerPhone, email: o.customerEmail,
-        orderCount: 0, totalSpend: 0, lastOrderDate: o.orderDate,
-        addresses: [], pinCodes: [], cities: [], states: [], suspicious: false,
+        name: o.customerName || '',
+        phone: o.customerPhone || '',
+        email: o.customerEmail || '',
+        orderCount: 0,
+        totalSpend: 0,
+        lastOrderDate: o.orderDate,
+        addresses: [],
+        pinCodes: [],
+        cities: [],
+        states: [],
+        suspicious: false,
+        returnCount: 0,
       };
     }
     const p = map[o.customerId];
-    p.orderCount++;
-    p.totalSpend += o.totalAmount;
-    if (new Date(o.orderDate) > new Date(p.lastOrderDate)) p.lastOrderDate = o.orderDate;
+    p.orderCount += 1;
+    p.totalSpend += Number(o.totalAmount || 0);
+    if (!p.lastOrderDate || new Date(o.orderDate) > new Date(p.lastOrderDate)) p.lastOrderDate = o.orderDate;
     if (o.shippingAddress && !p.addresses.includes(o.shippingAddress)) p.addresses.push(o.shippingAddress);
     if (o.customerPinCode && !p.pinCodes.includes(o.customerPinCode)) p.pinCodes.push(o.customerPinCode);
     if (o.customerCity && !p.cities.includes(o.customerCity)) p.cities.push(o.customerCity);
     if (o.customerState && !p.states.includes(o.customerState)) p.states.push(o.customerState);
+    if (['returned', 'rto', 'customer_return', 'courier_return', 'cancelled'].includes(o.status)) p.returnCount += 1;
   });
+
+  // Post-process to flag suspicious profiles
   Object.values(map).forEach(p => {
-    const returnOrders = orders.filter(o => o.customerId === Object.keys(map).find(k => map[k] === p) && ['returned', 'rto', 'customer_return', 'courier_return', 'cancelled'].includes(o.status));
-    if (p.addresses.length >= 3 || (p.orderCount >= 3 && returnOrders.length / p.orderCount > 0.5)) {
-      p.suspicious = true;
-    }
+    if (p.addresses.length >= 3) p.suspicious = true;
+    else if (p.orderCount >= 3 && p.returnCount / p.orderCount > 0.5) p.suspicious = true;
+    // remove helper field before return
+    delete (p as any).returnCount;
   });
+
   return map;
 }
 
@@ -153,6 +168,42 @@ const videoStatusLabels: Record<VideoStatus, { label: string; color: string }> =
 
 const ORDERS_PAGE_SIZE = 50;
 
+function normalizePortal(rawPortal: unknown, orderNumber: unknown): Portal {
+  const portalValue = String(rawPortal || '').trim().toLowerCase();
+  const orderNumberValue = String(orderNumber || '').toLowerCase();
+
+  if (portalValue.includes('firstcry') || orderNumberValue.includes('firstcry')) return 'firstcry';
+  if (portalValue === 'in') return 'firstcry';
+  if (portalValue === 'own website' || portalValue === 'website') return 'own_website';
+  if (portalValue === 'own_website') return 'own_website';
+  if (portalValue === 'amazon' || portalValue === 'flipkart' || portalValue === 'meesho' || portalValue === 'blinkit') {
+    return portalValue as Portal;
+  }
+
+  return (portalValue || 'firstcry') as Portal;
+}
+
+function normalizeStatus(rawStatus: unknown): OrderStatus {
+  const statusValue = String(rawStatus || '').trim().toLowerCase();
+  if (statusValue in statusConfig) {
+    return statusValue as OrderStatus;
+  }
+
+  if (['processing', 'processed', 'review'].includes(statusValue)) {
+    return 'confirmed';
+  }
+
+  if (['account approved', 'account_approved'].includes(statusValue)) {
+    return 'confirmed';
+  }
+
+  if (['account rejected', 'account_rejected'].includes(statusValue)) {
+    return 'cancelled';
+  }
+
+  return 'pending';
+}
+
 export default function Orders() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -176,17 +227,31 @@ export default function Orders() {
 
     const fetchOrders = async () => {
       try {
-        const data = await ordersDb.getAll();
-        setAllOrders(data.map((o: any) => {
+        const rawOrders = await ordersDb.getAllWithItems();
+
+        setAllOrders(rawOrders.map((o: any) => {
           const orderDate = o.order_date ?? o.orderDate ?? o.created_at ?? o.createdAt ?? null;
-          const totalAmount = Number(o.total_amount ?? o.totalAmount ?? o.total ?? o.amount ?? 0) || 0;
+          const items = o.order_items || o.orderItems || [];
+          const portal = normalizePortal(o.portal, o.order_number);
+          const status = normalizeStatus(o.status);
+          // compute total from DB field if present, otherwise derive from order_items
+          const rawTotal = o.total_amount ?? o.totalAmount ?? o.total ?? o.amount ?? null;
+          const computedFromItems = items.length > 0
+            ? items.reduce((s: number, it: any) => s + (Number(it.quantity ?? it.qty ?? 0) * Number(it.unit_price ?? it.price ?? it.selling_price ?? it.total_price ?? 0)), 0)
+            : 0;
+          const totalAmount = (rawTotal !== null && rawTotal !== undefined && String(rawTotal).trim() !== '')
+            ? Number(rawTotal)
+            : computedFromItems || 0;
+
           return {
             ...o,
             orderId: o.order_number || o.id || String(o.id || ''),
             orderDate,
+            portal,
+            status,
             totalAmount,
             customerName: o.customer_name || o.customerName || '',
-            customerId: o.id || o.customer_id || o.customerId || String(o.id || ''),
+            customerId: o.customer_id || o.customerId || o.customer || (o.id ? String(o.id) : ''),
             customerEmail: o.customer_email || o.customerEmail || '',
             customerPhone: o.customer_phone || o.customerPhone || '',
             shippingAddress: o.customer_address || o.shipping_address || '',
@@ -195,7 +260,7 @@ export default function Orders() {
             customerState: o.customer_state || o.customerState || '',
             deliveryDate: o.delivered_date || o.delivery_date || null,
             portalOrderId: o.order_number || o.portal_order_id || null,
-            items: [],
+            items,
           };
         }));
       } catch (e) { console.error(e); }
@@ -204,14 +269,21 @@ export default function Orders() {
     fetchOrders();
   }, [authLoading, user]);
 
-  // Video reconciliation state
+  // Video reconciliation state (only for visible page to avoid heavy computation)
   const [videoRecords, setVideoRecords] = useState<Record<string, VideoRecord>>({});
   const [returnPolicyDays] = useState(30);
   const [videoRetentionDays] = useState(120);
-
-  useEffect(() => {
-    if (allOrders.length > 0) setVideoRecords(generateVideoRecords(allOrders));
-  }, [allOrders]);
+  const [processingStats, setProcessingStats] = useState({
+    total: 0,
+    withinCutoff: 0,
+    missedCutoff: 0,
+    pendingDispatch: 0,
+    rtoPending: 0,
+    customerReturns: 0,
+    courierReturns: 0,
+    delivered: 0,
+    shipped: 0,
+  });
 
   const customerProfiles = useMemo(() => computeCustomerProfiles(allOrders), [allOrders]);
 
@@ -250,21 +322,31 @@ export default function Orders() {
     return filteredOrders.slice(start, start + ORDERS_PAGE_SIZE);
   }, [filteredOrders, safeCurrentPage]);
 
+  // Generate video records only for orders visible on the current page to reduce work
+  useEffect(() => {
+    if (paginatedOrders.length > 0) {
+      setVideoRecords(generateVideoRecords(paginatedOrders));
+    } else {
+      setVideoRecords({});
+    }
+  }, [paginatedOrders]);
+
   const rowSelection = useRowSelection(paginatedOrders.map(o => o.orderId));
 
-  const processingStats = useMemo(() => {
+  useEffect(() => {
     const orders = selectedPortal === 'all' ? allOrders : allOrders.filter(o => o.portal === selectedPortal);
-    const withinCutoff = orders.filter(o => ['pending', 'confirmed'].includes(o.status) && getOrderCutoffStatus(o) === 'within').length;
-    const missedCutoff = orders.filter(o => ['pending', 'confirmed'].includes(o.status) && getOrderCutoffStatus(o) === 'missed').length;
-    const pendingDispatch = orders.filter(o => ['confirmed', 'packed'].includes(o.status)).length;
-    const rtoPending = orders.filter(o => o.status === 'rto').length;
-    const total = orders.length;
-    const customerReturns = orders.filter(o => o.status === 'customer_return').length;
-    const courierReturns = orders.filter(o => o.status === 'courier_return').length;
-    const delivered = orders.filter(o => o.status === 'delivered').length;
-    const shipped = orders.filter(o => o.status === 'shipped').length;
-    return { total, withinCutoff, missedCutoff, pendingDispatch, rtoPending, customerReturns, courierReturns, delivered, shipped };
-  }, [selectedPortal]);
+    setProcessingStats({
+      total: orders.length,
+      withinCutoff: orders.filter(o => ['pending', 'confirmed'].includes(o.status) && getOrderCutoffStatus(o) === 'within').length,
+      missedCutoff: orders.filter(o => ['pending', 'confirmed'].includes(o.status) && getOrderCutoffStatus(o) === 'missed').length,
+      pendingDispatch: orders.filter(o => ['pending', 'confirmed', 'packed'].includes(o.status)).length,
+      rtoPending: orders.filter(o => o.status === 'rto').length,
+      customerReturns: orders.filter(o => o.status === 'customer_return').length,
+      courierReturns: orders.filter(o => o.status === 'courier_return').length,
+      delivered: orders.filter(o => o.status === 'delivered').length,
+      shipped: orders.filter(o => o.status === 'shipped').length,
+    });
+  }, [allOrders, selectedPortal]);
 
   // Video stats
   const videoStats = useMemo(() => {
@@ -666,7 +748,7 @@ export default function Orders() {
                 </TableHeader>
                 <TableBody>
                   {paginatedOrders.map((order) => {
-                    const status = statusConfig[order.status];
+                    const status = statusConfig[order.status] || statusConfig.pending;
                     const portal = getChannels().find(p => p.id === order.portal);
                     const StatusIcon = status.icon;
                     const custType = getCustomerType(order.customerId);
@@ -1002,7 +1084,7 @@ export default function Orders() {
                   <h4 className="font-semibold mb-3">Status Timeline</h4>
                   <div className="space-y-3">
                     {selectedOrder.statusTimeline.map((event, index) => {
-                      const config = statusConfig[event.status];
+                      const config = statusConfig[event.status] || statusConfig.pending;
                       const Icon = config.icon;
                       return (
                         <div key={index} className="flex items-start gap-3">

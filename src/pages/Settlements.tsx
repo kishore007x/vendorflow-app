@@ -40,36 +40,21 @@ const expenseCategories: any[] = [];
 const taxSplit = { cgst: 0, sgst: 0, igst: 0 };
 const totalTax = taxSplit.cgst + taxSplit.sgst + taxSplit.igst;
 
-// Mock revenue vs cost trend
-const revenueCostTrend = [
-  { period: 'Week 1', revenue: 185000, cost: 128000, margin: 30.8 },
-  { period: 'Week 2', revenue: 210000, cost: 142000, margin: 32.4 },
-  { period: 'Week 3', revenue: 195000, cost: 135000, margin: 30.8 },
-  { period: 'Week 4', revenue: 240000, cost: 155000, margin: 35.4 },
-];
+// Revenue/cost trend (computed from DB in future)
+const revenueCostTrend: { period: string; revenue: number; cost: number; margin: number }[] = [];
 
-// Reconciliation discrepancy trend
-const reconTrend = [
-  { period: 'Jan', mismatchCount: 12, discrepancyAmt: 4500 },
-  { period: 'Feb', mismatchCount: 8, discrepancyAmt: 2800 },
-  { period: 'Mar', mismatchCount: 15, discrepancyAmt: 6200 },
-  { period: 'Apr', mismatchCount: 6, discrepancyAmt: 1900 },
-  { period: 'May', mismatchCount: 10, discrepancyAmt: 3700 },
-  { period: 'Jun', mismatchCount: 4, discrepancyAmt: 1200 },
-];
+// Reconciliation discrepancy trend (computed from DB in future)
+const reconTrend: { period: string; mismatchCount: number; discrepancyAmt: number }[] = [];
 
-// B2B vs B2C
-const b2bValue = 320000;
-const b2cValue = 480000;
-const salesSplit = [
-  { name: 'B2B', value: b2bValue },
-  { name: 'B2C', value: b2cValue },
-];
+// B2B vs B2C split (computed from DB in future)
+const salesSplit: { name: string; value: number }[] = [];
+const b2bValue = 0;
+const b2cValue = 0;
 
 // Bank vs Ecom
-const bankTotal = 756000;
-const ecomTotal = 742500;
-const bankEcomDiff = bankTotal - ecomTotal;
+const bankTotal = 0;
+const ecomTotal = 0;
+const bankEcomDiff = 0;
 
 function SectionBadge() {
   return <Badge variant="outline" className="gap-1 text-[10px] border-success/30 text-success"><CheckCircle2 className="w-3 h-3" />Updated</Badge>;
@@ -614,6 +599,7 @@ export default function Settlements() {
                         </TableRow>
                       );
                     })}
+                    {filteredOrderSettlements.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-6 text-muted-foreground">No order settlements found</TableCell></TableRow>}
                   </TableBody>
                 </Table>
               </div>

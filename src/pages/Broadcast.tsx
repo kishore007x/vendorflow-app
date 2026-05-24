@@ -227,6 +227,7 @@ export default function Broadcast() {
                     </div>
                   );
                 })}
+                {broadcasts.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No broadcasts yet</p>}
               </CardContent>
             </Card>
 
@@ -395,6 +396,7 @@ export default function Broadcast() {
                     </div>
                   );
                 })}
+                {broadcasts.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No broadcast history</p>}
               </div>
             </CardContent>
           </Card>

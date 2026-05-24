@@ -20,35 +20,10 @@ import { format } from 'date-fns';
 import { GlobalDateFilter, type DateRange } from '@/components/GlobalDateFilter';
 import ChannelPnLComponent from '@/components/finance/ChannelPnL';
 
-// ── Mock GSTIN Auto-fill database ──
-const gstinDatabase: Record<string, { name: string; address: string; state: string; stateCode: string; taxStatus: 'Regular' | 'Composition' }> = {
-  '27AAACR5055K1ZY': { name: 'RetailMart India Pvt Ltd', address: '45, MG Road, Andheri East, Mumbai 400069', state: 'Maharashtra', stateCode: '27', taxStatus: 'Regular' },
-  '29AAGCQ1234F1Z5': { name: 'QuickBuy Online Solutions', address: '12, Koramangala, Bengaluru 560034', state: 'Karnataka', stateCode: '29', taxStatus: 'Regular' },
-  '07AABCM9876D1ZP': { name: 'MegaStore Limited', address: '88, Connaught Place, New Delhi 110001', state: 'Delhi', stateCode: '07', taxStatus: 'Regular' },
-  '27AABCR1234M1Z5': { name: 'RawMaterials Co Pvt Ltd', address: '23, Worli, Mumbai 400018', state: 'Maharashtra', stateCode: '27', taxStatus: 'Regular' },
-  '29AADCP5678N1Z3': { name: 'PackTech Industries', address: '56, Whitefield, Bengaluru 560066', state: 'Karnataka', stateCode: '29', taxStatus: 'Composition' },
-  '07AABCL9012P1Z7': { name: 'LogiFreight Services', address: '101, Nehru Place, New Delhi 110019', state: 'Delhi', stateCode: '07', taxStatus: 'Regular' },
-  '33AABCT5678Q1Z9': { name: 'TechZone Solutions', address: '77, T Nagar, Chennai 600017', state: 'Tamil Nadu', stateCode: '33', taxStatus: 'Regular' },
-};
+// ── GSTIN Auto-fill (populated from DB in future) ──
+const gstinDatabase: Record<string, { name: string; address: string; state: string; stateCode: string; taxStatus: 'Regular' | 'Composition' }> = {};
 
 const SELLER_STATE_CODE = '27'; // Maharashtra
-
-// ── Data (fetched from database) ──
-
-const mockGstr1 = [] as any[];
-
-// DB-backed invoices and purchase bills
-// loaded on mount below
-
-const plData = {
-  revenue: 485000,
-  commission: 38800,
-  logistics: 24250,
-  refundImpact: 12125,
-  otherExpenses: 15000,
-};
-const netProfit = plData.revenue - plData.commission - plData.logistics - plData.refundImpact - plData.otherExpenses;
-const marginPct = ((netProfit / plData.revenue) * 100).toFixed(1);
 
 // ── Line Item Types ──
 interface LineItem {
@@ -367,10 +342,13 @@ export default function FinanceTaxation() {
   };
 
   const totalInputGst = purchaseBills.reduce((s, b) => s + (b.inputGst || (b.cgst || 0) + (b.sgst || 0) + (b.igst || 0)), 0);
-  const totalOutputGst = invoices.filter(i => i.type === 'Sales Invoice').reduce((s, i) => s + (i.cgst || 0) + (i.sgst || 0) + (i.igst || 0), 0);
+  const totalOutputGst = invoices.reduce((s, i) => s + (i.cgst || 0) + (i.sgst || 0) + (i.igst || 0), 0);
+  const totalRevenue = invoices.reduce((s, i) => s + Number(i.total_amount || 0), 0);
+  const netProfit = totalRevenue - totalOutputGst;
+  const marginPct = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : '0';
 
   const kpis = [
-    { label: 'Total Revenue', value: fmt(plData.revenue), icon: IndianRupee, color: 'text-primary', bg: 'bg-primary/10' },
+    { label: 'Total Revenue', value: fmt(totalRevenue), icon: IndianRupee, color: 'text-primary', bg: 'bg-primary/10' },
     { label: 'Net Profit', value: fmt(netProfit), icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-500/10' },
     { label: 'Margin', value: `${marginPct}%`, icon: Percent, color: 'text-blue-600', bg: 'bg-blue-500/10' },
     { label: 'Output GST', value: fmt(totalOutputGst), icon: Receipt, color: 'text-amber-600', bg: 'bg-amber-500/10' },

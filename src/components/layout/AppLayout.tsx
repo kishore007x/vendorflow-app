@@ -85,6 +85,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
+  const viewer = user;
 
   const handleLogout = async () => {
     await logout();
@@ -93,7 +94,8 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const currentPath = location.pathname;
   const allowedRoles = routePermissions[currentPath];
-  const hasAccess = !allowedRoles || (user && allowedRoles.includes(user.role));
+  const normalizedRole = viewer?.role ? String(viewer.role).toLowerCase() : undefined;
+  const hasAccess = !allowedRoles || (normalizedRole && allowedRoles.includes(normalizedRole));
 
   const lastSynced = new Date();
   lastSynced.setMinutes(lastSynced.getMinutes() - 3);
@@ -213,17 +215,17 @@ export function AppLayout({ children }: AppLayoutProps) {
                     }}
                   >
                     <Avatar className="w-8 h-8">
-                      <AvatarImage src={user?.avatar} alt={user?.name} />
+                      <AvatarImage src={viewer?.avatar} alt={viewer?.name} />
                       <AvatarFallback
                         className="text-xs font-semibold text-white"
                         style={{ background: 'linear-gradient(135deg, #C59DD9, #7A3F91)' }}
                       >
-                        {user?.name?.split(' ').map(n => n[0]).join('')}
+                        {viewer?.name?.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
                     <div className="hidden sm:flex flex-col text-left">
-                      <span className="text-sm font-medium leading-tight">{user?.name}</span>
-                      <span className="text-xs text-muted-foreground capitalize">{user?.role}</span>
+                      <span className="text-sm font-medium leading-tight">{viewer?.name}</span>
+                      <span className="text-xs text-muted-foreground capitalize">{viewer?.role}</span>
                     </div>
                   </button>
                 </DropdownMenuTrigger>
@@ -238,8 +240,8 @@ export function AppLayout({ children }: AppLayoutProps) {
                   }}
                 >
                   <div className="px-2 py-1.5">
-                    <p className="text-sm font-medium">{user?.name}</p>
-                    <p className="text-xs text-muted-foreground">{user?.email}</p>
+                    <p className="text-sm font-medium">{viewer?.name}</p>
+                    <p className="text-xs text-muted-foreground">{viewer?.email}</p>
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/system-settings')}>
@@ -269,7 +271,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <ShieldAlert className="h-5 w-5" />
                   <AlertTitle>Access Restricted</AlertTitle>
                   <AlertDescription>
-                    Your role <Badge variant="outline" className="mx-1 capitalize">{user?.role}</Badge> does not have permission to access this module. Contact your administrator to request access.
+                    Your role <Badge variant="outline" className="mx-1 capitalize">{viewer?.role}</Badge> does not have permission to access this module. Contact your administrator to request access.
                   </AlertDescription>
                   <Button variant="outline" size="sm" className="mt-3" onClick={() => navigate('/dashboard')}>
                     Return to Dashboard

@@ -63,18 +63,7 @@ const roles = [
   { key: 'analyst' as const, label: 'Analyst', desc: 'Read-only analytics', color: 'bg-purple-500/10 text-purple-600' },
 ];
 
-const daysAgo = (d: number) => new Date(Date.now() - d * 86400000).toISOString();
-
-const initialAuditLog: AuditLogEntry[] = [
-  { id: 'AL-001', action: 'login', user: 'Sarah Johnson', role: 'Super Admin', description: 'Logged in from 192.168.1.1', timestamp: daysAgo(0), module: 'Auth' },
-  { id: 'AL-002', action: 'permission_change', user: 'Sarah Johnson', role: 'Super Admin', description: 'Enabled Analytics access for Vendor User', timestamp: daysAgo(0), module: 'Permissions' },
-  { id: 'AL-003', action: 'financial_edit', user: 'Emily Davis', role: 'Operations', description: 'Updated settlement batch SET-AMZ-2024-02', timestamp: daysAgo(1), module: 'Settlements' },
-  { id: 'AL-004', action: 'approval', user: 'Sarah Johnson', role: 'Super Admin', description: 'Approved return claim RET-2024-002', timestamp: daysAgo(1), module: 'Returns' },
-  { id: 'AL-005', action: 'status_change', user: 'Emily Davis', role: 'Operations', description: 'Changed order ORD-2024-003 status to Shipped', timestamp: daysAgo(2), module: 'Orders' },
-  { id: 'AL-006', action: 'login', user: 'Michael Chen', role: 'Vendor', description: 'Logged in from mobile', timestamp: daysAgo(2), module: 'Auth' },
-  { id: 'AL-007', action: 'financial_edit', user: 'Sarah Johnson', role: 'Super Admin', description: 'Adjusted stock for SKU-AMZ-006', timestamp: daysAgo(3), module: 'Inventory' },
-  { id: 'AL-008', action: 'approval', user: 'Sarah Johnson', role: 'Super Admin', description: 'Approved vendor VEN-003 activation', timestamp: daysAgo(4), module: 'Vendors' },
-];
+const initialAuditLog: AuditLogEntry[] = [];
 
 const actionConfig: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   login: { label: 'Login', color: 'bg-blue-500/10 text-blue-600', icon: LogIn },

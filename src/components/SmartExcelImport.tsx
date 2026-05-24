@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import * as XLSX from 'xlsx';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,36 @@ interface ColumnMapping {
 
 type ImportStep = 'upload' | 'mapping' | 'preview' | 'result';
 
+function normalizeHeader(value: string) {
+  return value.toLowerCase().trim().replace(/[\s\-\/]+/g, '_');
+}
+
+function detectModuleFromHeaders(headers: string[], fileName: string) {
+  const normalizedHeaders = headers.map(normalizeHeader);
+  const hasInventorySkuShape = normalizedHeaders.includes('sku_id') && normalizedHeaders.includes('display_name');
+  const hasEcommerceSkuShape = normalizedHeaders.includes('vendorstylecode') && normalizedHeaders.includes('productname');
+
+  if (hasInventorySkuShape || hasEcommerceSkuShape) {
+    return 'sku_mapping';
+  }
+
+  return null;
+}
+
+function getFallbackAliases(moduleId: string): Record<string, string[]> {
+  if (moduleId === 'sku_mapping') {
+    return {
+      master_sku_id: ['sku_id', 'vendorstylecode', 'master_sku_id', 'sku', 'master_sku'],
+      product_name: ['display_name', 'productname', 'product_name', 'product', 'name'],
+      brand: ['platform', 'brand'],
+      firstcry_sku: ['productid', 'product_id'],
+      firstcry_url: ['url', 'product_url'],
+    };
+  }
+
+  return {};
+}
+
 export function SmartExcelImport() {
   const [step, setStep] = useState<ImportStep>('upload');
   const [selectedModule, setSelectedModule] = useState<string>('orders');
@@ -42,6 +73,7 @@ export function SmartExcelImport() {
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const currentModule = getModuleById(selectedModule);
 
@@ -120,9 +152,12 @@ export function SmartExcelImport() {
           return;
         }
         
+        const detectedModule = detectModuleFromHeaders(cleanHeaders, f.name) || selectedModule;
+
         setHeaders(cleanHeaders);
         setRawData(cleanData);
-        requestAIMapping(cleanHeaders, cleanData);
+        setSelectedModule(detectedModule);
+        requestAIMapping(cleanHeaders, cleanData, detectedModule);
       } catch {
         toast({ title: 'Parse Error', description: 'Could not read the file. Please check format.', variant: 'destructive' });
       }
@@ -130,10 +165,10 @@ export function SmartExcelImport() {
     reader.readAsArrayBuffer(f);
   }, [selectedModule]);
 
-  const requestAIMapping = async (hdrs: string[], rows: Record<string, any>[]) => {
+  const requestAIMapping = async (hdrs: string[], rows: Record<string, any>[], moduleId: string = selectedModule) => {
     setIsMapping(true);
     setStep('mapping');
-    const mod = getModuleById(selectedModule);
+    const mod = getModuleById(moduleId);
     if (!mod) return;
 
     try {
@@ -147,6 +182,22 @@ export function SmartExcelImport() {
 
       if (error) throw error;
       const aiMappings: ColumnMapping[] = data?.mappings || [];
+      const aliases = getFallbackAliases(moduleId);
+      const aliasFallback: ColumnMapping[] = hdrs.map(h => {
+        const normalizedHeader = normalizeHeader(h);
+        const match = mod.fields.find(f =>
+          f.key.toLowerCase() === normalizedHeader ||
+          f.label.toLowerCase() === h.toLowerCase() ||
+          aliases[f.key]?.includes(normalizedHeader)
+        );
+        return {
+          excelHeader: h,
+          systemField: match?.key || null,
+          confidence: match ? 0.7 : 0,
+          reason: match ? 'Matched by name' : 'No match',
+        };
+      });
+
       // Fill in any unmapped headers
       const mappedHeaders = new Set(aiMappings.map(m => m.excelHeader));
       hdrs.forEach(h => {
@@ -154,14 +205,26 @@ export function SmartExcelImport() {
           aiMappings.push({ excelHeader: h, systemField: null, confidence: 0, reason: 'No match found' });
         }
       });
-      setMappings(aiMappings);
+      const mergedMappings = hdrs.map(h => {
+        const aiMatch = aiMappings.find(m => m.excelHeader === h);
+        const aliasMatch = aliasFallback.find(m => m.excelHeader === h);
+        if (aiMatch?.systemField) {
+          return aiMatch;
+        }
+        return aliasMatch || aiMatch || { excelHeader: h, systemField: null, confidence: 0, reason: 'No match found' };
+      });
+
+      setMappings(mergedMappings);
     } catch (err) {
       console.error('AI mapping failed, using fallback:', err);
       // Fallback: simple name matching
+      const aliases = getFallbackAliases(moduleId);
       const fallback: ColumnMapping[] = hdrs.map(h => {
+        const normalizedHeader = normalizeHeader(h);
         const match = mod.fields.find(f =>
-          f.key.toLowerCase() === h.toLowerCase().replace(/[\s\-]/g, '_') ||
-          f.label.toLowerCase() === h.toLowerCase()
+          f.key.toLowerCase() === normalizedHeader ||
+          f.label.toLowerCase() === h.toLowerCase() ||
+          aliases[f.key]?.includes(normalizedHeader)
         );
         return {
           excelHeader: h,
@@ -224,6 +287,14 @@ export function SmartExcelImport() {
     }
 
     setIsImporting(false);
+    // Invalidate react-query cache so pages refresh with newly imported data
+    try {
+      // Try invalidating by table name first (common convention), then invalidate all as a fallback
+      if (currentModule?.dbTable) await queryClient.invalidateQueries([currentModule.dbTable]);
+      await queryClient.invalidateQueries();
+    } catch (e) {
+      console.debug('Query invalidation failed:', e);
+    }
     setStep('result');
     toast({
       title: 'Import Complete',

@@ -1,5 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Reconciliation from './Reconciliation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -51,7 +52,18 @@ function StockReconciliation() {
 }
 
 export default function ReconciliationHub() {
-  const [tab, setTab] = useState('payment');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [tab, setTab] = useState(location.pathname === '/stock-reconciliation' ? 'stock' : 'payment');
+
+  useEffect(() => {
+    setTab(location.pathname === '/stock-reconciliation' ? 'stock' : 'payment');
+  }, [location.pathname]);
+
+  const handleTabChange = (nextTab: string) => {
+    setTab(nextTab);
+    navigate(nextTab === 'stock' ? '/stock-reconciliation' : '/reconciliation', { replace: true });
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -62,7 +74,7 @@ export default function ReconciliationHub() {
         </p>
       </div>
 
-      <Tabs value={tab} onValueChange={setTab} className="w-full">
+      <Tabs value={tab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="glass-panel">
           <TabsTrigger value="payment">Payment Reconciliation</TabsTrigger>
           <TabsTrigger value="stock">Stock Reconciliation</TabsTrigger>

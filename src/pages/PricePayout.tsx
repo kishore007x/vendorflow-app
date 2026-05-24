@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,8 @@ import { IndianRupee, TrendingUp, Download, FileSpreadsheet, FileDown, FileText,
 import PriceAuditEngine from '@/components/settlements/PriceAuditEngine';
 import { GlobalDateFilter, type DateRange } from '@/components/GlobalDateFilter';
 import { useToast } from '@/hooks/use-toast';
+import { getChannels } from '@/services/channelManager';
+import { reconciliationDb, settlementsDb } from '@/services/database';
 
 interface PriceBreakdown {
   productName: string;
@@ -43,14 +45,58 @@ interface ReconEntry {
   status: 'matched' | 'mismatch' | 'pending';
 }
 
-const mockPriceData: PriceBreakdown[] = [];
-
-const mockReconData: ReconEntry[] = [];
-
 const channels = ['All Channels', 'Amazon', 'Flipkart', 'Meesho', 'Shopify', 'Website', 'FirstCry', 'Blinkit'];
+
+const channelMeta = (portal?: string) => getChannels().find(ch => ch.id === portal) || getChannels()[0];
+
+const mapSettlementRow = (row: any): PriceBreakdown => {
+  const portal = row.portal || 'firstcry';
+  const meta = channelMeta(portal);
+  const gross = Number(row.amount ?? row.gross_amount ?? row.total_amount ?? 0);
+  const commission = Number(row.commission ?? row.commission_amount ?? 0);
+  const shipping = Number(row.shipping_fee ?? row.logistics_fee ?? row.shipping_amount ?? 0);
+  const gst = Number(row.tax ?? row.gst ?? row.tcs ?? 0);
+  const tcs = Number(row.tcs ?? row.tcs_amount ?? 0);
+  const platformFees = Number(row.platform_fee ?? row.fee ?? 0);
+  const netPayout = Number(row.net_amount ?? row.net_settlement ?? row.payout_amount ?? gross - commission - shipping - gst - tcs - platformFees);
+
+  return {
+    productName: row.product_name || row.order_number || row.reference_id || row.settlement_id || 'Settlement row',
+    productId: row.product_id || row.order_id || row.id || '—',
+    portal: meta.name,
+    portalIcon: meta.icon,
+    channel: meta.name,
+    marketplacePrice: gross,
+    commission,
+    commissionPct: gross > 0 ? Math.round((commission / gross) * 100) : 0,
+    platformFees,
+    shippingFees: shipping,
+    gst,
+    tcs,
+    netPayout,
+  };
+};
+
+const mapReconRow = (row: any): ReconEntry => ({
+  id: row.id || `${row.portal}-${row.date || row.created_at || Date.now()}`,
+  productId: row.order_id || row.reference_id || row.id || '—',
+  productName: row.notes || row.order_id || row.portal || 'Reconciliation row',
+  channel: channelMeta(row.portal).name,
+  channelIcon: channelMeta(row.portal).icon,
+  expectedSettlement: Number(row.expected_amount ?? row.expected_settlement ?? row.expected_orders ?? 0),
+  actualSettlement: Number(row.actual_amount ?? row.actual_settlement ?? row.processed_orders ?? 0),
+  commissionExpected: Number(row.commission_expected ?? 0),
+  commissionActual: Number(row.commission_actual ?? 0),
+  refundExpected: Number(row.refund_expected ?? 0),
+  refundActual: Number(row.refund_actual ?? 0),
+  penaltyAmount: Number(row.penalty_amount ?? 0),
+  status: (row.status === 'matched' || row.status === 'mismatch' || row.status === 'pending') ? row.status : 'pending',
+});
 
 export default function PricePayout() {
   const { toast } = useToast();
+  const [priceRows, setPriceRows] = useState<PriceBreakdown[]>([]);
+  const [reconRows, setReconRows] = useState<ReconEntry[]>([]);
   const [selectedChannel, setSelectedChannel] = useState('All Channels');
   const [reconChannel, setReconChannel] = useState('All Channels');
   const [activeTab, setActiveTab] = useState('payout');
@@ -58,9 +104,27 @@ export default function PricePayout() {
   const [sortField, setSortField] = useState<string>('default');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const [settlements, recon] = await Promise.all([
+          settlementsDb.getAll().catch(() => []),
+          reconciliationDb.getAll().catch(() => []),
+        ]);
+        if (!mounted) return;
+        setPriceRows((settlements || []).map(mapSettlementRow));
+        setReconRows((recon || []).map(mapReconRow));
+      } catch (error) {
+        console.error('Failed to load price/payout data', error);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
   // Payout data
   const filteredData = useMemo(() => {
-    let data = selectedChannel === 'All Channels' ? [...mockPriceData] : mockPriceData.filter(p => p.channel === selectedChannel);
+    let data = selectedChannel === 'All Channels' ? [...priceRows] : priceRows.filter(p => p.channel === selectedChannel);
     if (sortField !== 'default') {
       data.sort((a, b) => {
         const aVal = sortField === 'margin' ? (a.netPayout / a.marketplacePrice) : sortField === 'commission' ? a.commissionPct : sortField === 'payout' ? a.netPayout : a.marketplacePrice;
@@ -69,7 +133,7 @@ export default function PricePayout() {
       });
     }
     return data;
-  }, [selectedChannel, sortField, sortDir]);
+  }, [selectedChannel, sortField, sortDir, priceRows]);
 
   const avgMargin = filteredData.length > 0
     ? Math.round(filteredData.reduce((s, p) => s + (p.netPayout / p.marketplacePrice * 100), 0) / filteredData.length)
@@ -81,9 +145,9 @@ export default function PricePayout() {
 
   // Reconciliation data
   const filteredRecon = useMemo(() => {
-    if (reconChannel === 'All Channels') return mockReconData;
-    return mockReconData.filter(r => r.channel === reconChannel);
-  }, [reconChannel]);
+    if (reconChannel === 'All Channels') return reconRows;
+    return reconRows.filter(r => r.channel === reconChannel);
+  }, [reconChannel, reconRows]);
 
   const reconSummary = useMemo(() => {
     const totalExpected = filteredRecon.reduce((s, r) => s + r.expectedSettlement, 0);

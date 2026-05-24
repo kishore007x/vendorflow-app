@@ -96,7 +96,7 @@ const App = () => (
             <Route path="/settlements" element={<AppLayout><Settlements /></AppLayout>} />
             <Route path="/sku-mapping" element={<AppLayout><SKUMapping /></AppLayout>} />
             <Route path="/reconciliation" element={<AppLayout><ReconciliationHub /></AppLayout>} />
-            <Route path="/stock-reconciliation" element={<Navigate to="/reconciliation" replace />} />
+            <Route path="/stock-reconciliation" element={<AppLayout><ReconciliationHub /></AppLayout>} />
             <Route path="/affiliated" element={<AppLayout><Affiliated /></AppLayout>} />
             <Route path="/data-import" element={<AppLayout><DataImport /></AppLayout>} />
             <Route path="/social-insights" element={<AppLayout><SocialInsights /></AppLayout>} />
@@ -112,6 +112,7 @@ const App = () => (
             <Route path="/permissions" element={<AppLayout><Permissions /></AppLayout>} />
             <Route path="/reports" element={<AppLayout><Reports /></AppLayout>} />
             <Route path="/price-payout" element={<AppLayout><PricePayout /></AppLayout>} />
+            <Route path="/review-rating-analytics" element={<Navigate to="/review-analytics" replace />} />
             <Route path="/settings" element={<Navigate to="/permissions" replace />} />
             <Route path="/data-configuration" element={<Navigate to="/system-settings" replace />} />
             <Route path="/system-architecture" element={<Navigate to="/system-settings" replace />} />

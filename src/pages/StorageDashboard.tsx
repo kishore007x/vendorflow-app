@@ -24,14 +24,7 @@ const buckets = [
 const totalUsed = 496.8;
 const totalCapacity = 5000;
 
-const recentFiles = [
-  { name: "INV-2026-0412.pdf", bucket: "invoices", size: "342 KB", uploaded: "2026-03-19", type: "PDF" },
-  { name: "product-hero-blue.jpg", bucket: "product-images", size: "1.8 MB", uploaded: "2026-03-18", type: "Image" },
-  { name: "return-RET-0089.mp4", bucket: "return-evidence", size: "12 MB", uploaded: "2026-03-18", type: "Video" },
-  { name: "PO-2026-0034.pdf", bucket: "documents", size: "156 KB", uploaded: "2026-03-17", type: "PDF" },
-  { name: "packing-video-ORD-5543.mp4", bucket: "order-videos", size: "45 MB", uploaded: "2026-03-17", type: "Video" },
-  { name: "SKU-BATCH-MARCH.xlsx", bucket: "documents", size: "89 KB", uploaded: "2026-03-16", type: "Spreadsheet" },
-];
+const recentFiles: { name: string; bucket: string; size: string; uploaded: string; type: string }[] = [];
 
 const driveFeatures = [
   { title: "Google Drive Sync", desc: "Auto-sync invoices, reports, and documents to Google Drive folders", status: "coming_soon" },

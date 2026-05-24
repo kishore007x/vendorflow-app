@@ -83,6 +83,34 @@ export const ordersDb = {
     ordersInFlight.set(cacheKey, request);
     return request;
   },
+  async getAllWithItems(filters?: { portal?: string; status?: string; from?: string; to?: string; search?: string }) {
+    // Similar to getAll but also fetches related order_items in a single query
+    const cacheKey = buildOrdersCacheKey({ ...(filters || {}), includeItems: true });
+    const cached = ordersCache.get(cacheKey);
+    if (cached && Date.now() - cached.fetchedAt < ORDERS_CACHE_TTL_MS) {
+      return cached.data;
+    }
+
+    const inFlight = ordersInFlight.get(cacheKey);
+    if (inFlight) return inFlight;
+
+    let query = supabase.from('orders').select('*, order_items(*)').order('created_at', { ascending: false });
+    if (filters?.portal) query = query.eq('portal', filters.portal);
+    if (filters?.status) query = query.eq('status', filters.status as any);
+    if (filters?.from) query = query.gte('order_date', filters.from);
+    if (filters?.to) query = query.lte('order_date', filters.to);
+    if (filters?.search) query = query.or(`order_number.ilike.%${filters.search}%,customer_name.ilike.%${filters.search}%`);
+
+    const request = query.then(({ data, error }) => {
+      if (error) throw error;
+      const result = data || [];
+      ordersCache.set(cacheKey, { fetchedAt: Date.now(), data: result });
+      return result;
+    }).finally(() => ordersInFlight.delete(cacheKey));
+
+    ordersInFlight.set(cacheKey, request);
+    return request;
+  },
   async getById(id: string) {
     const { data, error } = await supabase.from('orders').select('*, order_items(*)').eq('id', id).single();
     if (error) throw error;

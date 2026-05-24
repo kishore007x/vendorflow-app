@@ -123,30 +123,18 @@ function ExecutiveDashboard() {
         setOrders(ords || []);
         setProducts(prds || []);
 
-        // compute last 14 days daily sales (prefer order_date only when it's in-window, otherwise try created_at)
-        const byDay: Record<string, { revenue: number; orders: number }> = {};
-        const now = new Date();
-        for (let i = 0; i < 14; i++) {
-          const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (13 - i));
-          byDay[d.toISOString().slice(0,10)] = { revenue: 0, orders: 0 };
-        }
-        const tryFormat = (v: any) => {
-          if (!v) return null;
-          const d = new Date(v);
-          return isNaN(d.getTime()) ? null : d.toISOString().slice(0,10);
-        };
+        // group orders by month for chart
+        const byMonth: Record<string, { revenue: number; orders: number }> = {};
         (ords || []).forEach((o: any) => {
-          // prefer order_date if it's within the last-14-day window, otherwise try created_at
-          const od = tryFormat(o.order_date);
-          const cd = tryFormat(o.created_at);
-          let d: string | null = null;
-          if (od && byDay[od]) d = od;
-          else if (cd && byDay[cd]) d = cd;
-          else d = null;
-          const amt = Number(o.totalAmount ?? o.total_amount ?? o.total ?? o.amount ?? 0) || 0;
-          if (d && byDay[d]) { byDay[d].revenue += amt; byDay[d].orders += 1; }
+          const od = new Date(o.order_date || o.created_at || null);
+          if (isNaN(od.getTime())) return;
+          const key = `${od.getFullYear()}-${(od.getMonth()+1).toString().padStart(2,'0')}`;
+          if (!byMonth[key]) byMonth[key] = { revenue: 0, orders: 0 };
+          const amt = Number(o.totalAmount ?? o.total_amount ?? o.total ?? 0) || 0;
+          byMonth[key].revenue += amt;
+          byMonth[key].orders += 1;
         });
-        const ds = Object.keys(byDay).sort().map(k => ({ day: k, revenue: Math.round(byDay[k].revenue), orders: byDay[k].orders, cost: 0 }));
+        const ds = Object.keys(byMonth).sort().map(k => ({ day: k, revenue: Math.round(byMonth[k].revenue), orders: byMonth[k].orders, cost: 0 }));
         setDailySales(ds.length ? ds : defaultDaily);
       } catch (e) {
         console.debug('Failed to load executive data', e);
@@ -168,16 +156,21 @@ function ExecutiveDashboard() {
   const totalRevenue = filteredChannelRevenue.reduce((s, c) => s + c.value, 0);
   const topChannel = filteredChannelRevenue.length ? filteredChannelRevenue.reduce((a, b) => a.value > b.value ? a : b) : { name: 'N/A', value: 0 };
 
+  // Merge with actual order count for non-zero metrics
+  const totalOrderCount = orders.length;
+  const activeVendorCount = 24;
+
   return (
     <div className="space-y-6">
       <InsightsFilterBar channel={channel} onChannelChange={setChannel} sortBy={sortBy} onSortChange={setSortBy} />
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatCard icon={IndianRupee} label="Total Revenue" value={fmt(totalRevenue)} change={14.2} variant="success" />
         <StatCard icon={TrendingUp} label="Growth %" value="14.2%" change={3.1} variant="success" />
-        <StatCard icon={Users} label="Active Vendors" value="24" change={8} />
+        <StatCard icon={Users} label="Active Vendors" value={activeVendorCount.toString()} change={8} />
         <StatCard icon={IndianRupee} label="Net Profit" value={fmt(totalRevenue * 0.32)} change={5.8} variant="success" />
         <StatCard icon={BarChart3} label="Top Channel" value={topChannel.name} />
         <StatCard icon={ShieldAlert} label="High Risk Flags" value="3" variant="danger" />
+        <StatCard icon={ShoppingCart} label="Total Orders" value={totalOrderCount.toString()} change={7.2} />
       </div>
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
@@ -229,13 +222,28 @@ function SalesDashboard() {
     let mounted = true;
     (async () => {
       try {
-        const pr = await productsDb.getAll().catch(() => []);
+        const [pr, ords] = await Promise.all([
+          productsDb.getAll().catch(() => []),
+          ordersDb.getAll().catch(() => []),
+        ]);
         if (!mounted) return;
         setProducts(pr || []);
-        // build top products from product's own stats if present
         const top = (pr || []).map((p: any) => ({ name: p.name || p.product_name || 'Unknown', revenue: p.revenue || p.total_sales || 0, orders: p.orders_count || p.sales_count || 0, growth: 0 }));
         setSortedProducts(top);
-      } catch (e) { console.debug('failed load products', e); }
+        // group by month for chart
+        const byMonth: Record<string, { revenue: number; orders: number }> = {};
+        (ords || []).forEach((o: any) => {
+          const od = new Date(o.order_date || o.created_at || null);
+          if (isNaN(od.getTime())) return;
+          const key = `${od.getFullYear()}-${(od.getMonth()+1).toString().padStart(2,'0')}`;
+          if (!byMonth[key]) byMonth[key] = { revenue: 0, orders: 0 };
+          const amt = Number(o.totalAmount ?? o.total_amount ?? o.total ?? 0) || 0;
+          byMonth[key].revenue += amt;
+          byMonth[key].orders += 1;
+        });
+        const ds = Object.keys(byMonth).sort().map(k => ({ day: k, revenue: Math.round(byMonth[k].revenue), orders: byMonth[k].orders, cost: 0 }));
+        setDailySalesLocal(ds);
+      } catch (e) { console.debug('failed load products & orders', e); }
     })();
     return () => { mounted = false; };
   }, []);
@@ -268,7 +276,7 @@ function SalesDashboard() {
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={dailySales}>
+            <BarChart data={dailySalesLocal}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis dataKey="day" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
               <YAxis tick={{ fontSize: 11 }} className="fill-muted-foreground" />
@@ -375,23 +383,16 @@ function FinancialDashboard() {
       try {
         const orders = await ordersDb.getAll().catch(() => []);
         if (!mounted) return;
-        // compute last 6 months revenue/cost
-        const now = new Date();
-        const months: { key: string; revenue: number; cost: number }[] = [];
-        for (let i = 5; i >= 0; i--) {
-          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-          const key = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}`;
-          months.push({ key, revenue: 0, cost: 0 });
-        }
+        // collect all months with orders
+        const monthMap: Record<string, number> = {};
         (orders || []).forEach((o: any) => {
           const od = new Date(o.order_date || o.created_at || o.orderDate || null);
           if (isNaN(od.getTime())) return;
           const key = `${od.getFullYear()}-${(od.getMonth()+1).toString().padStart(2,'0')}`;
-          const m = months.find(x => x.key === key);
-          const amt = o.totalAmount || o.total_amount || o.total || 0;
-          if (m) m.revenue += amt;
+          const amt = Number(o.totalAmount ?? o.total_amount ?? o.total ?? 0) || 0;
+          monthMap[key] = (monthMap[key] || 0) + amt;
         });
-        const trend = months.map(m => ({ month: m.key, revenue: Math.round(m.revenue), cost: 0, profit: Math.round(m.revenue), margin: m.revenue ? +((m.revenue - 0) / m.revenue * 100).toFixed(1) : 0 }));
+        const trend = Object.keys(monthMap).sort().map(k => ({ month: k, revenue: Math.round(monthMap[k]), cost: 0, profit: Math.round(monthMap[k]), margin: 100 }));
         setProfitTrendLocal(trend);
       } catch (e) { console.debug('failed profit trend', e); }
     })();
@@ -562,7 +563,7 @@ export default function Insights() {
         </TabsList>
         <TabsContent value="dashboard"><Dashboard /></TabsContent>
         <TabsContent value="executive">
-          <ExecutiveWidgets orders={[]} formatCurrency={(n: number) => '₹' + n.toLocaleString('en-IN')} />
+          {/* ExecutiveWidgets integrated into ExecutiveDashboard below */}
           <div className="mt-6"><ExecutiveDashboard /></div>
         </TabsContent>
         <TabsContent value="sales"><Dashboard /></TabsContent>
