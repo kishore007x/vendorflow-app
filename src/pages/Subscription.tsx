@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -117,7 +117,7 @@ interface VendorSub {
   lockedModules: string[];
 }
 
-const initialVendorSubs: VendorSub[] = [
+const defaultVendorSubs: VendorSub[] = [
   { vendorId: 'VEN-001', name: 'TechGadgets India Pvt Ltd', plan: 'Pro', status: 'active', enabled: true, lastPayment: '2026-02-01', expiryDate: '2026-03-01', daysRemaining: 17, paymentStatus: 'paid', whatsappReminder: true, email: 'admin@techgadgets.in', phone: '+91 98765 43210', lockedModules: [] },
   { vendorId: 'VEN-002', name: 'FashionHub Exports', plan: 'Enterprise', status: 'active', enabled: true, lastPayment: '2026-02-05', expiryDate: '2026-03-05', daysRemaining: 21, paymentStatus: 'paid', whatsappReminder: false, email: 'ops@fashionhub.com', phone: '+91 87654 32109', lockedModules: [] },
   { vendorId: 'VEN-003', name: 'BabyCare Essentials', plan: 'Basic', status: 'expired', enabled: false, lastPayment: '2026-01-15', expiryDate: '2026-02-15', daysRemaining: -3, paymentStatus: 'overdue', whatsappReminder: true, email: 'info@babycare.in', phone: '+91 76543 21098', lockedModules: ['Returns', 'Settlements', 'SKU Mapping', 'Analytics', 'AI Hub'] },
@@ -128,8 +128,36 @@ const initialVendorSubs: VendorSub[] = [
 
 export default function Subscription() {
   const { toast } = useToast();
-  const [vendorSubs, setVendorSubs] = useState(initialVendorSubs);
+  const [vendorSubs, setVendorSubs] = useState<VendorSub[]>([]);
   const [detailVendor, setDetailVendor] = useState<VendorSub | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const db = await import('@/services/database');
+        const vendors = await db.vendorsDb.getAll().catch(() => []);
+        if (!mounted) return;
+        const subs: VendorSub[] = (vendors || []).map((v: any, i: number) => ({
+          vendorId: v.vendor_id || v.id || `VEN-${String(i + 1).padStart(3, '0')}`,
+          name: v.name || v.company_name || `Vendor ${i + 1}`,
+          plan: v.plan || v.subscription_plan || 'Trial',
+          status: (v.status === 'active' || v.status === 'expired' || v.status === 'trial') ? v.status : 'trial',
+          enabled: v.status !== 'expired' && v.enabled !== false,
+          lastPayment: v.last_payment_date || v.lastPayment || new Date().toISOString(),
+          expiryDate: v.subscription_expiry || v.expiryDate || new Date(Date.now() + 30 * 86400000).toISOString(),
+          daysRemaining: v.days_remaining ?? 30,
+          paymentStatus: (v.payment_status === 'paid' || v.payment_status === 'pending' || v.payment_status === 'overdue') ? v.payment_status : v.status === 'expired' ? 'overdue' : v.status === 'trial' ? 'na' : 'paid',
+          whatsappReminder: v.whatsapp_reminder !== false,
+          email: v.email || v.contact_email || 'vendor@example.com',
+          phone: v.phone || v.contact_phone || '+91 00000 00000',
+          lockedModules: v.status === 'expired' ? ['Returns', 'Settlements', 'SKU Mapping', 'Analytics', 'AI Hub'] : v.status === 'trial' ? ['Returns', 'Settlements', 'SKU Mapping', 'Analytics'] : [],
+        }));
+        setVendorSubs(subs);
+      } catch (e) { console.debug('load vendor subs failed', e); }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const adminDashboard = useMemo(() => ({
     active: vendorSubs.filter(v => v.status === 'active').length,

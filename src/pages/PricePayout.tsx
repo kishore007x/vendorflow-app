@@ -45,7 +45,7 @@ interface ReconEntry {
   status: 'matched' | 'mismatch' | 'pending';
 }
 
-const channels = ['All Channels', 'Amazon', 'Flipkart', 'Meesho', 'Shopify', 'Website', 'FirstCry', 'Blinkit'];
+const channels = ['All Channels', ...getChannels().map(c => c.name)];
 
 const channelMeta = (portal?: string) => getChannels().find(ch => ch.id === portal) || getChannels()[0];
 
@@ -124,7 +124,7 @@ export default function PricePayout() {
 
   // Payout data
   const filteredData = useMemo(() => {
-    let data = selectedChannel === 'All Channels' ? [...priceRows] : priceRows.filter(p => p.channel === selectedChannel);
+    const data = selectedChannel === 'All Channels' ? [...priceRows] : priceRows.filter(p => p.channel === selectedChannel);
     if (sortField !== 'default') {
       data.sort((a, b) => {
         const aVal = sortField === 'margin' ? (a.netPayout / a.marketplacePrice) : sortField === 'commission' ? a.commissionPct : sortField === 'payout' ? a.netPayout : a.marketplacePrice;

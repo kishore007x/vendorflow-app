@@ -1,7 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { getChannels } from '@/services/channelManager';
 import { ChannelIcon } from '@/components/ChannelIcon';
-import { settlementsDb } from '@/services/database';
 import { Portal, SettlementStatus } from '@/types';
 import { PortalFilter } from '@/components/dashboard/PortalFilter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +15,7 @@ import {
   CheckCircle2, Wallet, Receipt, Building2, ShoppingCart
 } from 'lucide-react';
 import { DateFilter, ExportButton, useRowSelection, SelectAllCheckbox, RowCheckbox } from '@/components/TableEnhancements';
+import { useAuth } from '@/contexts/AuthContext';
 import { GlobalDateFilter, type DateRange } from '@/components/GlobalDateFilter';
 import OrderPaymentSettlement from '@/components/settlements/OrderPaymentSettlement';
 import LandingCostAnalysis from '@/components/settlements/LandingCostAnalysis';
@@ -35,32 +35,12 @@ const settlementStatusConfig: Record<SettlementStatus, { label: string; color: s
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
-const expenseCategories: any[] = [];
-
-const taxSplit = { cgst: 0, sgst: 0, igst: 0 };
-const totalTax = taxSplit.cgst + taxSplit.sgst + taxSplit.igst;
-
-// Revenue/cost trend (computed from DB in future)
-const revenueCostTrend: { period: string; revenue: number; cost: number; margin: number }[] = [];
-
-// Reconciliation discrepancy trend (computed from DB in future)
-const reconTrend: { period: string; mismatchCount: number; discrepancyAmt: number }[] = [];
-
-// B2B vs B2C split (computed from DB in future)
-const salesSplit: { name: string; value: number }[] = [];
-const b2bValue = 0;
-const b2cValue = 0;
-
-// Bank vs Ecom
-const bankTotal = 0;
-const ecomTotal = 0;
-const bankEcomDiff = 0;
-
 function SectionBadge() {
   return <Badge variant="outline" className="gap-1 text-[10px] border-success/30 text-success"><CheckCircle2 className="w-3 h-3" />Updated</Badge>;
 }
 
 export default function Settlements() {
+  const { user } = useAuth();
   const [selectedPortal, setSelectedPortal] = useState<Portal | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState('30days');
@@ -70,6 +50,19 @@ export default function Settlements() {
   const [paymentStatusFilter, setPaymentStatusFilter] = useState('all');
 
   const [allSettlements, setAllSettlements] = useState<any[]>([]);
+
+  const [expenseCategories, setExpenseCategories] = useState<any[]>([]);
+  const [taxSplit, setTaxSplit] = useState({ cgst: 0, sgst: 0, igst: 0 });
+  const [revenueCostTrend, setRevenueCostTrend] = useState<{ period: string; revenue: number; cost: number; margin: number }[]>([]);
+  const [reconTrend, setReconTrend] = useState<{ period: string; mismatchCount: number; discrepancyAmt: number }[]>([]);
+  const [salesSplit, setSalesSplit] = useState<{ name: string; value: number }[]>([]);
+  const [b2bValue, setB2bValue] = useState(0);
+  const [b2cValue, setB2cValue] = useState(0);
+  const [bankTotal, setBankTotal] = useState(0);
+  const [ecomTotal, setEcomTotal] = useState(0);
+
+  const totalTax = taxSplit.cgst + taxSplit.sgst + taxSplit.igst;
+  const bankEcomDiff = bankTotal - ecomTotal;
 
   useEffect(() => {
     const fetchSettlements = async () => {
@@ -83,6 +76,70 @@ export default function Settlements() {
       } catch (e) { console.error(e); }
     };
     fetchSettlements();
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const db = await import('@/services/database');
+        const [expenses, invoices, orders] = await Promise.all([
+          db.expensesDb.getAll().catch(() => []),
+          db.invoicesDb.getAll().catch(() => []),
+          db.ordersDb.getAll().catch(() => []),
+        ]);
+        if (!mounted) return;
+
+        // Expense categories
+        const catMap: Record<string, number> = {};
+        (expenses || []).forEach((e: any) => {
+          const c = e.category || 'Other';
+          catMap[c] = (catMap[c] || 0) + Number(e.amount || 0);
+        });
+        setExpenseCategories(Object.entries(catMap).map(([name, value]) => ({ name, value })));
+
+        // Tax split from invoices (sales type)
+        const salesInvoices = (invoices || []).filter((i: any) => i.type === 'Sales Invoice' || !i.type);
+        const cgst = salesInvoices.reduce((s: number, i: any) => s + Number(i.cgst || 0), 0);
+        const sgst = salesInvoices.reduce((s: number, i: any) => s + Number(i.sgst || 0), 0);
+        const igst = salesInvoices.reduce((s: number, i: any) => s + Number(i.igst || 0), 0);
+        setTaxSplit({ cgst, sgst, igst });
+
+        // Revenue / cost trend from orders by month
+        const monthMap: Record<string, { revenue: number; cost: number }> = {};
+        (orders || []).forEach((o: any) => {
+          const od = new Date(o.order_date || o.created_at);
+          if (isNaN(od.getTime())) return;
+          const key = `${od.getFullYear()}-${(od.getMonth() + 1).toString().padStart(2, '0')}`;
+          if (!monthMap[key]) monthMap[key] = { revenue: 0, cost: 0 };
+          const amt = Number(o.totalAmount ?? o.total_amount ?? o.total ?? 0) || 0;
+          monthMap[key].revenue += amt;
+          monthMap[key].cost += Number(o.commission ?? o.shipping_fee ?? 0) || 0;
+        });
+        const rct = Object.keys(monthMap).sort().map(k => ({
+          period: k,
+          revenue: Math.round(monthMap[k].revenue),
+          cost: Math.round(monthMap[k].cost),
+          margin: monthMap[k].revenue > 0 ? Math.round(((monthMap[k].revenue - monthMap[k].cost) / monthMap[k].revenue) * 100) : 0,
+        }));
+        setRevenueCostTrend(rct);
+
+        // Sales split — B2B estimation from order amounts
+        const b2b = (orders || []).filter((o: any) => Number(o.totalAmount ?? o.total_amount ?? 0) >= 10000);
+        const b2bTotal = b2b.reduce((s: number, o: any) => s + Number(o.totalAmount ?? o.total_amount ?? o.total ?? 0), 0);
+        const b2cTotal = (orders || []).reduce((s: number, o: any) => {
+          const amt = Number(o.totalAmount ?? o.total_amount ?? o.total ?? 0) || 0;
+          return s + amt;
+        }, 0) - b2bTotal;
+        setB2bValue(Math.round(b2bTotal));
+        setB2cValue(Math.round(b2cTotal));
+        setSalesSplit([
+          { name: 'B2B', value: Math.round(b2bTotal) },
+          { name: 'B2C', value: Math.round(Math.max(b2cTotal, 0)) },
+        ]);
+      } catch (e) { console.debug('Settlements derived data fetch failed', e); }
+    })();
+    return () => { mounted = false; };
   }, []);
 
   const filteredSettlements = useMemo(() => {
@@ -142,7 +199,31 @@ export default function Settlements() {
       settled: { count: settled.length, value: settled.reduce((s, i) => s + i.netAmount, 0) },
       pending: { count: pendingS.length, value: pendingS.reduce((s, i) => s + i.netAmount, 0) },
     };
-  }, []);
+  }, [allSettlements]);
+
+  // Recon trend + bank/ecom from settlements
+  useEffect(() => {
+    const monthMap: Record<string, { mismatchCount: number; discrepancyAmt: number }> = {};
+    let bank = 0;
+    let ecom = 0;
+    allSettlements.forEach((s: any) => {
+      const sd = new Date(s.settlement_date || s.created_at);
+      if (!isNaN(sd.getTime())) {
+        const key = `${sd.getFullYear()}-${(sd.getMonth() + 1).toString().padStart(2, '0')}`;
+        if (!monthMap[key]) monthMap[key] = { mismatchCount: 0, discrepancyAmt: 0 };
+        monthMap[key].discrepancyAmt += Math.abs((s.amount || 0) - (s.netAmount || 0));
+      }
+      if (s.status === 'completed') ecom += Number(s.amount || 0);
+      bank += Number(s.amount || 0);
+    });
+    setReconTrend(Object.keys(monthMap).sort().map(k => ({
+      period: k,
+      mismatchCount: Math.round(monthMap[k].discrepancyAmt / 1000),
+      discrepancyAmt: Math.round(monthMap[k].discrepancyAmt),
+    })));
+    setBankTotal(Math.round(bank));
+    setEcomTotal(Math.round(ecom));
+  }, [allSettlements]);
 
   const totalExpense = expenseCategories.reduce((s, e) => s + e.value, 0);
 
@@ -164,6 +245,13 @@ export default function Settlements() {
           <h1 className="text-2xl font-bold text-foreground">Financial Dashboard</h1>
           <p className="text-muted-foreground">Revenue, expenses, settlements & reconciliation overview</p>
         </div>
+        {/* Admin debug: show how many settlements the client received */}
+        {user?.role === 'admin' && (
+          <div className="text-sm text-muted-foreground">
+            <div>API rows fetched: <strong>{allSettlements.length}</strong></div>
+            <div>API net total: <strong>{formatCurrency(allSettlements.reduce((s, v) => s + (v.net_amount ?? v.netAmount ?? v.netAmount ?? 0), 0))}</strong></div>
+          </div>
+        )}
         <div className="flex items-center gap-2 flex-wrap">
           <GlobalDateFilter value={globalDateRange} onChange={setGlobalDateRange} />
           <ExportButton label={activeSelection.count > 0 ? undefined : `Export – ${dateLabel}`} selectedCount={activeSelection.count} />

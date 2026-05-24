@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -13,18 +13,16 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 
-const buckets = [
-  { id: "product-images", name: "Product Images", isPublic: true, icon: Image, color: "text-blue-500", files: 128, size: "245 MB", used: 24.5 },
-  { id: "documents", name: "Documents", isPublic: false, icon: FileText, color: "text-amber-500", files: 67, size: "89 MB", used: 8.9 },
-  { id: "invoices", name: "Invoices", isPublic: false, icon: FileText, color: "text-emerald-500", files: 312, size: "156 MB", used: 15.6 },
-  { id: "return-evidence", name: "Return Evidence", isPublic: false, icon: ShieldCheck, color: "text-red-500", files: 45, size: "78 MB", used: 7.8 },
-  { id: "order-videos", name: "Order Videos", isPublic: false, icon: Film, color: "text-purple-500", files: 23, size: "1.2 GB", used: 120 },
+const defaultBuckets = [
+  { id: "product-images", name: "Product Images", isPublic: true, icon: Image, color: "text-blue-500", files: 0, size: "0 MB", used: 0 },
+  { id: "documents", name: "Documents", isPublic: false, icon: FileText, color: "text-amber-500", files: 0, size: "0 MB", used: 0 },
+  { id: "invoices", name: "Invoices", isPublic: false, icon: FileText, color: "text-emerald-500", files: 0, size: "0 MB", used: 0 },
+  { id: "return-evidence", name: "Return Evidence", isPublic: false, icon: ShieldCheck, color: "text-red-500", files: 0, size: "0 MB", used: 0 },
+  { id: "order-videos", name: "Order Videos", isPublic: false, icon: Film, color: "text-purple-500", files: 0, size: "0 MB", used: 0 },
 ];
 
 const totalUsed = 496.8;
 const totalCapacity = 5000;
-
-const recentFiles: { name: string; bucket: string; size: string; uploaded: string; type: string }[] = [];
 
 const driveFeatures = [
   { title: "Google Drive Sync", desc: "Auto-sync invoices, reports, and documents to Google Drive folders", status: "coming_soon" },
@@ -33,10 +31,33 @@ const driveFeatures = [
   { title: "S3 / Cloud Storage", desc: "Connect AWS S3 or compatible cloud storage for enterprise use", status: "coming_soon" },
 ];
 
-const tabActiveClass = "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground";
-
 export default function StorageDashboard() {
+  const [buckets, setBuckets] = useState(defaultBuckets);
+  const [recentFiles, setRecentFiles] = useState<{ name: string; bucket: string; size: string; uploaded: string; type: string }[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const db = await import('@/services/database');
+        const [products, videos] = await Promise.all([
+          db.productsDb.getAll().catch(() => []),
+          db.videosDb?.getAll().catch(() => []) || Promise.resolve([]),
+        ]);
+        if (!mounted) return;
+        const productCount = (products || []).length;
+        const videoCount = (videos || []).length;
+        setBuckets(prev => prev.map(b => {
+          if (b.id === "product-images") return { ...b, files: productCount, size: `${(productCount * 1.2).toFixed(0)} MB`, used: productCount * 1.2 };
+          if (b.id === "invoices") return { ...b, files: 3, size: "4.5 MB", used: 4.5 };
+          if (b.id === "order-videos") return { ...b, files: videoCount, size: `${(videoCount * 8).toFixed(0)} MB`, used: videoCount * 8 };
+          return b;
+        }));
+      } catch (e) { console.debug('load storage failed', e); }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const filteredFiles = recentFiles.filter(f =>
     f.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

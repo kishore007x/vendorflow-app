@@ -117,7 +117,7 @@ export default function PriceAuditEngine() {
   };
 
   const filteredData = useMemo(() => {
-    let data = portalFilter === 'All' ? dataSource : dataSource.filter(i => i.portal === portalFilter);
+    const data = portalFilter === 'All' ? dataSource : dataSource.filter(i => i.portal === portalFilter);
 
     const getValue = (item: PriceAuditItem, field: SortField): number | string => {
       if (field === 'marginDrop') return item.expectedMarginPct - item.actualMarginPct;

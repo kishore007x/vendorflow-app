@@ -14,6 +14,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LabelList,
 } from 'recharts';
 import { ordersDb, productsDb, inventoryDb, returnsDb } from '@/services/database';
+import { getChannels } from '@/services/channelManager';
 import Dashboard from '@/pages/Dashboard';
 import { ExecutiveWidgets } from '@/components/dashboard/ExecutiveWidgets';
 
@@ -22,11 +23,7 @@ const fmt = (n: number) => '₹' + n.toLocaleString('en-IN');
 // Channel options
 const channels = [
   { id: 'all', name: 'All Channels' },
-  { id: 'amazon', name: 'Amazon' },
-  { id: 'flipkart', name: 'Flipkart' },
-  { id: 'meesho', name: 'Meesho' },
-  { id: 'website', name: 'Website' },
-  { id: 'blinkit', name: 'Blinkit' },
+  ...getChannels().map(c => ({ id: c.id, name: c.name })),
 ];
 
 // Sort options
@@ -36,7 +33,8 @@ const sortOptions = [
   { id: 'units', name: 'Units' },
 ];
 
-// ---- Data from DB ----
+interface DBOrder { totalAmount?: number; total_amount?: number; total?: number; portal?: string; order_date?: string; created_at?: string; commission?: number; shipping_fee?: number; }
+
 const defaultDaily = Array.from({ length: 14 }, (_, i) => ({ day: `Day ${i + 1}`, revenue: 0, orders: 0, cost: 0 }));
 
 // ---- Filter bar component ----
@@ -110,18 +108,24 @@ function ExecutiveDashboard() {
   const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [dailySales, setDailySales] = useState(defaultDaily);
+  const [activeVendorCount, setActiveVendorCount] = useState(0);
+  const [alertsCount, setAlertsCount] = useState(0);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        const [ords, prds] = await Promise.all([
+        const [ords, prds, vends, alts] = await Promise.all([
           ordersDb.getAll().catch(() => []),
           productsDb.getAll().catch(() => []),
+          (await import('@/services/database')).vendorsDb.getAll().catch(() => []),
+          (await import('@/services/database')).alertsDb.getAll().catch(() => []),
         ]);
         if (!mounted) return;
         setOrders(ords || []);
         setProducts(prds || []);
+        setActiveVendorCount((vends || []).length);
+        setAlertsCount((alts || []).filter((a: any) => a.type === 'risk' || a.severity === 'high').length);
 
         // group orders by month for chart
         const byMonth: Record<string, { revenue: number; orders: number }> = {};
@@ -156,21 +160,22 @@ function ExecutiveDashboard() {
   const totalRevenue = filteredChannelRevenue.reduce((s, c) => s + c.value, 0);
   const topChannel = filteredChannelRevenue.length ? filteredChannelRevenue.reduce((a, b) => a.value > b.value ? a : b) : { name: 'N/A', value: 0 };
 
-  // Merge with actual order count for non-zero metrics
   const totalOrderCount = orders.length;
-  const activeVendorCount = 24;
+  const totalCost = orders.reduce((s: number, o: any) => s + Number(o.commission || 0) + Number(o.shipping_fee || 0), 0);
+  const netProfit = totalRevenue - totalCost;
+  const growthPct = orders.length > 0 ? totalRevenue > 0 ? ((totalRevenue - totalCost) / totalRevenue * 100).toFixed(1) : '0' : '0';
 
   return (
     <div className="space-y-6">
       <InsightsFilterBar channel={channel} onChannelChange={setChannel} sortBy={sortBy} onSortChange={setSortBy} />
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <StatCard icon={IndianRupee} label="Total Revenue" value={fmt(totalRevenue)} change={14.2} variant="success" />
-        <StatCard icon={TrendingUp} label="Growth %" value="14.2%" change={3.1} variant="success" />
-        <StatCard icon={Users} label="Active Vendors" value={activeVendorCount.toString()} change={8} />
-        <StatCard icon={IndianRupee} label="Net Profit" value={fmt(totalRevenue * 0.32)} change={5.8} variant="success" />
+        <StatCard icon={IndianRupee} label="Total Revenue" value={fmt(totalRevenue)} variant="success" />
+        <StatCard icon={TrendingUp} label="Margin %" value={`${growthPct}%`} variant="success" />
+        <StatCard icon={Users} label="Active Vendors" value={activeVendorCount.toString()} />
+        <StatCard icon={IndianRupee} label="Net Profit" value={fmt(netProfit)} variant="success" />
         <StatCard icon={BarChart3} label="Top Channel" value={topChannel.name} />
-        <StatCard icon={ShieldAlert} label="High Risk Flags" value="3" variant="danger" />
-        <StatCard icon={ShoppingCart} label="Total Orders" value={totalOrderCount.toString()} change={7.2} />
+        <StatCard icon={ShieldAlert} label="High Risk Flags" value={alertsCount.toString()} variant={alertsCount > 0 ? 'danger' : 'default'} />
+        <StatCard icon={ShoppingCart} label="Total Orders" value={totalOrderCount.toString()} />
       </div>
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
@@ -249,7 +254,7 @@ function SalesDashboard() {
   }, []);
 
   useEffect(() => {
-    let data = [...sortedProducts];
+    const data = [...sortedProducts];
     if (sortBy === 'revenue') data.sort((a, b) => b.revenue - a.revenue);
     else if (sortBy === 'units') data.sort((a, b) => b.orders - a.orders);
     setSortedProducts(data);
@@ -465,15 +470,44 @@ function FinancialDashboard() {
 function OperationsDashboard() {
   const [channel, setChannel] = useState('all');
   const [sortBy, setSortBy] = useState('date');
-  const [opsDataLocal, setOpsDataLocal] = useState({ automationRate: 0, workflowLoad: 0, processingVolume: 0, bottlenecks: [] as any[] });
+  const [opsDataLocal, setOpsDataLocal] = useState<{ automationRate: number; workflowLoad: number; processingVolume: number; bottlenecks: any[]; dailyChartData: any[] }>({ automationRate: 0, workflowLoad: 0, processingVolume: 0, bottlenecks: [], dailyChartData: [] });
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        const orders = await ordersDb.getAll().catch(() => []);
+        const [orders, tasks, expenses] = await Promise.all([
+          ordersDb.getAll().catch(() => []),
+          (await import('@/services/database')).tasksDb.getAll().catch(() => []),
+          (await import('@/services/database')).expensesDb.getAll().catch(() => []),
+        ]);
         if (!mounted) return;
-        setOpsDataLocal({ automationRate: 70, workflowLoad: 60, processingVolume: (orders || []).length, bottlenecks: [] });
+        const today = new Date();
+        const dayMap: Record<string, number> = {};
+        (orders || []).forEach((o: any) => {
+          const od = new Date(o.order_date || o.created_at);
+          if (isNaN(od.getTime())) return;
+          const diff = Math.floor((today.getTime() - od.getTime()) / 86400000);
+          if (diff >= 0 && diff < 14) {
+            const key = `Day ${14 - diff}`;
+            dayMap[key] = (dayMap[key] || 0) + 1;
+          }
+        });
+        const dailyData = Array.from({ length: 14 }, (_, i) => {
+          const key = `Day ${i + 1}`;
+          return { day: key, revenue: 0, orders: dayMap[key] || 0, cost: 0 };
+        });
+        const processed = (orders || []).filter((o: any) => o.status === 'shipped' || o.status === 'delivered').length;
+        const total = (orders || []).length;
+        const rate = total > 0 ? Math.round((processed / total) * 100) : 0;
+        const load = total > 100 ? 80 : total > 50 ? 60 : total > 10 ? 40 : 20;
+        const bottlenecks = [
+          { area: 'Order Processing', load: Math.min(load + 10, 100), status: load > 70 ? 'critical' : load > 40 ? 'warning' : 'normal' },
+          { area: 'Inventory Sync', load: Math.min(load, 100), status: load > 60 ? 'warning' : 'normal' },
+          { area: 'Returns Handling', load: Math.min(load - 10, 100), status: load > 70 ? 'critical' : 'normal' },
+          { area: 'Shipping', load: Math.min(load + 5, 100), status: load > 65 ? 'warning' : 'normal' },
+        ];
+        setOpsDataLocal({ automationRate: rate, workflowLoad: load, processingVolume: total, bottlenecks, dailyChartData: dailyData });
       } catch (e) { console.debug('failed ops', e); }
     })();
     return () => { mounted = false; };
@@ -525,7 +559,7 @@ function OperationsDashboard() {
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={defaultDaily}>
+            <BarChart data={opsDataLocal.dailyChartData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis dataKey="day" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
               <YAxis tick={{ fontSize: 11 }} className="fill-muted-foreground" />
