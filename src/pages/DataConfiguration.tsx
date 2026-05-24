@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Settings, Database, Shield } from 'lucide-react';
+import { Settings, Database, Shield, Save } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface FieldConfig {
   field: string;
@@ -11,7 +13,7 @@ interface FieldConfig {
   mandatory: boolean;
 }
 
-const initialFields: FieldConfig[] = [
+const defaultFields: FieldConfig[] = [
   { field: 'SKU ID', module: 'Inventory / Orders', mandatory: true },
   { field: 'Master SKU ID', module: 'SKU Mapping', mandatory: true },
   { field: 'Product Name', module: 'Products', mandatory: true },
@@ -29,11 +31,30 @@ const initialFields: FieldConfig[] = [
   { field: 'Batch ID', module: 'Settlements', mandatory: false },
 ];
 
+const STORAGE_KEY = 'vendorflow_field_config';
+
 export default function DataConfiguration() {
-  const [fields, setFields] = useState(initialFields);
+  const { toast } = useToast();
+  const [fields, setFields] = useState<FieldConfig[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : defaultFields;
+    } catch {
+      return defaultFields;
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(fields));
+  }, [fields]);
 
   const toggleMandatory = (index: number) => {
     setFields(prev => prev.map((f, i) => i === index ? { ...f, mandatory: !f.mandatory } : f));
+  };
+
+  const handleSave = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(fields));
+    toast({ title: 'Configuration Saved', description: 'Field configuration has been saved to local storage.' });
   };
 
   const mandatoryCount = fields.filter(f => f.mandatory).length;
@@ -46,10 +67,13 @@ export default function DataConfiguration() {
           <h1 className="text-2xl font-bold text-foreground">Data Configuration</h1>
           <p className="text-muted-foreground">Define mandatory and optional fields across modules for data governance</p>
         </div>
-        <Badge variant="outline" className="gap-1 text-sm">
-          <Shield className="w-3.5 h-3.5" />
-          Data Governance
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="gap-1 text-sm">
+            <Shield className="w-3.5 h-3.5" />
+            Data Governance
+          </Badge>
+          <Button onClick={handleSave} className="gap-2"><Save className="w-4 h-4" /> Save</Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

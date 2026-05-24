@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -27,7 +27,7 @@ interface Meeting {
   keyTopics?: string[];
 }
 
-const meetings: Meeting[] = [
+const defaultMeetings: Meeting[] = [
   {
     id: 'M-001', title: 'Weekly Vendor Sync – Amazon Performance', date: '2026-03-18', time: '10:00 AM', duration: '45 min',
     participants: ['Vikram P.', 'Meena S.', 'Amit K.'], status: 'completed', hasNotes: true, hasRecording: true,
@@ -75,8 +75,6 @@ const meetings: Meeting[] = [
   },
 ];
 
-const [selectedMeeting, setSelectedMeetingState] = [null as Meeting | null, (_: Meeting | null) => {}];
-
 const statusStyle: Record<string, string> = {
   completed: 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30',
   scheduled: 'bg-amber-500/15 text-amber-600 border-amber-500/30',
@@ -86,9 +84,41 @@ const statusStyle: Record<string, string> = {
 
 export default function GoogleMeetIntegration() {
   const { toast } = useToast();
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [selected, setSelected] = useState<Meeting | null>(null);
   const [aiNotesEnabled, setAiNotesEnabled] = useState(true);
   const [autoRecording, setAutoRecording] = useState(true);
+  
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const db = await import('@/services/database');
+        const tasks = await db.tasksDb.getAll().catch(() => []);
+        if (!mounted) return;
+        if ((tasks || []).length > 0) {
+          const generated: Meeting[] = (tasks || []).slice(0, 8).map((t: any, i: number) => ({
+            id: `M-${String(i + 1).padStart(3, '0')}`,
+            title: t.title || t.task_name || t.description || `Meeting ${i + 1}`,
+            date: t.due_date || t.created_at || new Date().toISOString().split('T')[0],
+            time: '10:00 AM',
+            duration: '30 min',
+            participants: [t.assignee || t.assigned_to || 'Team Member'],
+            status: (t.status === 'completed' || t.status === 'scheduled' || t.status === 'cancelled') ? t.status as any : t.status === 'in_progress' ? 'in_progress' : 'completed',
+            hasNotes: t.notes ? true : false,
+            hasRecording: false,
+            aiSummary: t.notes || undefined,
+            actionItems: t.checklist?.length ? t.checklist.map((c: any) => ({ task: c.text || c.title || c, assignee: t.assignee || '', due: t.due_date || '', done: c.done || c.completed || false })) : undefined,
+            keyTopics: t.tags || t.labels || undefined,
+          }));
+          setMeetings(generated);
+        } else {
+          setMeetings(defaultMeetings);
+        }
+      } catch (e) { console.debug('load meetings failed', e); }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const completedMeetings = meetings.filter(m => m.status === 'completed');
   const totalActionItems = completedMeetings.reduce((s, m) => s + (m.actionItems?.length || 0), 0);

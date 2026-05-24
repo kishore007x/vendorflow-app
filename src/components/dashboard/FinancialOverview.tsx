@@ -86,30 +86,28 @@ export function FinancialOverview({ orders, settlements, expenses, invoices }: F
   // ─── RECONCILIATION DISCREPANCY TREND ───
   const discrepancyTrend = useMemo(() => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    if (settlements.length === 0) {
+      return months.map(month => ({ month, expected: 0, actual: 0, discrepancy: 0, mismatchCount: 0 }));
+    }
     return months.map((month, i) => {
-      const expected = settlements.length > 0
-        ? Math.round(settlements.reduce((s, v) => s + Number(v.amount || 0), 0) / 6 * (0.9 + Math.random() * 0.2))
-        : 50000 + Math.round(Math.random() * 30000);
+      const expected = Math.round(settlements.reduce((s, v) => s + Number(v.amount || 0), 0) / 6 * (0.9 + Math.random() * 0.2));
       const actual = Math.round(expected * (0.92 + Math.random() * 0.1));
-      return {
-        month,
-        expected,
-        actual,
-        discrepancy: expected - actual,
-        mismatchCount: Math.max(0, Math.floor(Math.random() * 8)),
-      };
+      return { month, expected, actual, discrepancy: expected - actual, mismatchCount: Math.max(0, Math.floor(Math.random() * 8)) };
     });
   }, [settlements]);
 
   // ─── REVENUE VS COST TREND ───
   const revenueCostTrend = useMemo(() => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    if (orders.length === 0 && totalExpenses === 0) {
+      return months.map(month => ({ month, revenue: 0, cost: 0, profit: 0 }));
+    }
     const totalRev = orders.reduce((s, o) => s + Number(o.total_amount || 0), 0);
     const totalCost = totalExpenses + settlements.reduce((s, v) => s + Number(v.commission || 0), 0);
     return months.map((month, i) => {
       const factor = 0.8 + Math.random() * 0.4;
-      const rev = totalRev > 0 ? Math.round((totalRev / 6) * factor) : 80000 + Math.round(Math.random() * 40000);
-      const cost = totalCost > 0 ? Math.round((totalCost / 6) * factor * 0.9) : Math.round(rev * (0.55 + Math.random() * 0.15));
+      const rev = Math.round((totalRev / 6) * factor);
+      const cost = Math.round((totalCost / 6) * factor * 0.9);
       return { month, revenue: rev, cost, profit: rev - cost };
     });
   }, [orders, totalExpenses, settlements]);
@@ -133,8 +131,8 @@ export function FinancialOverview({ orders, settlements, expenses, invoices }: F
       const portalSettlements = settlements.filter(s =>
         s.portal?.toLowerCase() === portal.toLowerCase()
       );
-      const ecomValue = portalSettlements.reduce((s, v) => s + Number(v.amount || 0), 0) || (20000 + Math.round(Math.random() * 50000));
-      const bankValue = Math.round(ecomValue * (0.93 + Math.random() * 0.09));
+      const ecomValue = portalSettlements.reduce((s, v) => s + Number(v.amount || 0), 0);
+      const bankValue = ecomValue > 0 ? Math.round(ecomValue * (0.93 + Math.random() * 0.09)) : 0;
       return {
         portal,
         bank: bankValue,

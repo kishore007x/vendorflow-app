@@ -39,11 +39,8 @@ interface SettlementLineItem {
   netAmount: number;
 }
 
-// ---------- data ----------
 const mockLineItems: SettlementLineItem[] = [];
 
-// load settlement line items from DB (best-effort mapping)
-// maps settlements -> line items for display
 function mapSettlementToLineItems(s: any): SettlementLineItem[] {
   // best-effort mapping: if settlement contains line_items, use them
   if (Array.isArray(s.line_items) && s.line_items.length) return s.line_items.map((li: any) => ({
@@ -114,6 +111,15 @@ const defaultVisibleColumns = new Set<ColumnKey>([
 ]);
 
 export default function OrderPaymentSettlement() {
+  const [lineItems, setLineItems] = useState<SettlementLineItem[]>([]);
+  useEffect(() => {
+    import('@/services/database').then(db => {
+      db.settlementsDb.getAll().then(data => {
+        const mapped = (data || []).flatMap(mapSettlementToLineItems);
+        setLineItems(mapped);
+      }).catch(() => {});
+    });
+  }, []);
   const [searchQuery, setSearchQuery] = useState('');
   const [paymentTypeFilter, setPaymentTypeFilter] = useState('all');
   const [amountTypeFilter, setAmountTypeFilter] = useState('all');

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
@@ -29,7 +29,7 @@ interface AuditLogEntry {
   module?: string;
 }
 
-const initialPermissions: PermissionRow[] = [
+const defaultPermissions: PermissionRow[] = [
   { feature: 'Dashboard Overview', category: 'Overview', superAdmin: true, financeManager: true, operationsManager: true, vendorUser: true, analyst: true },
   { feature: 'Product Catalog', category: 'Catalog', superAdmin: true, financeManager: false, operationsManager: false, vendorUser: true, analyst: false },
   { feature: 'Product Health', category: 'Catalog', superAdmin: true, financeManager: false, operationsManager: true, vendorUser: true, analyst: true },
@@ -75,8 +75,38 @@ const actionConfig: Record<string, { label: string; color: string; icon: React.E
 
 export default function Permissions() {
   const { toast } = useToast();
-  const [permissions, setPermissions] = useState(initialPermissions);
-  const [auditLog, setAuditLog] = useState(initialAuditLog);
+  const [permissions, setPermissions] = useState(defaultPermissions);
+  const [auditLog, setAuditLog] = useState<AuditLogEntry[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const db = await import('@/services/database');
+        const [vendors, orders] = await Promise.all([
+          db.vendorsDb.getAll().catch(() => []),
+          db.ordersDb.getAll().catch(() => []),
+        ]);
+        if (!mounted) return;
+        const logs: AuditLogEntry[] = [];
+        (orders || []).slice(0, 20).forEach((o: any) => {
+          if (o.status === 'delivered' || o.status === 'shipped') {
+            logs.push({
+              id: `AL-${o.id || Date.now()}-${logs.length}`,
+              action: 'approval',
+              user: o.vendor_name || o.customer_name || 'System',
+              role: 'Operations Manager',
+              description: `Order ${o.order_id || o.id} marked as ${o.status}`,
+              timestamp: o.updated_at || o.created_at || new Date().toISOString(),
+              module: 'Orders',
+            });
+          }
+        });
+        setAuditLog(logs.slice(0, 50));
+      } catch (e) { console.debug('load permissions failed', e); }
+    })();
+    return () => { mounted = false; };
+  }, []);
   const categories = [...new Set(permissions.map(p => p.category))];
 
   const togglePermission = (idx: number, role: typeof roles[number]['key']) => {

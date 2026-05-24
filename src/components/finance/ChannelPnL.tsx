@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,14 +10,6 @@ const fmt = (n: number) => '₹' + n.toLocaleString('en-IN');
 
 type Channel = 'all' | 'amazon' | 'flipkart' | 'meesho' | 'website' | 'blinkit';
 
-const channelPnLData: Record<Exclude<Channel, 'all'>, { revenue: number; commission: number; logistics: number; refundImpact: number; otherExpenses: number; gst: number }> = {
-  amazon:   { revenue: 0, commission: 0, logistics: 0, refundImpact: 0, otherExpenses: 0, gst: 0 },
-  flipkart: { revenue: 0, commission: 0, logistics: 0, refundImpact: 0, otherExpenses: 0, gst: 0 },
-  meesho:   { revenue: 0, commission: 0, logistics: 0, refundImpact: 0, otherExpenses: 0, gst: 0 },
-  website:  { revenue: 0, commission: 0, logistics: 0, refundImpact: 0, otherExpenses: 0, gst: 0 },
-  blinkit:  { revenue: 0, commission: 0, logistics: 0, refundImpact: 0, otherExpenses: 0, gst: 0 },
-};
-
 const channelLabels: Record<Exclude<Channel, 'all'>, string> = {
   amazon: 'Amazon', flipkart: 'Flipkart', meesho: 'Meesho', website: 'Website', blinkit: 'Blinkit',
 };
@@ -25,10 +17,44 @@ const channelLabels: Record<Exclude<Channel, 'all'>, string> = {
 export default function ChannelPnL() {
   const { toast } = useToast();
   const [channel, setChannel] = useState<Channel>('all');
+  const [channelPnLData, setChannelPnLData] = useState<Record<string, { revenue: number; commission: number; logistics: number; refundImpact: number; otherExpenses: number; gst: number }>>({});
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const db = await import('@/services/database');
+        const orders = await db.ordersDb.getAll().catch(() => []);
+        if (!mounted) return;
+        const map: Record<string, { revenue: number; commission: number; logistics: number; refundImpact: number; otherExpenses: number; gst: number }> = {};
+        (orders || []).forEach((o: any) => {
+          const p = (o.portal || 'website').toLowerCase();
+          if (!map[p]) map[p] = { revenue: 0, commission: 0, logistics: 0, refundImpact: 0, otherExpenses: 0, gst: 0 };
+          const rev = Number(o.totalAmount ?? o.total_amount ?? o.total ?? 0) || 0;
+          map[p].revenue += rev;
+          map[p].commission += Number(o.commission || 0);
+          map[p].logistics += Number(o.shipping_fee || 0);
+          // gst estimated from revenue
+          map[p].gst += Math.round(rev * 0.05);
+        });
+        // also fetch returns for refund impact
+        const returns = await db.returnsDb.getAll().catch(() => []);
+        if (!mounted) return;
+        (returns || []).forEach((r: any) => {
+          const p = (r.portal || 'website').toLowerCase();
+          if (!map[p]) map[p] = { revenue: 0, commission: 0, logistics: 0, refundImpact: 0, otherExpenses: 0, gst: 0 };
+          map[p].refundImpact += Number(r.refund_amount ?? r.amount ?? 0);
+        });
+        setChannelPnLData(map);
+      } catch (e) { console.debug('ChannelPnL fetch failed', e); }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const data = useMemo(() => {
     if (channel === 'all') {
-      const keys = Object.keys(channelPnLData) as Exclude<Channel, 'all'>[];
+      const keys = Object.keys(channelPnLData);
+      if (keys.length === 0) return { revenue: 0, commission: 0, logistics: 0, refundImpact: 0, otherExpenses: 0, gst: 0 };
       return keys.reduce((acc, k) => ({
         revenue: acc.revenue + channelPnLData[k].revenue,
         commission: acc.commission + channelPnLData[k].commission,
@@ -38,8 +64,8 @@ export default function ChannelPnL() {
         gst: acc.gst + channelPnLData[k].gst,
       }), { revenue: 0, commission: 0, logistics: 0, refundImpact: 0, otherExpenses: 0, gst: 0 });
     }
-    return channelPnLData[channel];
-  }, [channel]);
+    return channelPnLData[channel] || { revenue: 0, commission: 0, logistics: 0, refundImpact: 0, otherExpenses: 0, gst: 0 };
+  }, [channel, channelPnLData]);
 
   const netProfit = data.revenue - data.commission - data.logistics - data.refundImpact - data.otherExpenses;
   const marginPct = data.revenue > 0 ? ((netProfit / data.revenue) * 100).toFixed(1) : '0';

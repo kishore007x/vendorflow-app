@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format, differenceInDays } from 'date-fns';
+import { getChannels } from '@/services/channelManager';
 
 type OnboardingStatus = 'submitted' | 'under_review' | 'approved' | 'rejected';
 type SubscriptionStatus = 'trial' | 'fully_paid' | 'partially_paid' | 'wallet_balance';
@@ -63,7 +64,7 @@ const statusConfig: Record<OnboardingStatus, { label: string; color: string; ico
   rejected: { label: 'Rejected', color: 'bg-rose-500/15 text-rose-600 border-rose-500/30', icon: XCircle },
 };
 
-const allPlatforms = ['Amazon', 'Flipkart', 'Meesho', 'FirstCry', 'Blinkit', 'Own Website'];
+const allPlatforms = getChannels().map(c => c.name);
 
 export default function BusinessOnboarding() {
   const { toast } = useToast();
@@ -105,7 +106,7 @@ export default function BusinessOnboarding() {
   };
 
   const filtered = useMemo(() => {
-    let data = requests.filter(r => {
+    const data = requests.filter(r => {
       const matchSearch = r.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.contactPerson.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.id.toLowerCase().includes(searchQuery.toLowerCase());

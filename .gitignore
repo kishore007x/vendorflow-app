@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# Test / temp artifacts
+test-results/
+tmp_*.png
+tmp_fk/

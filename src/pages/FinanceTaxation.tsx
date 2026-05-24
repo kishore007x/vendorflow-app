@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -138,7 +138,27 @@ export default function FinanceTaxation() {
     return { taxable, cgst, sgst, igst, total };
   }, [quotationItems, quotationSameState]);
 
-  const mockQuotations: any[] = [];
+  const [quotations, setQuotations] = useState<any[]>([]);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const db = await import('@/services/database');
+        const inv = await db.invoicesDb.getAll().catch(() => []);
+        if (!mounted) return;
+        setQuotations((inv || []).map(i => ({
+          id: i.id,
+          customer: i.customer || i.party_name || i.customer_name || 'Unknown',
+          date: i.date || i.invoice_date || new Date().toISOString(),
+          items: i.line_items?.length || i.items_count || 1,
+          total: i.total || i.amount || 0,
+          validTill: i.valid_till || i.expiry_date || i.date || new Date().toISOString(),
+          status: i.status || i.quotation_status || 'Draft',
+        })));
+      } catch (e) { console.debug('load quotations failed', e); }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   // DB-backed data
   const [invoices, setInvoices] = useState<any[]>([]);
@@ -601,7 +621,7 @@ export default function FinanceTaxation() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mockQuotations.map(q => (
+                  {quotations.map(q => (
                     <TableRow key={q.id}>
                       <TableCell className="font-mono text-sm">{q.id}</TableCell>
                       <TableCell className="font-medium">{q.customer}</TableCell>

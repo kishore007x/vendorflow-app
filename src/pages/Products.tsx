@@ -126,7 +126,7 @@ export default function Products() {
   const getMargin = (p: any) => p.mrp > 0 ? ((p.mrp - p.basePrice) / p.mrp) * 100 : 0;
 
   const filteredProducts = useMemo(() => {
-    let results = allProducts.filter((product: any) => {
+    const results = allProducts.filter((product: any) => {
       const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            product.productId.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            product.masterSkuId.toLowerCase().includes(searchQuery.toLowerCase()) ||

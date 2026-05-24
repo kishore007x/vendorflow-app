@@ -57,7 +57,7 @@ export default function VideoManagement() {
   useEffect(() => { fetchData(); }, [searchQuery, statusFilter]);
 
   const filtered = useMemo(() => {
-    let data = [...records];
+    const data = [...records];
     data.sort((a, b) => {
       const valA = a[sortField] || '';
       const valB = b[sortField] || '';

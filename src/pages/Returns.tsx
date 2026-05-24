@@ -233,7 +233,7 @@ export default function Returns() {
 
   // Tab 1: Returns
   const filteredReturns = useMemo(() => {
-    let data = portalFiltered.filter(r => {
+    const data = portalFiltered.filter(r => {
       if (!searchFilter(r)) return false;
       if (stageFilter !== 'all' && r.currentStage !== stageFilter) return false;
       if (returnTypeFilter !== 'all' && r.returnType !== returnTypeFilter) return false;
@@ -244,7 +244,7 @@ export default function Returns() {
 
   // Tab 2: Claims Eligible
   const filteredClaims = useMemo(() => {
-    let data = portalFiltered.filter(r => {
+    const data = portalFiltered.filter(r => {
       if (!searchFilter(r)) return false;
       return claimStages.includes(r.currentStage) || r.claimEligibility?.status !== 'ineligible';
     });
@@ -253,7 +253,7 @@ export default function Returns() {
 
   // Tab 3: Settlements
   const filteredSettlements = useMemo(() => {
-    let data = portalFiltered.filter(r => {
+    const data = portalFiltered.filter(r => {
       if (!searchFilter(r)) return false;
       return settlementStages.includes(r.currentStage) || !!r.linkedSettlementId;
     });

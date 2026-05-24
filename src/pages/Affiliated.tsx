@@ -1,9 +1,43 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Users, Link2, Globe, TrendingUp, Plus } from 'lucide-react';
+import { Users, Link2, Plus } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Affiliated() {
+  const { toast } = useToast();
+  const [stats, setStats] = useState({ totalPartners: 0, activeReferrals: 0, totalCommission: 0 });
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const db = await import('@/services/database');
+        const [vendors, orders] = await Promise.all([
+          db.vendorsDb.getAll().catch(() => []),
+          db.ordersDb.getAll().catch(() => []),
+        ]);
+        if (!mounted) return;
+        const v = (vendors || []) as Record<string, unknown>[];
+        const o = (orders || []) as Record<string, unknown>[];
+        const totalCommission = o.reduce((s, ord) => s + (Number(ord.commission) || 0), 0);
+        setStats({
+          totalPartners: v.length,
+          activeReferrals: o.filter((ord) => ord.referral_id || ord.affiliate_id).length,
+          totalCommission: Math.round(totalCommission),
+        });
+      } catch (e) { console.debug('load affiliates failed', e); }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  const handleAddPartner = () => {
+    toast({ title: 'Add Partner', description: 'Partner addition form would open here.' });
+  };
+
+  const handleGenerateLink = () => {
+    toast({ title: 'Referral Link', description: 'Referral link generated. Share it with your partner.' });
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -13,7 +47,7 @@ export default function Affiliated() {
             Manage affiliate partnerships, referral programs, and commission tracking.
           </p>
         </div>
-        <Button className="gap-2" style={{ background: 'var(--gradient-deep)', color: 'white' }}>
+        <Button className="gap-2" style={{ background: 'var(--gradient-deep)', color: 'white' }} onClick={handleAddPartner}>
           <Plus className="w-4 h-4" /> Add Partner
         </Button>
       </div>
@@ -24,8 +58,8 @@ export default function Affiliated() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Partners</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground mt-1">No partners added yet</p>
+            <div className="text-2xl font-bold">{stats.totalPartners}</div>
+            <p className="text-xs text-muted-foreground mt-1">{stats.totalPartners > 0 ? `${stats.totalPartners} registered partners` : 'No partners added yet'}</p>
           </CardContent>
         </Card>
         <Card className="glass-card">
@@ -33,8 +67,8 @@ export default function Affiliated() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Active Referrals</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
-            <p className="text-xs text-muted-foreground mt-1">Pending referral tracking</p>
+            <div className="text-2xl font-bold">{stats.activeReferrals}</div>
+            <p className="text-xs text-muted-foreground mt-1">{stats.activeReferrals > 0 ? `${stats.activeReferrals} tracked referrals` : 'Pending referral tracking'}</p>
           </CardContent>
         </Card>
         <Card className="glass-card">
@@ -42,7 +76,7 @@ export default function Affiliated() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Commission</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹0</div>
+            <div className="text-2xl font-bold">₹{stats.totalCommission.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground mt-1">Commission earned this month</p>
           </CardContent>
         </Card>
@@ -55,16 +89,16 @@ export default function Affiliated() {
               <Users className="w-8 h-8 text-muted-foreground" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold">No Affiliate Partners Yet</h3>
+              <h3 className="text-lg font-semibold">{stats.totalPartners > 0 ? `${stats.totalPartners} Affiliate Partner(s)` : 'No Affiliate Partners Yet'}</h3>
               <p className="text-muted-foreground text-sm mt-1 max-w-md mx-auto">
-                Start building your affiliate network. Add partners, generate referral links, and track commissions automatically.
+                {stats.totalPartners > 0 ? 'Partners are loaded from your vendor database.' : 'Start building your affiliate network. Add partners, generate referral links, and track commissions automatically.'}
               </p>
             </div>
             <div className="flex items-center justify-center gap-3 pt-2">
-              <Button variant="outline" className="gap-2">
+              <Button variant="outline" className="gap-2" onClick={handleGenerateLink}>
                 <Link2 className="w-4 h-4" /> Generate Referral Link
               </Button>
-              <Button className="gap-2" style={{ background: 'var(--gradient-deep)', color: 'white' }}>
+              <Button className="gap-2" style={{ background: 'var(--gradient-deep)', color: 'white' }} onClick={handleAddPartner}>
                 <Plus className="w-4 h-4" /> Add Partner
               </Button>
             </div>
