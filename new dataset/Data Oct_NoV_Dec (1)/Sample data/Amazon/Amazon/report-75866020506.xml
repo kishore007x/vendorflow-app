@@ -1,0 +1,3613 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AmazonEnvelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="amzn-envelope.xsd">
+<Header>
+	<DocumentVersion>1.00</DocumentVersion>
+</Header>
+<MessageType>Returns-Report</MessageType>
+<Message>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-2011</invoice_number>
+        <category>Baby Product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>37416257235331</order_item_id>
+    </item_details>
+    <order_id>405-4608726-3674722</order_id>
+    <order_date>2026-01-26T12:31:01Z</order_date>
+    <return_request_date>2026-01-31T13:57:57Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366835982868</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-02-03T09:39:58Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Pink with Beige)</item_name>
+        <asin>B07NKSDNRC</asin>
+        <return_reason_code>CR-NOT_COMPATIBLE</return_reason_code>
+        <merchant_sku>DUP- Wedge03</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <invoice_number>IN-1920</invoice_number>
+        <category>Baby Product</category>
+        <refund_amount>599.0</refund_amount>
+        <order_item_id>36542944437339</order_item_id>
+    </item_details>
+    <order_id>408-7841782-4438744</order_id>
+    <order_date>2026-01-21T12:35:31Z</order_date>
+    <amazon_rma_id>D6nk7ZJ1RRMA</amazon_rma_id>
+    <return_request_date>2026-01-31T09:37:32Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514920587218</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>621.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-02-09T10:56:06Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>599.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger Cradle for Baby,Kids Window Cradle Metal Hanger for Baby - Babies -Pink</item_name>
+        <asin>B0C8PVTTRR</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-P</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-2017</invoice_number>
+        <category>Baby Product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>35252562865043</order_item_id>
+    </item_details>
+    <order_id>171-4841966-3493904</order_id>
+    <order_date>2026-01-26T14:44:01Z</order_date>
+    <return_request_date>2026-01-31T07:29:47Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366835950034</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-02-02T12:15:00Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Micky-White)</item_name>
+        <asin>B0C8PPPDNS</asin>
+        <return_reason_code>CR-UNWANTED_ITEM</return_reason_code>
+        <merchant_sku>MPWedge227-W</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>Home</category>
+        <refund_amount>578.0</refund_amount>
+        <order_item_id>07418447760043</order_item_id>
+    </item_details>
+    <order_id>405-0632470-7875561</order_id>
+    <order_date>2026-01-28T17:42:51Z</order_date>
+    <amazon_rma_id>D9P27NJxRRMA</amazon_rma_id>
+    <return_request_date>2026-01-31T03:52:55Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514920099506</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>448.5</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-02-02T12:15:00Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>578.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>NEVER_ARRIVED</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>Baby Product</category>
+        <refund_amount>698.0</refund_amount>
+        <order_item_id>69080320649787</order_item_id>
+    </item_details>
+    <order_id>402-1358886-4302742</order_id>
+    <order_date>2026-01-27T07:59:25Z</order_date>
+    <amazon_rma_id>DN5cL7JsRRMA</amazon_rma_id>
+    <return_request_date>2026-01-30T13:23:12Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514919557659</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>138.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-02-03T09:39:58Z</return_delivery_date>
+    <return_type>Amazon CS</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>CR-DEFECTIVE</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>Replacement</resolution>
+        <category>Baby Product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>69080320649787</order_item_id>
+    </item_details>
+    <order_id>402-1358886-4302742</order_id>
+    <order_date>2026-01-27T07:59:25Z</order_date>
+    <amazon_rma_id>Dn5cLkJYRRMA</amazon_rma_id>
+    <return_request_date>2026-01-30T13:07:22Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514920113387</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_type>C-Returns</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger Cradle for Baby,Kids Window Cradle Metal Hanger for Baby - Babies -Pink</item_name>
+        <asin>B0C8PVTTRR</asin>
+        <return_reason_code>CR-SWITCHEROO</return_reason_code>
+        <merchant_sku>CRODA227-P</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>Replacement</resolution>
+        <category>Baby Product</category>
+        <refund_amount>703.8</refund_amount>
+        <order_item_id>11876057241307</order_item_id>
+    </item_details>
+    <order_id>405-4134778-3032358</order_id>
+    <order_date>2026-01-23T05:19:51Z</order_date>
+    <amazon_rma_id>DGmWLDJNRRMA</amazon_rma_id>
+    <return_request_date>2026-01-29T16:50:53Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514918788573</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-02-10T10:41:48Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1956</invoice_number>
+        <category>Baby Product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>32980459244803</order_item_id>
+    </item_details>
+    <order_id>403-1489343-2236361</order_id>
+    <order_date>2026-01-23T09:18:33Z</order_date>
+    <return_request_date>2026-01-29T16:33:20Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366782253707</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-31T09:48:23Z</return_delivery_date>
+    <return_type>Undelivered</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Maroon)</item_name>
+        <asin>B09WLF9LY8</asin>
+        <return_reason_code>CR-UNWANTED_ITEM</return_reason_code>
+        <merchant_sku>PMW227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>Home</category>
+        <refund_amount>499.0</refund_amount>
+        <order_item_id>60343216638275</order_item_id>
+    </item_details>
+    <order_id>406-7044772-3001935</order_id>
+    <order_date>2026-01-18T13:22:36Z</order_date>
+    <amazon_rma_id>Dn70LJJjRRMA</amazon_rma_id>
+    <return_request_date>2026-01-29T13:53:14Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514918344663</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>138.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-02-11T12:36:34Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>499.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Micky-White)</item_name>
+        <asin>B0C8PPPDNS</asin>
+        <return_reason_code>CR-NOT_COMPATIBLE</return_reason_code>
+        <merchant_sku>MPWedge227-W</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>Home</category>
+        <refund_amount>498.0</refund_amount>
+        <order_item_id>30632322645355</order_item_id>
+    </item_details>
+    <order_id>403-9725326-2126728</order_id>
+    <order_date>2026-01-17T11:26:40Z</order_date>
+    <amazon_rma_id>DDg6LNJJRRMA</amazon_rma_id>
+    <return_request_date>2026-01-29T07:33:22Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514917923463</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>115.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-02-03T09:39:58Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>498.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger Cradle for Baby,Kids Window Cradle Metal Hanger for Baby - Babies -Pink</item_name>
+        <asin>B0C8PVTTRR</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-P</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1910</invoice_number>
+        <category>Baby Product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>05192862831971</order_item_id>
+    </item_details>
+    <order_id>405-8329974-4144338</order_id>
+    <order_date>2026-01-21T03:46:23Z</order_date>
+    <return_request_date>2026-01-29T07:12:00Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366706820831</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-02-02T12:15:00Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Micky-White)</item_name>
+        <asin>B0C8PPPDNS</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>MPWedge227-W</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1875</invoice_number>
+        <category>Home</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>64005335811451</order_item_id>
+    </item_details>
+    <order_id>402-5124484-9149967</order_id>
+    <order_date>2026-01-19T05:26:52Z</order_date>
+    <return_request_date>2026-01-28T06:58:23Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366677334610</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-02-02T12:15:56Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Premium 2 in 1 Baby Breast Feeding Foam Pillow with Detachable Cover | Newborn Nursing Pillow with Zip Buckle Adjustment | Infant Support for Baby and Mom Breastfeeding- Foam Navy Blue Print</item_name>
+        <asin>B0D58KHFXT</asin>
+        <return_reason_code>CR-QUALITY_UNACCEPTABLE</return_reason_code>
+        <merchant_sku>FPPNBP-2in1</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <invoice_number>IN-1925</invoice_number>
+        <category>Baby Product</category>
+        <refund_amount>998.0</refund_amount>
+        <order_item_id>33221155208475</order_item_id>
+    </item_details>
+    <order_id>403-5273954-7225907</order_id>
+    <order_date>2026-01-21T15:18:52Z</order_date>
+    <amazon_rma_id>DMQDLfJhRRMA</amazon_rma_id>
+    <return_request_date>2026-01-28T05:08:55Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514916422547</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>138.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-02-04T10:55:51Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>998.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Micky-White)</item_name>
+        <asin>B0C8PPPDNS</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>MPWedge227-W</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1744</invoice_number>
+        <category>Home</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>23521003841883</order_item_id>
+    </item_details>
+    <order_id>406-2899850-3485919</order_id>
+    <order_date>2026-01-10T16:53:35Z</order_date>
+    <return_request_date>2026-01-28T03:34:59Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366489651219</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-02-02T12:15:00Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Premium 2 in 1 Dry Sheet Cotton Baby Breastfeeding Pillow with Adjustable Strap | Nursing Pillow, Baby Support &amp; Playtime | Washable Cover with Zip -(Grey)</item_name>
+        <asin>B0C8KRVBJ2</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>ADSRFP227-G</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1874</invoice_number>
+        <category>Baby Product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>67646508803363</order_item_id>
+    </item_details>
+    <order_id>403-0382738-8425159</order_id>
+    <order_date>2026-01-19T05:04:25Z</order_date>
+    <return_request_date>2026-01-26T17:27:50Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366677312670</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-31T09:48:23Z</return_delivery_date>
+    <return_type>Undelivered</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>CR-DEFECTIVE</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1953</invoice_number>
+        <category>Baby Product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>39481324420755</order_item_id>
+    </item_details>
+    <order_id>408-7954141-7786726</order_id>
+    <order_date>2026-01-23T08:09:35Z</order_date>
+    <amazon_rma_id>DnrdLBJWRRMA</amazon_rma_id>
+    <return_request_date>2026-01-26T12:08:54Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514914261186</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>138.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-28T11:26:30Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Maroon)</item_name>
+        <asin>B09WLF9LY8</asin>
+        <return_reason_code>CR-NOT_COMPATIBLE</return_reason_code>
+        <merchant_sku>PMW227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>Home</category>
+        <refund_amount>579.0</refund_amount>
+        <order_item_id>49332940419403</order_item_id>
+    </item_details>
+    <order_id>404-1938339-0225129</order_id>
+    <order_date>2026-01-21T22:32:51Z</order_date>
+    <amazon_rma_id>D9RSLXJbRRMA</amazon_rma_id>
+    <return_request_date>2026-01-26T00:54:22Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514913558492</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>92.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-31T09:48:23Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>579.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Micky-White)</item_name>
+        <asin>B0C8PPPDNS</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>MPWedge227-W</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1870</invoice_number>
+        <category>Home</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>42674303878859</order_item_id>
+    </item_details>
+    <order_id>402-7477709-6508316</order_id>
+    <order_date>2026-01-18T19:40:57Z</order_date>
+    <return_request_date>2026-01-25T18:24:19Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366649888615</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-28T11:26:30Z</return_delivery_date>
+    <return_type>Undelivered</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Long Body Rectangular Microfiber Pillow (Red, 20"x72" inches (i.e 50x180 Cms) [6 ft Long])</item_name>
+        <asin>B07NLFYVQL</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>RLRP222</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1854</invoice_number>
+        <category>Home</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>04605997460283</order_item_id>
+    </item_details>
+    <order_id>405-1753070-4439547</order_id>
+    <order_date>2026-01-18T07:15:27Z</order_date>
+    <return_request_date>2026-01-25T18:13:11Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366649889964</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-28T11:26:30Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Pink with Beige)</item_name>
+        <asin>B07NKSDNRC</asin>
+        <return_reason_code>CR-QUALITY_UNACCEPTABLE</return_reason_code>
+        <merchant_sku>DUP- Wedge03</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>Baby Product</category>
+        <refund_amount>1200.5</refund_amount>
+        <order_item_id>54350513121179</order_item_id>
+    </item_details>
+    <order_id>404-1498038-3725167</order_id>
+    <order_date>2026-01-18T07:16:59Z</order_date>
+    <amazon_rma_id>D1vZs9JJRRMA</amazon_rma_id>
+    <return_request_date>2026-01-25T08:41:59Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514912875873</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>92.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-31T09:48:23Z</return_delivery_date>
+    <return_type>Amazon CS</return_type>
+    <order_amount>1198.0</order_amount>
+    <order_quantity>2</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger Cradle for Baby,Kids Window Cradle Metal Hanger for Baby - Babies -Pink</item_name>
+        <asin>B0C8PVTTRR</asin>
+        <return_reason_code>CR-DEFECTIVE</return_reason_code>
+        <merchant_sku>CRODA227-P</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1929</invoice_number>
+        <category>Baby Product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>16151651538051</order_item_id>
+    </item_details>
+    <order_id>408-7841547-9926706</order_id>
+    <order_date>2026-01-21T19:26:51Z</order_date>
+    <amazon_rma_id>DGSdsTJXRRMA</amazon_rma_id>
+    <return_request_date>2026-01-25T06:31:35Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514912671369</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>184.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-31T09:48:23Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Breastfeeding Foam Pillow Premium 2 in 1 Baby with Detachable Cover | Newborn Nursing Pillow with Zip Buckle Adjustment | Infant Support for Baby and Mom Breastfeeding- Mickey Blue Print</item_name>
+        <asin>B0DG92WXGM</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>BFFMBP</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1849</invoice_number>
+        <category>Home</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>39714815514099</order_item_id>
+    </item_details>
+    <order_id>171-3777333-9261968</order_id>
+    <order_date>2026-01-17T22:02:55Z</order_date>
+    <return_request_date>2026-01-24T13:56:49Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366649888455</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-28T11:26:30Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger Cradle for Baby,Kids Window Cradle Metal Hanger for Baby - Babies -Pink</item_name>
+        <asin>B0C8PVTTRR</asin>
+        <return_reason_code>CR-DEFECTIVE</return_reason_code>
+        <merchant_sku>CRODA227-P</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>Replacement</resolution>
+        <category>Baby Product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>30959761509915</order_item_id>
+    </item_details>
+    <order_id>403-1253820-2994768</order_id>
+    <order_date>2026-01-19T13:11:33Z</order_date>
+    <amazon_rma_id>DcFks3JCRRMA</amazon_rma_id>
+    <return_request_date>2026-01-24T12:43:26Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514914913948</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-02-04T10:55:51Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Maroon)</item_name>
+        <asin>B09WLF9LY8</asin>
+        <return_reason_code>CR-QUALITY_UNACCEPTABLE</return_reason_code>
+        <merchant_sku>PMW227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>Home</category>
+        <refund_amount>499.0</refund_amount>
+        <order_item_id>07633417197187</order_item_id>
+    </item_details>
+    <order_id>404-9851126-7925147</order_id>
+    <order_date>2026-01-16T20:37:00Z</order_date>
+    <amazon_rma_id>DG3CsWJtRRMA</amazon_rma_id>
+    <return_request_date>2026-01-24T10:56:50Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514911703641</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>138.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-02-02T12:15:56Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>499.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Premium 2 in 1 Dry Sheet Cotton Baby Breastfeeding Pillow with Adjustable Strap | Nursing Pillow, Baby Support &amp; Playtime | Washable Cover with Zip -(Grey)</item_name>
+        <asin>B0C8KRVBJ2</asin>
+        <return_reason_code>CR-ORDERED_WRONG_ITEM</return_reason_code>
+        <merchant_sku>ADSRFP227-G</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>Baby Product</category>
+        <refund_amount>698.0</refund_amount>
+        <order_item_id>47390258058715</order_item_id>
+    </item_details>
+    <order_id>402-9572293-5514754</order_id>
+    <order_date>2026-01-17T19:08:06Z</order_date>
+    <amazon_rma_id>DdkLs0JVRRMA</amazon_rma_id>
+    <return_request_date>2026-01-24T09:03:10Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514911296624</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>138.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-31T09:48:23Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Pink with Beige)</item_name>
+        <asin>B07NKSDNRC</asin>
+        <return_reason_code>CR-MISSING_PARTS</return_reason_code>
+        <merchant_sku>DUP- Wedge03</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>2</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <category>Baby Product</category>
+        <refund_amount>601.5</refund_amount>
+        <order_item_id>54350513121179</order_item_id>
+    </item_details>
+    <order_id>404-1498038-3725167</order_id>
+    <order_date>2026-01-18T07:16:59Z</order_date>
+    <amazon_rma_id>DSmFs5JdRRMA</amazon_rma_id>
+    <return_request_date>2026-01-24T07:56:24Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514911168204</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>92.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_type>C-Returns</return_type>
+    <order_amount>1198.0</order_amount>
+    <order_quantity>2</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger Cradle for Baby,Kids Window Cradle Metal Hanger for Baby - Babies -Pink</item_name>
+        <asin>B0C8PVTTRR</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-P</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1864</invoice_number>
+        <category>Baby Product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>16567307448707</order_item_id>
+    </item_details>
+    <order_id>403-1516827-3550729</order_id>
+    <order_date>2026-01-18T15:29:40Z</order_date>
+    <return_request_date>2026-01-23T18:48:35Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366649890496</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-24T12:55:59Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>CR-DEFECTIVE</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>Replacement</resolution>
+        <category>Baby Product</category>
+        <refund_amount>698.0</refund_amount>
+        <order_item_id>26381502291555</order_item_id>
+    </item_details>
+    <order_id>407-0182194-4213101</order_id>
+    <order_date>2026-01-12T05:49:40Z</order_date>
+    <amazon_rma_id>Dy2BsMJTRRMA</amazon_rma_id>
+    <return_request_date>2026-01-23T08:09:33Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514910788601</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-28T11:26:30Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Maroon)</item_name>
+        <asin>B09WLF9LY8</asin>
+        <return_reason_code>CR-QUALITY_UNACCEPTABLE</return_reason_code>
+        <merchant_sku>PMW227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>Home</category>
+        <refund_amount>499.0</refund_amount>
+        <order_item_id>58627483451939</order_item_id>
+    </item_details>
+    <order_id>402-3444211-4066740</order_id>
+    <order_date>2026-01-08T17:35:58Z</order_date>
+    <amazon_rma_id>D6Z6s2J5RRMA</amazon_rma_id>
+    <return_request_date>2026-01-22T17:45:17Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514909133788</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>138.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-28T11:26:30Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>499.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1774</invoice_number>
+        <category>Baby Product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>45770758947059</order_item_id>
+    </item_details>
+    <order_id>408-5814655-8341942</order_id>
+    <order_date>2026-01-13T07:30:43Z</order_date>
+    <return_request_date>2026-01-22T06:00:30Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366528077949</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-27T10:45:07Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1814</invoice_number>
+        <category>Baby Product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>10172738637803</order_item_id>
+    </item_details>
+    <order_id>171-8669558-4033152</order_id>
+    <order_date>2026-01-15T18:27:46Z</order_date>
+    <return_request_date>2026-01-22T03:15:52Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366572385267</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-27T10:45:07Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger Cradle for Baby,Kids Window Cradle Metal Hanger for Baby - Babies -Pink</item_name>
+        <asin>B0C8PVTTRR</asin>
+        <return_reason_code>CR-DEFECTIVE</return_reason_code>
+        <merchant_sku>CRODA227-P</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>Replacement</resolution>
+        <category>Baby Product</category>
+        <refund_amount>705.0</refund_amount>
+        <order_item_id>35474347063075</order_item_id>
+    </item_details>
+    <order_id>403-4303711-1403524</order_id>
+    <order_date>2026-01-12T08:35:45Z</order_date>
+    <amazon_rma_id>DMczskJfRRMA</amazon_rma_id>
+    <return_request_date>2026-01-21T19:26:49Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514908037902</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-31T09:48:23Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Premium Baby Breast Feeding Pillow with Detachable Cover | Newborn Nursing Pillow with Zip Buckle Adjustment | Infant Support for Baby and Mom Breastfeeding-Navy Blue Print</item_name>
+        <asin>B0D58K92GN</asin>
+        <return_reason_code>CR-NOT_COMPATIBLE</return_reason_code>
+        <merchant_sku>FFPNBP</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>Baby Product</category>
+        <refund_amount>698.0</refund_amount>
+        <order_item_id>68026872686139</order_item_id>
+    </item_details>
+    <order_id>403-6326246-7904335</order_id>
+    <order_date>2026-01-14T13:14:41Z</order_date>
+    <amazon_rma_id>DJGksBJVRRMA</amazon_rma_id>
+    <return_request_date>2026-01-21T02:24:45Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514906427682</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>115.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-27T10:45:07Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Long Body Rectangular Microfiber Pillow (Red, 20"x72" inches (i.e 50x180 Cms) [6 ft Long])</item_name>
+        <asin>B07NLFYVQL</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>RLRP222</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1797</invoice_number>
+        <category>Home</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>59449549679187</order_item_id>
+    </item_details>
+    <order_id>405-3669310-7227513</order_id>
+    <order_date>2026-01-14T05:20:48Z</order_date>
+    <return_request_date>2026-01-20T18:22:06Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>166975299877</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-24T12:55:59Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1711</invoice_number>
+        <category>Baby Product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>30302067660179</order_item_id>
+    </item_details>
+    <order_id>408-1822683-3225969</order_id>
+    <order_date>2026-01-08T15:29:29Z</order_date>
+    <return_request_date>2026-01-20T10:50:16Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>166926695505</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-20T10:50:10Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1773</invoice_number>
+        <category>Baby Product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>23981264933395</order_item_id>
+    </item_details>
+    <order_id>406-7308122-7257125</order_id>
+    <order_date>2026-01-13T06:52:11Z</order_date>
+    <return_request_date>2026-01-20T10:50:15Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>166963476822</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-20T10:50:10Z</return_delivery_date>
+    <return_type>Undelivered</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger Cradle for Baby,Kids Window Cradle Metal Hanger for Baby - Babies -Pink</item_name>
+        <asin>B0C8PVTTRR</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-P</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1708</invoice_number>
+        <category>Baby Product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>37628003978875</order_item_id>
+    </item_details>
+    <order_id>403-2961907-9677922</order_id>
+    <order_date>2026-01-08T14:07:28Z</order_date>
+    <return_request_date>2026-01-20T10:50:15Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366423833589</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-20T10:50:10Z</return_delivery_date>
+    <return_type>Undelivered</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Pink with Beige)</item_name>
+        <asin>B07NKSDNRC</asin>
+        <return_reason_code>CR-QUALITY_UNACCEPTABLE</return_reason_code>
+        <merchant_sku>DUP- Wedge03</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>Replacement</resolution>
+        <category>Baby Product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>69493532420523</order_item_id>
+    </item_details>
+    <order_id>408-9846171-8201951</order_id>
+    <order_date>2026-01-13T18:16:27Z</order_date>
+    <amazon_rma_id>DMSDQCJ7RRMA</amazon_rma_id>
+    <return_request_date>2026-01-19T15:58:36Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514905077536</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_type>C-Returns</return_type>
+    <order_amount>679.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>CR-SWITCHEROO</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>N</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>Baby Product</category>
+        <refund_amount>698.0</refund_amount>
+        <order_item_id>64408256044499</order_item_id>
+    </item_details>
+    <order_id>402-4404178-2398709</order_id>
+    <order_date>2026-01-02T07:11:24Z</order_date>
+    <amazon_rma_id>DMFBQ9JkRRMA</amazon_rma_id>
+    <return_request_date>2026-01-19T07:48:10Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514903931922</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>184.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-31T09:48:23Z</return_delivery_date>
+    <return_type>Amazon CS</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger Cradle for Baby,Kids Window Cradle Metal Hanger for Baby - Babies -Pink</item_name>
+        <asin>B0C8PVTTRR</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-P</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1733</invoice_number>
+        <category>Baby Product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>17415430874667</order_item_id>
+    </item_details>
+    <order_id>171-2666960-4657954</order_id>
+    <order_date>2026-01-10T07:05:23Z</order_date>
+    <return_request_date>2026-01-18T17:34:31Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366489651165</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-22T10:56:57Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Maroon)</item_name>
+        <asin>B09WLF9LY8</asin>
+        <return_reason_code>CR-SWITCHEROO</return_reason_code>
+        <merchant_sku>PMW227</merchant_sku>
+        <in_policy>N</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>Home</category>
+        <refund_amount>499.0</refund_amount>
+        <order_item_id>26115096762459</order_item_id>
+    </item_details>
+    <order_id>403-8602615-5713100</order_id>
+    <order_date>2025-12-29T05:18:10Z</order_date>
+    <amazon_rma_id>Dw1cQxJ3RRMA</amazon_rma_id>
+    <return_request_date>2026-01-18T14:55:03Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514903238144</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>115.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-27T10:45:07Z</return_delivery_date>
+    <return_type>Amazon CS</return_type>
+    <order_amount>499.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Cotton Mutlipurpose 5 in 1 Baby Feeding Nursing Pillow with Adjustable Strap| for Breastfeeding, Baby Support &amp; Playtime | Washable Premium Cotton Cover with Zip -(Aash Star)</item_name>
+        <asin>B0BXTC6NZ6</asin>
+        <return_reason_code>CR-ORDERED_WRONG_ITEM</return_reason_code>
+        <merchant_sku>Aash_Star</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <category>Baby Product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>07200998077347</order_item_id>
+    </item_details>
+    <order_id>403-2700647-7865947</order_id>
+    <order_date>2026-01-07T16:53:09Z</order_date>
+    <amazon_rma_id>D6DNQpJ1RRMA</amazon_rma_id>
+    <return_request_date>2026-01-18T11:07:59Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514903008754</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>172.5</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_type>C-Returns</return_type>
+    <order_amount>599.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Pink with Beige)</item_name>
+        <asin>B07NKSDNRC</asin>
+        <return_reason_code>CR-QUALITY_UNACCEPTABLE</return_reason_code>
+        <merchant_sku>DUP- Wedge03</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <invoice_number>IN-1700</invoice_number>
+        <category>Baby Product</category>
+        <refund_amount>589.0</refund_amount>
+        <order_item_id>48437923370819</order_item_id>
+    </item_details>
+    <order_id>406-7690739-8129129</order_id>
+    <order_date>2026-01-08T10:21:14Z</order_date>
+    <amazon_rma_id>DX8dQ0JyRRMA</amazon_rma_id>
+    <return_request_date>2026-01-18T08:40:10Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514902841055</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>621.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-27T10:45:07Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>599.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Cotton Mutlipurpose 5 in 1 Baby Feeding Nursing Pillow with Adjustable Strap| for Breastfeeding, Baby Support &amp; Playtime | Washable Premium Cotton Cover with Zip -(Aash Star)</item_name>
+        <asin>B0BXTC6NZ6</asin>
+        <return_reason_code>CR-ORDERED_WRONG_ITEM</return_reason_code>
+        <merchant_sku>Aash_Star</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>Baby Product</category>
+        <refund_amount>599.0</refund_amount>
+        <order_item_id>54808962249795</order_item_id>
+    </item_details>
+    <order_id>402-1876182-5581913</order_id>
+    <order_date>2026-01-10T01:00:49Z</order_date>
+    <amazon_rma_id>DmM8Q4JqRRMA</amazon_rma_id>
+    <return_request_date>2026-01-17T19:03:10Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514902341289</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>207.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-24T12:55:59Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>599.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Memory Foam Multi Use Wedge Pillow For Pregnancy Women And New Born Baby Lower Back-Pain Relief Knee Support Between Legs Anti Vomiting Milk Spitting (Royal Blue16 Inch X 14 3.5 Inch)</item_name>
+        <asin>B09WLDWSVQ</asin>
+        <return_reason_code>CR-FOUND_BETTER_PRICE</return_reason_code>
+        <merchant_sku>PRBW227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>Home</category>
+        <refund_amount>499.0</refund_amount>
+        <order_item_id>15857236416595</order_item_id>
+    </item_details>
+    <order_id>407-9428526-4458719</order_id>
+    <order_date>2026-01-01T23:09:59Z</order_date>
+    <amazon_rma_id>DdYtQTJLRRMA</amazon_rma_id>
+    <return_request_date>2026-01-15T22:57:47Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514899611990</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>92.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-22T10:56:57Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>499.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Cotton 5-in-1 Feeding Pillow with Detachable Cover, New Born Breast Feeding Pillow Portable Pillow for Baby and Mom -(Blue Star)</item_name>
+        <asin>B0BXTDF5RC</asin>
+        <return_reason_code>CR-QUALITY_UNACCEPTABLE</return_reason_code>
+        <merchant_sku>Blue_Star</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>Baby Product</category>
+        <refund_amount>598.0</refund_amount>
+        <order_item_id>48888206154979</order_item_id>
+    </item_details>
+    <order_id>408-6652686-8938752</order_id>
+    <order_date>2026-01-11T04:25:01Z</order_date>
+    <amazon_rma_id>DwLfQpJHRRMA</amazon_rma_id>
+    <return_request_date>2026-01-15T15:18:58Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514899351025</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>138.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-22T10:56:57Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>598.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Micky-White)</item_name>
+        <asin>B0C8PPPDNS</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>MPWedge227-W</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1720</invoice_number>
+        <category>Home</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>47633213229147</order_item_id>
+    </item_details>
+    <order_id>404-0917968-1435549</order_id>
+    <order_date>2026-01-09T07:19:15Z</order_date>
+    <return_request_date>2026-01-15T12:34:33Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366445110736</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-20T10:50:10Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Maroon)</item_name>
+        <asin>B09WLF9LY8</asin>
+        <return_reason_code>CR-UNWANTED_ITEM</return_reason_code>
+        <merchant_sku>PMW227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>Home</category>
+        <refund_amount>499.0</refund_amount>
+        <order_item_id>04809730386099</order_item_id>
+    </item_details>
+    <order_id>407-2154645-8303540</order_id>
+    <order_date>2025-12-31T16:05:22Z</order_date>
+    <amazon_rma_id>DJq6QPJGRRMA</amazon_rma_id>
+    <return_request_date>2026-01-14T16:48:39Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514898340419</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>138.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-20T10:50:10Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>499.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Cotton 5-in-1 Feeding Pillow with Detachable Cover | New Born Portable Breast Feeding Pillow for Baby | Infant Support for Baby and Mom | Blue Star</item_name>
+        <asin>B071XC7S5K</asin>
+        <return_reason_code>CR-DAMAGED_BY_CARRIER</return_reason_code>
+        <merchant_sku>74-FB2A-AD9Q</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>Baby Product</category>
+        <refund_amount>548.0</refund_amount>
+        <order_item_id>26041522888587</order_item_id>
+    </item_details>
+    <order_id>404-9459958-9896327</order_id>
+    <order_date>2026-01-07T09:27:04Z</order_date>
+    <amazon_rma_id>Dnvkc1JCRRMA</amazon_rma_id>
+    <return_request_date>2026-01-14T11:43:05Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514897845656</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>207.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-20T10:50:10Z</return_delivery_date>
+    <return_type>Amazon CS</return_type>
+    <order_amount>548.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Breastfeeding Pillow Cotton 5-in-1 Feeding Pillow with Detachable Cover, New Born Portable Pillow for Baby and Mom -(Navy Blue)</item_name>
+        <asin>B0DG9242TL</asin>
+        <return_reason_code>CR-QUALITY_UNACCEPTABLE</return_reason_code>
+        <merchant_sku>RFPNB227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>Home</category>
+        <refund_amount>498.0</refund_amount>
+        <order_item_id>30408428408339</order_item_id>
+    </item_details>
+    <order_id>407-0487652-7566714</order_id>
+    <order_date>2026-01-05T08:25:41Z</order_date>
+    <amazon_rma_id>D3NNcLJ2RRMA</amazon_rma_id>
+    <return_request_date>2026-01-14T01:15:31Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514897136259</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>92.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-20T10:50:10Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>498.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>CR-SWITCHEROO</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>Replacement</resolution>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>64408256044499</order_item_id>
+    </item_details>
+    <order_id>402-4404178-2398709</order_id>
+    <order_date>2026-01-02T07:11:24Z</order_date>
+    <amazon_rma_id>D1D8c0JvRRMA</amazon_rma_id>
+    <return_request_date>2026-01-13T07:30:41Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514897159302</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_type>C-Returns</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Long Body Rectangular Microfiber Pillow (Pink, 20"x60" inches (i.e 50x150 Cms) [5 ft Long])</item_name>
+        <asin>B07NLF1PDY</asin>
+        <return_reason_code>CR-SWITCHEROO</return_reason_code>
+        <merchant_sku>PLRP221</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <invoice_number>IN-1746</invoice_number>
+        <category>gl_home</category>
+        <refund_amount>1389.0</refund_amount>
+        <order_item_id>02511987890755</order_item_id>
+    </item_details>
+    <order_id>408-4723244-3975522</order_id>
+    <order_date>2026-01-11T03:51:31Z</order_date>
+    <amazon_rma_id>D98pcMJ1RRMA</amazon_rma_id>
+    <return_request_date>2026-01-13T04:37:09Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514895898036</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>103.5</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-20T10:50:10Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>1399.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1672</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>59137653159739</order_item_id>
+    </item_details>
+    <order_id>408-3431849-6538727</order_id>
+    <order_date>2026-01-07T06:42:11Z</order_date>
+    <return_request_date>2026-01-13T04:12:59Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366400427855</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-17T13:55:17Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Maroon)</item_name>
+        <asin>B09WLF9LY8</asin>
+        <return_reason_code>CR-QUALITY_UNACCEPTABLE</return_reason_code>
+        <merchant_sku>PMW227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>gl_home</category>
+        <refund_amount>499.0</refund_amount>
+        <order_item_id>69742753476867</order_item_id>
+    </item_details>
+    <order_id>408-1072939-0401920</order_id>
+    <order_date>2026-01-08T12:52:50Z</order_date>
+    <amazon_rma_id>DdMDc4JBRRMA</amazon_rma_id>
+    <return_request_date>2026-01-12T17:28:18Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514895691552</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>69.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-14T09:46:45Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>499.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Hanging Spring for Baby Cradle, Infant Jhula Swing Stainless Steel Spring Set Triangle, Spring for Hanging Cradle, thottil Hook, jhoola, jula, Swing Weight Support 15kg</item_name>
+        <asin>B0C8PQYQPX</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODS227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1692</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>68977292777339</order_item_id>
+    </item_details>
+    <order_id>406-4364569-0517951</order_id>
+    <order_date>2026-01-08T05:16:32Z</order_date>
+    <return_request_date>2026-01-12T16:23:19Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366404471410</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-17T13:55:17Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Pink with Beige)</item_name>
+        <asin>B07NKSDNRC</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>DUP- Wedge03</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1659</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>38127043770835</order_item_id>
+    </item_details>
+    <order_id>408-3266899-8125126</order_id>
+    <order_date>2026-01-05T06:43:58Z</order_date>
+    <return_request_date>2026-01-12T15:36:49Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366349792953</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-20T10:50:10Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>Get It Wedge Orthopedic Pillow with Detachable Cover Acid Reflux Memory Foam Support Firm Pillow for Sleeping ,Leg Elevator ,Back &amp; Neck Pain Relief (Navy Blue, 24 inch X 24 inch X 8 Inch)</item_name>
+        <asin>B09XJ247R1</asin>
+        <return_reason_code>CR-QUALITY_UNACCEPTABLE</return_reason_code>
+        <merchant_sku>K9-42EM-XX55</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>gl_home</category>
+        <refund_amount>1498.0</refund_amount>
+        <order_item_id>01009826271187</order_item_id>
+    </item_details>
+    <order_id>405-3263181-5488358</order_id>
+    <order_date>2026-01-03T17:12:46Z</order_date>
+    <amazon_rma_id>D6WfcWJGRRMA</amazon_rma_id>
+    <return_request_date>2026-01-12T09:05:31Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514894824722</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>138.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-20T10:50:10Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>1498.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>CR-DEFECTIVE</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>25936885914619</order_item_id>
+    </item_details>
+    <order_id>403-4355671-6842706</order_id>
+    <order_date>2026-01-03T11:14:36Z</order_date>
+    <amazon_rma_id>DdWbcvJ7RRMA</amazon_rma_id>
+    <return_request_date>2026-01-12T08:46:56Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonUnPaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_type>C-Returns</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger Cradle for Baby,Kids Window Cradle Metal Hanger for Baby - Babies -Pink</item_name>
+        <asin>B0C8PVTTRR</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-P</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1727</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>24542370755571</order_item_id>
+    </item_details>
+    <order_id>404-1967593-0992330</order_id>
+    <order_date>2026-01-09T19:06:40Z</order_date>
+    <return_request_date>2026-01-11T13:55:51Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>166934103009</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-12T13:58:53Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Maroon)</item_name>
+        <asin>B09WLF9LY8</asin>
+        <return_reason_code>CR-QUALITY_UNACCEPTABLE</return_reason_code>
+        <merchant_sku>PMW227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <category>gl_home</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>26115096762459</order_item_id>
+    </item_details>
+    <order_id>403-8602615-5713100</order_id>
+    <order_date>2025-12-29T05:18:10Z</order_date>
+    <amazon_rma_id>DgHNcGJYRRMA</amazon_rma_id>
+    <return_request_date>2026-01-11T10:23:32Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514893611439</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>115.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_type>C-Returns</return_type>
+    <order_amount>499.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1643</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>28434007519595</order_item_id>
+    </item_details>
+    <order_id>171-8583504-6831569</order_id>
+    <order_date>2026-01-03T12:23:04Z</order_date>
+    <return_request_date>2026-01-11T09:05:46Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366322678601</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-14T09:46:45Z</return_delivery_date>
+    <return_type>Undelivered</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Maroon)</item_name>
+        <asin>B09WLF9LY8</asin>
+        <return_reason_code>CR-UNWANTED_ITEM</return_reason_code>
+        <merchant_sku>PMW227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>gl_home</category>
+        <refund_amount>499.0</refund_amount>
+        <order_item_id>66462436924563</order_item_id>
+    </item_details>
+    <order_id>171-4765541-6786706</order_id>
+    <order_date>2025-12-29T03:28:18Z</order_date>
+    <amazon_rma_id>D6lbcWJQRRMA</amazon_rma_id>
+    <return_request_date>2026-01-11T08:48:05Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>14931294350766</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>92.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-20T14:37:05Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>499.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Pink Star)</item_name>
+        <asin>B09SLJRMMM</asin>
+        <return_reason_code>CR-QUALITY_UNACCEPTABLE</return_reason_code>
+        <merchant_sku>WPPS2277</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>gl_home</category>
+        <refund_amount>579.0</refund_amount>
+        <order_item_id>12487400172131</order_item_id>
+    </item_details>
+    <order_id>405-8439468-6191515</order_id>
+    <order_date>2026-01-05T01:58:59Z</order_date>
+    <amazon_rma_id>DwlbcMJVRRMA</amazon_rma_id>
+    <return_request_date>2026-01-11T08:37:59Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514893472726</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>92.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-17T13:55:17Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>579.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Premium 5 in 1 Cotton Baby Breast Feeding Pillow with Adjustable Strap| Nursing Pillow for Breastfeeding, Baby Support &amp; Playtime | Washable Premium Cotton Cover with Zip -(Micky-White)</item_name>
+        <asin>B0C8K3Y73B</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>MPRFP227-W</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1654</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>36599744162091</order_item_id>
+    </item_details>
+    <order_id>171-5827434-4123511</order_id>
+    <order_date>2026-01-04T16:52:33Z</order_date>
+    <return_request_date>2026-01-11T06:04:24Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366322669807</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-17T13:55:17Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>AMZ-PG-MISORDERED</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <category>gl_baby_product</category>
+        <refund_amount>703.0</refund_amount>
+        <order_item_id>07270128976259</order_item_id>
+    </item_details>
+    <order_id>402-3214720-6587530</order_id>
+    <order_date>2026-01-07T18:51:07Z</order_date>
+    <return_request_date>2026-01-09T18:44:20Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_type>Amazon CS</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>AMZ-PG-MISORDERED</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>07270128976259</order_item_id>
+    </item_details>
+    <order_id>402-3214720-6587530</order_id>
+    <order_date>2026-01-07T18:51:07Z</order_date>
+    <return_request_date>2026-01-09T18:43:32Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_type>Amazon CS</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1645</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>26635575902755</order_item_id>
+    </item_details>
+    <order_id>404-0175629-5828350</order_id>
+    <order_date>2026-01-03T15:52:46Z</order_date>
+    <return_request_date>2026-01-09T18:42:02Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366322718857</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-12T13:58:53Z</return_delivery_date>
+    <return_type>Undelivered</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Cotton 5-in-1 Feeding Pillow with Detachable Cover, New Born Breast Feeding Pillow Portable Pillow for Baby and Mom -(Blue Star)</item_name>
+        <asin>B0BXTDF5RC</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>Blue_Star</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1640</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>21100573742299</order_item_id>
+    </item_details>
+    <order_id>402-5484801-6360308</order_id>
+    <order_date>2026-01-03T10:29:56Z</order_date>
+    <return_request_date>2026-01-09T16:24:51Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>13371821393103</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-17T13:55:17Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>CR-DEFECTIVE</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>N</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>gl_baby_product</category>
+        <refund_amount>698.0</refund_amount>
+        <order_item_id>06419103596835</order_item_id>
+    </item_details>
+    <order_id>406-4581816-9255518</order_id>
+    <order_date>2025-12-12T17:15:10Z</order_date>
+    <amazon_rma_id>DNqbcWJLRRMA</amazon_rma_id>
+    <return_request_date>2026-01-09T15:57:02Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514891407980</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>184.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-12T13:58:53Z</return_delivery_date>
+    <return_type>Amazon CS</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>CR-SWITCHEROO</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>N</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>43542220479227</order_item_id>
+    </item_details>
+    <order_id>404-4755848-0373121</order_id>
+    <order_date>2025-12-25T11:42:38Z</order_date>
+    <amazon_rma_id>DwXJvSJMRRMA</amazon_rma_id>
+    <return_request_date>2026-01-09T12:21:49Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514891006695</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>138.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_type>Amazon CS</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Pink with Beige)</item_name>
+        <asin>B07NKSDNRC</asin>
+        <return_reason_code>CR-QUALITY_UNACCEPTABLE</return_reason_code>
+        <merchant_sku>DUP- Wedge03</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>gl_baby_product</category>
+        <refund_amount>599.0</refund_amount>
+        <order_item_id>64116710643603</order_item_id>
+    </item_details>
+    <order_id>406-6401148-0072345</order_id>
+    <order_date>2026-01-02T15:12:08Z</order_date>
+    <amazon_rma_id>DlNhvzJqRRMA</amazon_rma_id>
+    <return_request_date>2026-01-09T06:23:44Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514890504543</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>621.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-17T13:55:17Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>599.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>CR-SWITCHEROO</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>Replacement</resolution>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>64408256044499</order_item_id>
+    </item_details>
+    <order_id>402-4404178-2398709</order_id>
+    <order_date>2026-01-02T07:11:24Z</order_date>
+    <amazon_rma_id>DSNMv8J0RRMA</amazon_rma_id>
+    <return_request_date>2026-01-09T05:38:28Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514891698388</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_type>C-Returns</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Memory Foam Multi Use Wedge Pillow For Pregnancy Women And New Born Baby Lower Back-Pain Relief Knee Support Between Legs Anti Vomiting Milk Spitting (Royal Blue16 Inch X 14 3.5 Inch)</item_name>
+        <asin>B09WLDWSVQ</asin>
+        <return_reason_code>CR-QUALITY_UNACCEPTABLE</return_reason_code>
+        <merchant_sku>PRBW227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>gl_home</category>
+        <refund_amount>499.0</refund_amount>
+        <order_item_id>11590973774115</order_item_id>
+    </item_details>
+    <order_id>402-2001069-5592324</order_id>
+    <order_date>2026-01-02T01:56:33Z</order_date>
+    <amazon_rma_id>DcNBv4JVRRMA</amazon_rma_id>
+    <return_request_date>2026-01-09T02:07:11Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514890243923</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>115.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-13T13:40:09Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>499.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>CR-SWITCHEROO</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>Replacement</resolution>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>37758369436259</order_item_id>
+    </item_details>
+    <order_id>405-2372147-8524345</order_id>
+    <order_date>2026-01-03T03:14:01Z</order_date>
+    <amazon_rma_id>DDkgvMJJRRMA</amazon_rma_id>
+    <return_request_date>2026-01-08T15:29:27Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514890333150</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_type>C-Returns</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Micky-White)</item_name>
+        <asin>B0C8PPPDNS</asin>
+        <return_reason_code>CR-NOT_COMPATIBLE</return_reason_code>
+        <merchant_sku>MPWedge227-W</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>gl_home</category>
+        <refund_amount>498.0</refund_amount>
+        <order_item_id>05492865775347</order_item_id>
+    </item_details>
+    <order_id>408-6049472-1967512</order_id>
+    <order_date>2026-01-06T16:11:36Z</order_date>
+    <amazon_rma_id>Dcj8vlJxRRMA</amazon_rma_id>
+    <return_request_date>2026-01-08T13:04:27Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514889711273</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>92.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-10T12:49:53Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>498.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger Cradle for Baby,Kids Window Cradle Metal Hanger for Baby - Babies -Pink</item_name>
+        <asin>B0C8PVTTRR</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-P</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1499</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>23969180928523</order_item_id>
+    </item_details>
+    <order_id>404-1713220-0906745</order_id>
+    <order_date>2025-12-26T07:30:10Z</order_date>
+    <return_request_date>2026-01-08T09:41:49Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366105323704</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-12T13:59:44Z</return_delivery_date>
+    <return_type>Undelivered</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1533</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>11183195867971</order_item_id>
+    </item_details>
+    <order_id>402-8967662-6430756</order_id>
+    <order_date>2025-12-28T07:49:17Z</order_date>
+    <return_request_date>2026-01-07T19:47:03Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366160101989</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-09T13:38:50Z</return_delivery_date>
+    <return_type>Undelivered</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>Get It Long Body Rectangular Microfiber Pillow (Pink, 20"x72" inches (i.e 50x180 Cms) [6 ft Long])</item_name>
+        <asin>B07NLGFCSM</asin>
+        <return_reason_code>CR-NOT_COMPATIBLE</return_reason_code>
+        <merchant_sku>PLRP222</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>gl_baby_product</category>
+        <refund_amount>1899.0</refund_amount>
+        <order_item_id>38807061520971</order_item_id>
+    </item_details>
+    <order_id>408-5281843-9036341</order_id>
+    <order_date>2026-01-02T15:59:55Z</order_date>
+    <amazon_rma_id>DmQcvjJVRRMA</amazon_rma_id>
+    <return_request_date>2026-01-07T06:22:39Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514887679360</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>172.5</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-09T13:38:50Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>1899.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Pink Star)</item_name>
+        <asin>B09SLJRMMM</asin>
+        <return_reason_code>CR-QUALITY_UNACCEPTABLE</return_reason_code>
+        <merchant_sku>WPPS2277</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>gl_home</category>
+        <refund_amount>499.0</refund_amount>
+        <order_item_id>68468798971611</order_item_id>
+    </item_details>
+    <order_id>404-4022967-3972354</order_id>
+    <order_date>2025-12-31T23:26:04Z</order_date>
+    <amazon_rma_id>D6QLvzJRRRMA</amazon_rma_id>
+    <return_request_date>2026-01-07T05:17:00Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514887575488</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>138.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-13T13:40:09Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>499.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Maroon)</item_name>
+        <asin>B09WLF9LY8</asin>
+        <return_reason_code>CR-FOUND_BETTER_PRICE</return_reason_code>
+        <merchant_sku>PMW227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <invoice_number>IN-1576</invoice_number>
+        <category>gl_home</category>
+        <refund_amount>499.0</refund_amount>
+        <order_item_id>20383786471395</order_item_id>
+    </item_details>
+    <order_id>405-6960099-2268329</order_id>
+    <order_date>2025-12-30T21:32:55Z</order_date>
+    <amazon_rma_id>DP6qvlJfRRMA</amazon_rma_id>
+    <return_request_date>2026-01-07T05:04:10Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514887554629</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>115.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-13T13:40:09Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>499.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Memory Foam Multi Use Wedge Pillow For Pregnancy Women And New Born Baby Lower Back-Pain Relief Knee Support Between Legs Anti Vomiting Milk Spitting (Royal Blue16 Inch X 14 3.5 Inch)</item_name>
+        <asin>B09WLDWSVQ</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>PRBW227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1596</invoice_number>
+        <category>gl_home</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>42611738215899</order_item_id>
+    </item_details>
+    <order_id>405-2312357-2797917</order_id>
+    <order_date>2026-01-01T12:11:23Z</order_date>
+    <return_request_date>2026-01-07T04:05:36Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366248869824</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-12T13:58:53Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>CR-SWITCHEROO</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>N</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1410</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>36484050246907</order_item_id>
+    </item_details>
+    <order_id>408-7839551-9785965</order_id>
+    <order_date>2025-12-22T03:35:50Z</order_date>
+    <amazon_rma_id>Dd6Qv1JKRRMA</amazon_rma_id>
+    <return_request_date>2026-01-07T03:30:40Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514887471087</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>184.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-12T13:58:53Z</return_delivery_date>
+    <return_type>Amazon CS</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Micky-White)</item_name>
+        <asin>B0C8PPPDNS</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>MPWedge227-W</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1540</invoice_number>
+        <category>gl_home</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>37009523643699</order_item_id>
+    </item_details>
+    <order_id>407-7461031-3350756</order_id>
+    <order_date>2025-12-28T13:51:24Z</order_date>
+    <return_request_date>2026-01-06T22:02:16Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366160100050</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-12T13:58:53Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1605</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>65201093738291</order_item_id>
+    </item_details>
+    <order_id>406-5196977-7949956</order_id>
+    <order_date>2026-01-01T21:06:09Z</order_date>
+    <return_request_date>2026-01-06T14:07:56Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366248877447</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-10T12:49:53Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1543</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>09483333765659</order_item_id>
+    </item_details>
+    <order_id>402-3372551-8473115</order_id>
+    <order_date>2025-12-28T15:32:52Z</order_date>
+    <return_request_date>2026-01-06T13:44:34Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366160085258</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-07T10:21:29Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Cotton 5-in-1 Feeding Pillow with Detachable Cover | New Born Portable Breast Feeding Pillow for Baby | Infant Support for Baby and Mom | Blue Star</item_name>
+        <asin>B071XC7S5K</asin>
+        <return_reason_code>CR-SWITCHEROO</return_reason_code>
+        <merchant_sku>74-FB2A-AD9Q</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <invoice_number>IN-1551</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>548.0</refund_amount>
+        <order_item_id>18543585327339</order_item_id>
+    </item_details>
+    <order_id>404-1712441-7884369</order_id>
+    <order_date>2025-12-29T03:48:58Z</order_date>
+    <amazon_rma_id>DmCQvNJqRRMA</amazon_rma_id>
+    <return_request_date>2026-01-06T11:33:56Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>14931294027915</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>207.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-13T16:50:31Z</return_delivery_date>
+    <return_type>Amazon CS</return_type>
+    <order_amount>548.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Cotton Mutlipurpose 5 in 1 Baby Feeding Nursing Pillow with Adjustable Strap| for Breastfeeding, Baby Support &amp; Playtime | Washable Premium Cotton Cover with Zip -(Aash Star)</item_name>
+        <asin>B0BXTC6NZ6</asin>
+        <return_reason_code>CR-NOT_COMPATIBLE</return_reason_code>
+        <merchant_sku>Aash_Star</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <invoice_number>IN-1568</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>599.0</refund_amount>
+        <order_item_id>47919993262459</order_item_id>
+    </item_details>
+    <order_id>403-7072297-1362740</order_id>
+    <order_date>2025-12-30T10:42:49Z</order_date>
+    <amazon_rma_id>DJf9vHJxRRMA</amazon_rma_id>
+    <return_request_date>2026-01-06T09:38:55Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>14931294018314</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>138.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-12T17:12:42Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>599.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>CR-DEFECTIVE</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1620</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>26207358160059</order_item_id>
+    </item_details>
+    <order_id>408-4941233-3618709</order_id>
+    <order_date>2026-01-02T11:10:21Z</order_date>
+    <amazon_rma_id>DcLxvsJqRRMA</amazon_rma_id>
+    <return_request_date>2026-01-06T05:51:50Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514886345860</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>184.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-10T12:49:53Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1517</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>07873504669563</order_item_id>
+    </item_details>
+    <order_id>406-0430623-7308322</order_id>
+    <order_date>2025-12-27T07:05:27Z</order_date>
+    <return_request_date>2026-01-06T05:12:14Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366160095486</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-12T13:58:53Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Premium 5 in 1 Cotton Baby Breast Feeding Pillow with Adjustable Strap| Nursing Pillow for Breastfeeding, Baby Support &amp; Playtime | Washable Premium Cotton Cover with Zip -(Micky-White)</item_name>
+        <asin>B0C8K3Y73B</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>MPRFP227-W</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1567</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>23802938157371</order_item_id>
+    </item_details>
+    <order_id>171-7935503-6133151</order_id>
+    <order_date>2025-12-30T10:21:52Z</order_date>
+    <return_request_date>2026-01-05T14:54:46Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366203067319</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-08T11:44:35Z</return_delivery_date>
+    <return_type>Undelivered</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Maroon)</item_name>
+        <asin>B09WLF9LY8</asin>
+        <return_reason_code>CR-NOT_COMPATIBLE</return_reason_code>
+        <merchant_sku>PMW227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>gl_home</category>
+        <refund_amount>499.0</refund_amount>
+        <order_item_id>21454988307459</order_item_id>
+    </item_details>
+    <order_id>404-3391925-5775540</order_id>
+    <order_date>2025-12-28T06:21:47Z</order_date>
+    <amazon_rma_id>D1JcvPJMRRMA</amazon_rma_id>
+    <return_request_date>2026-01-05T14:51:44Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514885757329</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>115.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-12T13:58:53Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>499.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Cotton 5-in-1 Feeding Pillow with Detachable Cover | New Born Portable Breast Feeding Pillow for Baby | Infant Support for Baby and Mom | Blue Star</item_name>
+        <asin>B071XC7S5K</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>74-FB2A-AD9Q</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1454</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>39165354631011</order_item_id>
+    </item_details>
+    <order_id>407-6857276-5265105</order_id>
+    <order_date>2025-12-24T05:48:45Z</order_date>
+    <return_request_date>2026-01-05T10:46:28Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366203067289</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-09T13:38:50Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1500</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>44753118889043</order_item_id>
+    </item_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger Cradle for Baby,Kids Window Cradle Metal Hanger for Baby - Babies -Pink</item_name>
+        <asin>B0C8PVTTRR</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-P</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1500</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>09268873611723</order_item_id>
+    </item_details>
+    <order_id>406-6957745-1431523</order_id>
+    <order_date>2025-12-26T08:19:23Z</order_date>
+    <return_request_date>2026-01-05T10:02:29Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366117440857</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-07T10:21:29Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1526</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>36612183131187</order_item_id>
+    </item_details>
+    <order_id>405-3239310-3532302</order_id>
+    <order_date>2025-12-27T18:31:10Z</order_date>
+    <return_request_date>2026-01-05T05:10:33Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366160095233</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-07T10:21:29Z</return_delivery_date>
+    <return_type>Undelivered</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>CR-MISSING_PARTS</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1410</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>36484050246907</order_item_id>
+    </item_details>
+    <order_id>408-7839551-9785965</order_id>
+    <order_date>2025-12-22T03:35:50Z</order_date>
+    <amazon_rma_id>DmPqvMJ9RRMA</amazon_rma_id>
+    <return_request_date>2026-01-05T03:41:35Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514884669081</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>184.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_type>C-Returns</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Memory Foam Multi Use Wedge Pillow For Pregnancy Women And New Born Baby Lower Back-Pain Relief Knee Support Between Legs Anti Vomiting Milk Spitting (Royal Blue16 Inch X 14 3.5 Inch)</item_name>
+        <asin>B09WLDWSVQ</asin>
+        <return_reason_code>CR-QUALITY_UNACCEPTABLE</return_reason_code>
+        <merchant_sku>PRBW227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>gl_home</category>
+        <refund_amount>499.0</refund_amount>
+        <order_item_id>20446965993187</order_item_id>
+    </item_details>
+    <order_id>408-7578149-5984354</order_id>
+    <order_date>2025-12-19T19:21:18Z</order_date>
+    <amazon_rma_id>DJvkzBJxRRMA</amazon_rma_id>
+    <return_request_date>2026-01-04T17:14:02Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514884519591</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>92.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-09T13:38:50Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>499.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Premium 5 in 1 Cotton Baby Breast Feeding Pillow with Adjustable Strap| Nursing Pillow for Breastfeeding, Baby Support &amp; Playtime | Washable Premium Cotton Cover with Zip -(Micky-White)</item_name>
+        <asin>B0C8K3Y73B</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>MPRFP227-W</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1546</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>21286781053251</order_item_id>
+    </item_details>
+    <order_id>406-1000918-2629933</order_id>
+    <order_date>2025-12-28T18:03:58Z</order_date>
+    <return_request_date>2026-01-04T12:09:11Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366160078861</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-08T11:44:35Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger Cradle for Baby,Kids Window Cradle Metal Hanger for Baby - Babies -Pink</item_name>
+        <asin>B0C8PVTTRR</asin>
+        <return_reason_code>CR-DEFECTIVE</return_reason_code>
+        <merchant_sku>CRODA227-P</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>gl_baby_product</category>
+        <refund_amount>698.0</refund_amount>
+        <order_item_id>56774022475347</order_item_id>
+    </item_details>
+    <order_id>171-2370332-7737133</order_id>
+    <order_date>2025-12-26T05:12:39Z</order_date>
+    <amazon_rma_id>Dm4GzvJ6RRMA</amazon_rma_id>
+    <return_request_date>2026-01-04T10:46:58Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514884018773</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>276.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-12T13:58:53Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Maroon)</item_name>
+        <asin>B09WLF9LY8</asin>
+        <return_reason_code>CR-ORDERED_WRONG_ITEM</return_reason_code>
+        <merchant_sku>PMW227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>gl_home</category>
+        <refund_amount>499.0</refund_amount>
+        <order_item_id>33493929310227</order_item_id>
+    </item_details>
+    <order_id>402-3971274-1405112</order_id>
+    <order_date>2025-12-29T18:11:49Z</order_date>
+    <amazon_rma_id>DlDCz4JcRRMA</amazon_rma_id>
+    <return_request_date>2026-01-03T10:18:23Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514882678719</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>92.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-08T11:44:35Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>499.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Maroon)</item_name>
+        <asin>B09WLF9LY8</asin>
+        <return_reason_code>CR-QUALITY_UNACCEPTABLE</return_reason_code>
+        <merchant_sku>PMW227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>gl_home</category>
+        <refund_amount>499.0</refund_amount>
+        <order_item_id>24235577786723</order_item_id>
+    </item_details>
+    <order_id>406-6011578-9066744</order_id>
+    <order_date>2025-12-31T01:26:25Z</order_date>
+    <amazon_rma_id>DP81zXJCRRMA</amazon_rma_id>
+    <return_request_date>2026-01-03T09:33:28Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514882597065</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>92.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-05T13:06:13Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>499.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1536</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>38407125299179</order_item_id>
+    </item_details>
+    <order_id>406-9233745-5327559</order_id>
+    <order_date>2025-12-28T11:28:55Z</order_date>
+    <return_request_date>2026-01-03T04:07:01Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366203065681</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-05T13:06:13Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>CR-DEFECTIVE</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1520</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>54955370282139</order_item_id>
+    </item_details>
+    <order_id>408-2298952-6615553</order_id>
+    <order_date>2025-12-27T10:14:30Z</order_date>
+    <amazon_rma_id>DwgpzPJ4RRMA</amazon_rma_id>
+    <return_request_date>2026-01-03T03:00:19Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514881994391</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>138.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_type>C-Returns</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1505</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>19556037254251</order_item_id>
+    </item_details>
+    <order_id>403-9024780-8566724</order_id>
+    <order_date>2025-12-26T14:41:34Z</order_date>
+    <return_request_date>2026-01-02T17:29:21Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366117451730</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-12T13:58:53Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Micky-White)</item_name>
+        <asin>B0C8PPPDNS</asin>
+        <return_reason_code>CR-QUALITY_UNACCEPTABLE</return_reason_code>
+        <merchant_sku>MPWedge227-W</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <category>gl_home</category>
+        <refund_amount>498.35</refund_amount>
+        <order_item_id>58748406422059</order_item_id>
+    </item_details>
+    <order_id>402-7412616-9074717</order_id>
+    <order_date>2025-12-25T12:28:50Z</order_date>
+    <amazon_rma_id>D1VJzKJWRRMA</amazon_rma_id>
+    <return_request_date>2026-01-02T15:43:37Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonUnPaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_type>C-Returns</return_type>
+    <order_amount>498.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1286</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>08233316984227</order_item_id>
+    </item_details>
+    <order_id>403-8723806-9673907</order_id>
+    <order_date>2025-12-16T12:30:01Z</order_date>
+    <return_request_date>2026-01-02T13:13:03Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>166743855007</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-02T13:12:58Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>CR-DEFECTIVE</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>Replacement</resolution>
+        <category>gl_baby_product</category>
+        <refund_amount>695.02</refund_amount>
+        <order_item_id>59060128200403</order_item_id>
+    </item_details>
+    <order_id>403-2749147-8751521</order_id>
+    <order_date>2025-12-22T20:13:32Z</order_date>
+    <amazon_rma_id>D6ZtzMJ9RRMA</amazon_rma_id>
+    <return_request_date>2026-01-02T11:10:18Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514882051970</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-09T13:38:50Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>698.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Maroon)</item_name>
+        <asin>B09WLF9LY8</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>PMW227</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1502</invoice_number>
+        <category>gl_home</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>09864098180715</order_item_id>
+    </item_details>
+    <order_id>402-3310924-4236346</order_id>
+    <order_date>2025-12-26T12:34:03Z</order_date>
+    <return_request_date>2026-01-02T04:23:11Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366117456889</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-03T13:18:10Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1509</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>42942859978451</order_item_id>
+    </item_details>
+    <order_id>403-9794626-6484366</order_id>
+    <order_date>2025-12-26T18:22:09Z</order_date>
+    <return_request_date>2026-01-01T17:57:09Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366117451747</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-02T10:24:20Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT New Born Baby Cradle Metal Hanger for Baby,Kids Window Cradle Metal Window Hanger - Babies - Blue</item_name>
+        <asin>B0C8PTH3QF</asin>
+        <return_reason_code>UND-UNKNOWN</return_reason_code>
+        <merchant_sku>CRODA227-B</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>StandardRefund</resolution>
+        <invoice_number>IN-1373</invoice_number>
+        <category>gl_baby_product</category>
+        <refund_amount>0.0</refund_amount>
+        <order_item_id>43548175828043</order_item_id>
+    </item_details>
+    <order_id>171-9641101-9061918</order_id>
+    <order_date>2025-12-20T06:17:12Z</order_date>
+    <return_request_date>2026-01-01T10:57:46Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>366009123387</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <label_cost>0.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Not Computed</label_to_be_paid_by>
+    <return_delivery_date>2026-01-05T13:07:44Z</return_delivery_date>
+    <return_type>Rejected</return_type>
+    <order_amount>0.0</order_amount>
+    <order_quantity>0</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Multi Use Wedge Pillow for Pregnancy Women and New Born Baby | Lower Back-Pain Relief |Knee Support Between Legs | Anti Vomiting and Milk Spitting for New Born Baby (Pink with Beige)</item_name>
+        <asin>B07NKSDNRC</asin>
+        <return_reason_code>CR-ORDERED_WRONG_ITEM</return_reason_code>
+        <merchant_sku>DUP- Wedge03</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>gl_baby_product</category>
+        <refund_amount>599.0</refund_amount>
+        <order_item_id>24311087058827</order_item_id>
+    </item_details>
+    <order_id>402-3638651-6639516</order_id>
+    <order_date>2025-12-24T16:50:37Z</order_date>
+    <amazon_rma_id>DSH0zvJmRRMA</amazon_rma_id>
+    <return_request_date>2026-01-01T08:40:25Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514879728120</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>621.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-09T13:38:50Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>599.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details>
+<return_details>
+    <item_details>
+        <item_name>GET IT Premium 2 in 1 Dry Sheet Cotton Baby Breastfeeding Pillow with Adjustable Strap | Nursing Pillow, Baby Support &amp; Playtime | Washable Cover with Zip -(Grey)</item_name>
+        <asin>B0C8KRVBJ2</asin>
+        <return_reason_code>CR-NOT_COMPATIBLE</return_reason_code>
+        <merchant_sku>ADSRFP227-G</merchant_sku>
+        <in_policy>Y</in_policy>
+        <return_quantity>1</return_quantity>
+        <resolution>RefundAtFirstScan</resolution>
+        <category>gl_baby_product</category>
+        <refund_amount>798.0</refund_amount>
+        <order_item_id>56703730002731</order_item_id>
+    </item_details>
+    <order_id>171-4754560-1877100</order_id>
+    <order_date>2025-12-23T14:30:31Z</order_date>
+    <amazon_rma_id>DJHfzXJwRRMA</amazon_rma_id>
+    <return_request_date>2026-01-01T05:46:37Z</return_request_date>
+    <return_request_status>Approved</return_request_status>
+    <a_to_z_claim>false</a_to_z_claim>
+    <is_prime>N</is_prime>
+    <label_details>
+        <tracking_id>514879444495</tracking_id>
+        <return_carrier>ATS</return_carrier>
+        <currency_code>INR</currency_code>
+        <label_cost>138.0</label_cost>
+        <label_type>AmazonPrePaidLabel</label_type>
+    </label_details>
+    <label_to_be_paid_by>Seller</label_to_be_paid_by>
+    <return_delivery_date>2026-01-07T10:21:29Z</return_delivery_date>
+    <return_type>C-Returns</return_type>
+    <order_amount>798.0</order_amount>
+    <order_quantity>1</order_quantity>
+</return_details></Message>
+</AmazonEnvelope>

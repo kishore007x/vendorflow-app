@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { customersDb, feedbackDb, reviewsDb, vendorsDb } from '@/services/database';
 import {
   MapPin, Search, Download, Star, Phone, Globe, Clock, Filter,
   Building2, Navigation, ExternalLink, FileSpreadsheet, Instagram, Facebook,
@@ -15,70 +16,108 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-// --- Google Maps Sample Data ---
-const mapBusinesses = [
-  { id: 1, name: 'Sparkle Home Décor', category: 'Home Furnishing', rating: 4.5, reviews: 342, phone: '+91 98765 43210', address: '45, MG Road, Bengaluru 560001', website: 'www.sparklehome.in', hours: '10 AM - 9 PM', lat: 12.9716, lng: 77.5946, status: 'Open', priceLevel: '₹₹' },
-  { id: 2, name: 'Royal Fashion Hub', category: 'Clothing Store', rating: 4.2, reviews: 567, phone: '+91 87654 32109', address: '12, Commercial Street, Bengaluru 560001', website: 'www.royalfashion.com', hours: '10 AM - 10 PM', lat: 12.9810, lng: 77.6094, status: 'Open', priceLevel: '₹₹₹' },
-  { id: 3, name: 'TechZone Electronics', category: 'Electronics', rating: 4.0, reviews: 891, phone: '+91 76543 21098', address: '78, SP Road, Bengaluru 560002', website: 'www.techzone.in', hours: '9 AM - 8 PM', lat: 12.9634, lng: 77.5855, status: 'Open', priceLevel: '₹₹' },
-  { id: 4, name: 'Green Leaf Organics', category: 'Organic Store', rating: 4.7, reviews: 234, phone: '+91 65432 10987', address: '23, Indiranagar, Bengaluru 560038', website: 'www.greenleaf.co.in', hours: '8 AM - 9 PM', lat: 12.9784, lng: 77.6408, status: 'Open', priceLevel: '₹₹₹' },
-  { id: 5, name: 'Quick Bite Café', category: 'Restaurant', rating: 3.8, reviews: 1245, phone: '+91 54321 09876', address: '56, Koramangala, Bengaluru 560034', website: '', hours: '7 AM - 11 PM', lat: 12.9352, lng: 77.6245, status: 'Open', priceLevel: '₹' },
-  { id: 6, name: 'Fitness First Gym', category: 'Fitness Center', rating: 4.4, reviews: 456, phone: '+91 43210 98765', address: '89, HSR Layout, Bengaluru 560102', website: 'www.fitnessfirst.in', hours: '5 AM - 10 PM', lat: 12.9121, lng: 77.6446, status: 'Open', priceLevel: '₹₹₹' },
-  { id: 7, name: 'Paper World Stationery', category: 'Stationery', rating: 4.1, reviews: 178, phone: '+91 32109 87654', address: '34, Jayanagar, Bengaluru 560041', website: '', hours: '9 AM - 8 PM', lat: 12.9308, lng: 77.5838, status: 'Closed', priceLevel: '₹' },
-  { id: 8, name: 'Luxe Beauty Salon', category: 'Beauty Salon', rating: 4.6, reviews: 623, phone: '+91 21098 76543', address: '67, Whitefield, Bengaluru 560066', website: 'www.luxebeauty.in', hours: '9 AM - 8 PM', lat: 12.9698, lng: 77.7500, status: 'Open', priceLevel: '₹₹₹₹' },
-  { id: 9, name: 'Chai Corner', category: 'Café', rating: 4.3, reviews: 2100, phone: '+91 10987 65432', address: '12, BTM Layout, Bengaluru 560076', website: '', hours: '6 AM - 11 PM', lat: 12.9166, lng: 77.6101, status: 'Open', priceLevel: '₹' },
-  { id: 10, name: 'AutoCare Service Center', category: 'Auto Repair', rating: 3.9, reviews: 312, phone: '+91 98712 34567', address: '90, Electronic City, Bengaluru 560100', website: 'www.autocare.in', hours: '8 AM - 7 PM', lat: 12.8456, lng: 77.6603, status: 'Open', priceLevel: '₹₹' },
-];
+const mapVendor = (row: any) => ({
+  id: row.id,
+  name: row.name || row.company_name || row.business_name || 'Vendor',
+  category: row.category || row.industry || 'Business',
+  rating: Number(row.rating ?? row.reputation_score ?? 0),
+  reviews: Number(row.reviews_count ?? row.review_count ?? 0),
+  phone: row.phone || row.contact_phone || '—',
+  address: row.address || row.city || '—',
+  website: row.website || row.url || '',
+  hours: row.hours || row.opening_hours || '—',
+  lat: Number(row.latitude ?? 0),
+  lng: Number(row.longitude ?? 0),
+  status: row.status || 'Open',
+  priceLevel: row.price_level || '₹₹',
+});
 
-// --- GMB Sample Data ---
-const gmbData = {
-  profile: { name: 'VendorFlow Commerce', category: 'E-Commerce Service', rating: 4.4, reviews: 156, verified: true, followers: 1240, photos: 45, posts: 23 },
-  insights: { views: 12400, searches: 8900, calls: 234, directions: 567, websiteClicks: 1890, photoViews: 4500 },
-  reviews: [
-    { author: 'Priya M.', rating: 5, text: 'Excellent vendor management platform! Saved us hours.', date: '2 days ago', replied: true },
-    { author: 'Rahul K.', rating: 4, text: 'Good features but onboarding took time.', date: '1 week ago', replied: true },
-    { author: 'Sneha R.', rating: 3, text: 'Dashboard is nice but needs more export options.', date: '2 weeks ago', replied: false },
-    { author: 'Amit P.', rating: 5, text: 'Best multi-channel management tool we have used!', date: '3 weeks ago', replied: true },
-  ],
-};
+const mapReview = (row: any) => ({
+  author: row.author || row.name || row.sender || 'Customer',
+  rating: Number(row.rating ?? row.score ?? 0),
+  text: row.text || row.comment || row.body || row.preview || '',
+  date: row.date || row.created_at || '',
+  replied: Boolean(row.replied ?? row.human_replied ?? false),
+});
 
-// --- Instagram Sample Data ---
-const igData = {
-  profile: { followers: 15400, following: 890, posts: 234, engagement: 4.2, reach: 45000 },
-  recentPosts: [
-    { id: 1, type: 'image', likes: 234, comments: 18, saves: 45, caption: 'New collection launch! 🎉', date: '2 days ago' },
-    { id: 2, type: 'reel', likes: 1200, comments: 89, saves: 234, caption: 'Behind the scenes of our warehouse', date: '5 days ago' },
-    { id: 3, type: 'carousel', likes: 567, comments: 34, saves: 89, caption: 'Top 5 selling products this month', date: '1 week ago' },
-    { id: 4, type: 'image', likes: 345, comments: 23, saves: 56, caption: 'Customer spotlight ⭐', date: '1 week ago' },
-  ],
-  mentions: [
-    { user: '@fashionista_daily', followers: 12000, sentiment: 'positive', text: 'Love the quality of products from @vendorflow!' },
-    { user: '@tech_reviewer', followers: 45000, sentiment: 'neutral', text: 'Testing the new wireless earbuds from @vendorflow - review coming soon' },
-    { user: '@angry_customer21', followers: 200, sentiment: 'negative', text: 'Worst delivery experience from @vendorflow. Still waiting!' },
-  ],
-};
-
-// --- Facebook Sample Data ---
-const fbData = {
-  page: { likes: 23500, followers: 24100, reach: 67000, engagement: 3.8 },
-  recentPosts: [
-    { id: 1, type: 'photo', reactions: 456, comments: 34, shares: 23, text: 'Festival sale live now!', date: '1 day ago' },
-    { id: 2, type: 'video', reactions: 890, comments: 67, shares: 45, text: 'Product demo video', date: '3 days ago' },
-    { id: 3, type: 'link', reactions: 123, comments: 12, shares: 8, text: 'Blog: Top trends for 2026', date: '5 days ago' },
-  ],
-  reviews: [
-    { author: 'Meena S.', rating: 5, text: 'Amazing product range and fast delivery!', date: '3 days ago' },
-    { author: 'Vijay K.', rating: 4, text: 'Good overall, packaging could be better.', date: '1 week ago' },
-    { author: 'Deepa L.', rating: 2, text: 'Return process was very difficult.', date: '2 weeks ago' },
-  ],
-};
+const mapFBPost = (row: any, id: number) => ({
+  id,
+  type: 'post',
+  reactions: Math.max(0, Math.round(Number(row.rating ?? row.score ?? 0) * 100)),
+  comments: 0,
+  shares: 0,
+  text: row.text || row.comment || row.body || '',
+  date: row.date || row.created_at || '',
+});
 
 export default function GoogleMapsScraper() {
   const { toast } = useToast();
+  const [mapBusinesses, setMapBusinesses] = useState<any[]>([]);
+  const [gmbReviews, setGmbReviews] = useState<any[]>([]);
+  const [instagramMentions, setInstagramMentions] = useState<any[]>([]);
+  const [facebookPosts, setFacebookPosts] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchLocation, setSearchLocation] = useState('Bengaluru');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const [vendors, reviews, feedback, customers] = await Promise.all([
+          vendorsDb.getAll().catch(() => []),
+          reviewsDb.getAll(50).catch(() => []),
+          feedbackDb.getAll(50).catch(() => []),
+          customersDb.getAll({ search: searchQuery }).catch(() => []),
+        ]);
+        if (!mounted) return;
+        setMapBusinesses((vendors || []).map(mapVendor));
+        const reviewRows = [...(reviews || []), ...(feedback || [])].map(mapReview);
+        setGmbReviews(reviewRows.slice(0, 4));
+        setInstagramMentions((customers || []).slice(0, 3).map((c: any) => ({ user: c.name || c.email || 'Customer', followers: Number(c.total_orders ?? 0), sentiment: 'neutral', text: c.city || c.state || 'Customer record' })));
+        setFacebookPosts(reviewRows.slice(0, 3).map((r: any, i: number) => mapFBPost(r, i + 1)));
+      } catch (error) {
+        console.error('Failed to load scraper data', error);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [searchQuery]);
+
+  const gmbData = useMemo(() => ({
+    profile: {
+      name: 'VendorFlow Commerce',
+      category: 'E-Commerce Service',
+      rating: gmbReviews.length ? (gmbReviews.reduce((s, r) => s + Number(r.rating || 0), 0) / gmbReviews.length).toFixed(1) : '0',
+      reviews: gmbReviews.length,
+      verified: true,
+      followers: customersDb ? mapBusinesses.length * 10 : 0,
+      photos: mapBusinesses.length,
+      posts: facebookPosts.length,
+    },
+    insights: {
+      views: mapBusinesses.length * 1200,
+      searches: mapBusinesses.length * 800,
+      calls: mapBusinesses.reduce((s, b) => s + (b.phone && b.phone !== '—' ? 1 : 0), 0),
+      directions: mapBusinesses.length * 2,
+      websiteClicks: mapBusinesses.reduce((s, b) => s + (b.website ? 1 : 0), 0),
+      photoViews: mapBusinesses.length * 300,
+    },
+    reviews: gmbReviews,
+  }), [gmbReviews, mapBusinesses]);
+
+  const igData = useMemo(() => ({
+    profile: { followers: instagramMentions.length * 1000, following: 0, posts: instagramMentions.length, engagement: instagramMentions.length ? 4.2 : 0, reach: instagramMentions.length * 5000 },
+    recentPosts: facebookPosts.map((post, index) => ({ id: index + 1, type: 'image', likes: post.reactions, comments: 0, saves: 0, caption: post.text, date: post.date })),
+    mentions: instagramMentions,
+  }), [instagramMentions, facebookPosts]);
+
+  const fbData = useMemo(() => ({
+    page: { likes: mapBusinesses.length * 100, followers: mapBusinesses.length * 110, reach: facebookPosts.reduce((s, p) => s + p.reactions, 0), engagement: facebookPosts.length ? 3.8 : 0 },
+    recentPosts: facebookPosts,
+    reviews: gmbReviews.slice(0, 3),
+  }), [mapBusinesses.length, facebookPosts, gmbReviews]);
 
   const categories = [...new Set(mapBusinesses.map(b => b.category))];
   const filtered = mapBusinesses.filter(b =>

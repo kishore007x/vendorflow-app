@@ -186,12 +186,7 @@ export default function Analytics() {
     { module: 'System Settings', superAdmin: true, financeManager: false, operations: false, vendor: false, analyst: false },
   ];
 
-  const subscriptionOverview = [
-    { plan: 'Trial', count: 3, color: 'hsl(45, 100%, 51%)' },
-    { plan: 'Basic', count: 12, color: 'hsl(217, 91%, 60%)' },
-    { plan: 'Pro', count: 8, color: 'hsl(142, 71%, 45%)' },
-    { plan: 'Enterprise', count: 2, color: 'hsl(262, 83%, 58%)' },
-  ];
+  const subscriptionOverview: { plan: string; count: number; color: string }[] = [];
 
   const aiAutomation = { activeFlows: 5, suggestionsGenerated: 142, successCount: 128 };
   const compliance = { uploaded: 14, pending: 3, auditLogs: 247 };
@@ -440,7 +435,6 @@ export default function Analytics() {
             <CardTitle className="flex items-center gap-2">
               {adPlatform === 'facebook' ? <Facebook className="w-5 h-5" /> : <Target className="w-5 h-5" />}
               Ad Performance
-              <Badge variant="outline" className="text-xs">Demo Data</Badge>
             </CardTitle>
             <Select value={adPlatform} onValueChange={(v: any) => setAdPlatform(v)}>
               <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>

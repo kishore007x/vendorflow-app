@@ -168,6 +168,42 @@ const videoStatusLabels: Record<VideoStatus, { label: string; color: string }> =
 
 const ORDERS_PAGE_SIZE = 50;
 
+function normalizePortal(rawPortal: unknown, orderNumber: unknown): Portal {
+  const portalValue = String(rawPortal || '').trim().toLowerCase();
+  const orderNumberValue = String(orderNumber || '').toLowerCase();
+
+  if (portalValue.includes('firstcry') || orderNumberValue.includes('firstcry')) return 'firstcry';
+  if (portalValue === 'in') return 'firstcry';
+  if (portalValue === 'own website' || portalValue === 'website') return 'own_website';
+  if (portalValue === 'own_website') return 'own_website';
+  if (portalValue === 'amazon' || portalValue === 'flipkart' || portalValue === 'meesho' || portalValue === 'blinkit') {
+    return portalValue as Portal;
+  }
+
+  return (portalValue || 'firstcry') as Portal;
+}
+
+function normalizeStatus(rawStatus: unknown): OrderStatus {
+  const statusValue = String(rawStatus || '').trim().toLowerCase();
+  if (statusValue in statusConfig) {
+    return statusValue as OrderStatus;
+  }
+
+  if (['processing', 'processed', 'review'].includes(statusValue)) {
+    return 'confirmed';
+  }
+
+  if (['account approved', 'account_approved'].includes(statusValue)) {
+    return 'confirmed';
+  }
+
+  if (['account rejected', 'account_rejected'].includes(statusValue)) {
+    return 'cancelled';
+  }
+
+  return 'pending';
+}
+
 export default function Orders() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -191,11 +227,13 @@ export default function Orders() {
 
     const fetchOrders = async () => {
       try {
-        // fetch orders including related order_items when possible
-        const data = await ordersDb.getAllWithItems();
-        setAllOrders(data.map((o: any) => {
+        const rawOrders = await ordersDb.getAllWithItems();
+
+        setAllOrders(rawOrders.map((o: any) => {
           const orderDate = o.order_date ?? o.orderDate ?? o.created_at ?? o.createdAt ?? null;
           const items = o.order_items || o.orderItems || [];
+          const portal = normalizePortal(o.portal, o.order_number);
+          const status = normalizeStatus(o.status);
           // compute total from DB field if present, otherwise derive from order_items
           const rawTotal = o.total_amount ?? o.totalAmount ?? o.total ?? o.amount ?? null;
           const computedFromItems = items.length > 0
@@ -209,6 +247,8 @@ export default function Orders() {
             ...o,
             orderId: o.order_number || o.id || String(o.id || ''),
             orderDate,
+            portal,
+            status,
             totalAmount,
             customerName: o.customer_name || o.customerName || '',
             customerId: o.customer_id || o.customerId || o.customer || (o.id ? String(o.id) : ''),
@@ -233,6 +273,17 @@ export default function Orders() {
   const [videoRecords, setVideoRecords] = useState<Record<string, VideoRecord>>({});
   const [returnPolicyDays] = useState(30);
   const [videoRetentionDays] = useState(120);
+  const [processingStats, setProcessingStats] = useState({
+    total: 0,
+    withinCutoff: 0,
+    missedCutoff: 0,
+    pendingDispatch: 0,
+    rtoPending: 0,
+    customerReturns: 0,
+    courierReturns: 0,
+    delivered: 0,
+    shipped: 0,
+  });
 
   const customerProfiles = useMemo(() => computeCustomerProfiles(allOrders), [allOrders]);
 
@@ -282,19 +333,20 @@ export default function Orders() {
 
   const rowSelection = useRowSelection(paginatedOrders.map(o => o.orderId));
 
-  const processingStats = useMemo(() => {
+  useEffect(() => {
     const orders = selectedPortal === 'all' ? allOrders : allOrders.filter(o => o.portal === selectedPortal);
-    const withinCutoff = orders.filter(o => ['pending', 'confirmed'].includes(o.status) && getOrderCutoffStatus(o) === 'within').length;
-    const missedCutoff = orders.filter(o => ['pending', 'confirmed'].includes(o.status) && getOrderCutoffStatus(o) === 'missed').length;
-    const pendingDispatch = orders.filter(o => ['confirmed', 'packed'].includes(o.status)).length;
-    const rtoPending = orders.filter(o => o.status === 'rto').length;
-    const total = orders.length;
-    const customerReturns = orders.filter(o => o.status === 'customer_return').length;
-    const courierReturns = orders.filter(o => o.status === 'courier_return').length;
-    const delivered = orders.filter(o => o.status === 'delivered').length;
-    const shipped = orders.filter(o => o.status === 'shipped').length;
-    return { total, withinCutoff, missedCutoff, pendingDispatch, rtoPending, customerReturns, courierReturns, delivered, shipped };
-  }, [selectedPortal]);
+    setProcessingStats({
+      total: orders.length,
+      withinCutoff: orders.filter(o => ['pending', 'confirmed'].includes(o.status) && getOrderCutoffStatus(o) === 'within').length,
+      missedCutoff: orders.filter(o => ['pending', 'confirmed'].includes(o.status) && getOrderCutoffStatus(o) === 'missed').length,
+      pendingDispatch: orders.filter(o => ['pending', 'confirmed', 'packed'].includes(o.status)).length,
+      rtoPending: orders.filter(o => o.status === 'rto').length,
+      customerReturns: orders.filter(o => o.status === 'customer_return').length,
+      courierReturns: orders.filter(o => o.status === 'courier_return').length,
+      delivered: orders.filter(o => o.status === 'delivered').length,
+      shipped: orders.filter(o => o.status === 'shipped').length,
+    });
+  }, [allOrders, selectedPortal]);
 
   // Video stats
   const videoStats = useMemo(() => {
@@ -696,7 +748,7 @@ export default function Orders() {
                 </TableHeader>
                 <TableBody>
                   {paginatedOrders.map((order) => {
-                    const status = statusConfig[order.status];
+                    const status = statusConfig[order.status] || statusConfig.pending;
                     const portal = getChannels().find(p => p.id === order.portal);
                     const StatusIcon = status.icon;
                     const custType = getCustomerType(order.customerId);
@@ -1032,7 +1084,7 @@ export default function Orders() {
                   <h4 className="font-semibold mb-3">Status Timeline</h4>
                   <div className="space-y-3">
                     {selectedOrder.statusTimeline.map((event, index) => {
-                      const config = statusConfig[event.status];
+                      const config = statusConfig[event.status] || statusConfig.pending;
                       const Icon = config.icon;
                       return (
                         <div key={index} className="flex items-start gap-3">

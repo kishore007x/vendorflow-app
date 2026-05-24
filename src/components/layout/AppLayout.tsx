@@ -82,13 +82,10 @@ export function AppLayout({ children }: AppLayoutProps) {
     );
   }
 
-  // In development, allow viewing the app without authentication to support local testing.
-  // This bypass will be inactive in production builds.
-  const devBypass = typeof import.meta !== 'undefined' && (import.meta as any).env?.DEV;
-  if (!isAuthenticated && !devBypass) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  const viewer = isAuthenticated ? user : devBypass ? { name: 'Dev Admin', role: 'admin', email: 'dev@local', avatar: '' } as any : user;
+  const viewer = user;
 
   const handleLogout = async () => {
     await logout();

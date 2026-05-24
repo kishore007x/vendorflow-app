@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
+    "verify:imports": "node scripts/verify_imports.js",
     "test:watch": "vitest"
   },
   "dependencies": {
@@ -54,6 +55,7 @@
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
     "pg": "^8.20.0",
+    "playwright": "^1.60.0",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
@@ -79,6 +81,7 @@
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react-swc": "^3.11.0",
+    "adm-zip": "^0.5.17",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.32.0",
     "eslint-plugin-react-hooks": "^5.2.0",

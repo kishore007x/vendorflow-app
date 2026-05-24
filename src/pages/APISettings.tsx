@@ -384,6 +384,7 @@ export default function APISettings() {
                     </tr>
                   </thead>
                   <tbody>
+                    {apiLogs.length === 0 && <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">No API logs yet</td></tr>}
                     {apiLogs.map(log => (
                       <tr key={log.id} className="border-b hover:bg-muted/30 transition-colors">
                         <td className="p-3 text-muted-foreground">{log.timestamp}</td>

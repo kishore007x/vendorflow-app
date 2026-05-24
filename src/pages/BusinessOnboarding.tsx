@@ -265,7 +265,8 @@ export default function BusinessOnboarding() {
                         </TableCell>
                       </TableRow>
                     );
-                  })}
+                    })}
+                    {filtered.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-6 text-muted-foreground">No requests yet</TableCell></TableRow>}
                 </TableBody>
               </Table>
             </CardContent>

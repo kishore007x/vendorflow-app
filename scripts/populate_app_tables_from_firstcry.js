@@ -74,10 +74,52 @@ async function copyReturns() {
   }));
   for (let i = 0; i < mapped.length; i += 200) {
     const rawChunk = mapped.slice(i, i + 200);
-    const chunk = (returnsCols && returnsCols.length > 0) ? rawChunk.map(r => filterToColumns(r, returnsCols)) : rawChunk;
-    const { error: insertErr } = await supabase.from('app_returns').insert(chunk);
-    if (insertErr) console.error('Insert returns chunk error', insertErr);
-    else console.log(`Inserted returns chunk ${i}..${i + chunk.length}`);
+    try {
+      const onConflict = 'return_number';
+      // dedupe by conflict key to avoid multiple rows with same return_number in same upsert
+      let deduped = rawChunk;
+      if (onConflict) {
+        const m = new Map();
+        for (const r of rawChunk) {
+          const k = r[onConflict] || null;
+          if (k === null) continue;
+          m.set(k, r);
+        }
+        deduped = Array.from(m.values());
+      }
+      const chunk = (returnsCols && returnsCols.length > 0) ? deduped.map(r => filterToColumns(r, returnsCols)) : deduped;
+      // batch-check which return_numbers already exist to avoid per-row selects
+      if (onConflict) {
+        const keys = chunk.map(r => r[onConflict]).filter(Boolean);
+        if (keys.length > 0) {
+          const { data: existing } = await supabase.from('app_returns').select(onConflict).in(onConflict, keys);
+          const existingSet = new Set((existing || []).map(e => e[onConflict]));
+          for (const row of chunk) {
+            try {
+              const k = row[onConflict] || null;
+              if (k && existingSet.has(k)) {
+                const { error: updErr } = await supabase.from('app_returns').update(row).eq(onConflict, k);
+                if (updErr) console.error('Update return row error', updErr, k);
+                else console.log('Updated return', k);
+              } else {
+                const { error: insErr } = await supabase.from('app_returns').insert([row]);
+                if (insErr) console.error('Insert return row error', insErr, k);
+                else console.log('Inserted return', k);
+              }
+            } catch (e) {
+              console.error('Failed to upsert return row', e, row[onConflict]);
+            }
+          }
+        }
+      } else {
+        // no conflict key; just insert chunk
+        const { error: insErr } = await supabase.from('app_returns').insert(chunk);
+        if (insErr) console.error('Insert returns chunk error', insErr);
+        else console.log('Inserted returns chunk', chunk.length);
+      }
+    } catch (err) {
+      console.error('Upsert returns chunk failed', err);
+    }
   }
 }
 
@@ -110,10 +152,50 @@ async function copyInvoices() {
   }));
   for (let i = 0; i < mapped.length; i += 200) {
     const rawChunk = mapped.slice(i, i + 200);
-    const chunk = (invoicesCols && invoicesCols.length > 0) ? rawChunk.map(r => filterToColumns(r, invoicesCols)) : rawChunk;
-    const { error: insertErr } = await supabase.from('app_invoices').insert(chunk);
-    if (insertErr) console.error('Insert invoices chunk error', insertErr);
-    else console.log(`Inserted invoices chunk ${i}..${i + chunk.length}`);
+    try {
+      const onConflict = 'invoice_number';
+      let deduped = rawChunk;
+      if (onConflict) {
+        const m = new Map();
+        for (const r of rawChunk) {
+          const k = r[onConflict] || null;
+          if (k === null) continue;
+          m.set(k, r);
+        }
+        deduped = Array.from(m.values());
+      }
+      const chunk = (invoicesCols && invoicesCols.length > 0) ? deduped.map(r => filterToColumns(r, invoicesCols)) : deduped;
+      // batch-check existing invoice numbers and update/insert accordingly
+      if (onConflict) {
+        const keys = chunk.map(r => r[onConflict]).filter(Boolean);
+        if (keys.length > 0) {
+          const { data: existing } = await supabase.from('app_invoices').select(onConflict).in(onConflict, keys);
+          const existingSet = new Set((existing || []).map(e => e[onConflict]));
+          for (const row of chunk) {
+            try {
+              const k = row[onConflict] || null;
+              if (k && existingSet.has(k)) {
+                const { error: updErr } = await supabase.from('app_invoices').update(row).eq(onConflict, k);
+                if (updErr) console.error('Update invoice row error', updErr, k);
+                else console.log('Updated invoice', k);
+              } else {
+                const { error: insErr } = await supabase.from('app_invoices').insert([row]);
+                if (insErr) console.error('Insert invoice row error', insErr, k);
+                else console.log('Inserted invoice', k);
+              }
+            } catch (e) {
+              console.error('Failed to upsert invoice row', e, row[onConflict]);
+            }
+          }
+        }
+      } else {
+        const { error: insErr } = await supabase.from('app_invoices').insert(chunk);
+        if (insErr) console.error('Insert invoices chunk error', insErr);
+        else console.log('Inserted invoices chunk', chunk.length);
+      }
+    } catch (err) {
+      console.error('Upsert invoices chunk failed', err);
+    }
   }
 }
 
@@ -147,10 +229,49 @@ async function buildInventory() {
   if (items.length === 0) { console.log('No inventory items to insert'); return; }
   for (let i = 0; i < items.length; i += 200) {
     const rawChunk = items.slice(i, i + 200);
-    const chunk = (inventoryCols && inventoryCols.length > 0) ? rawChunk.map(r => filterToColumns(r, inventoryCols)) : rawChunk;
-    const { error: insertErr } = await supabase.from('app_inventory').insert(chunk);
-    if (insertErr) console.error('Insert inventory chunk error', insertErr);
-    else console.log(`Inserted inventory chunk ${i}..${i + chunk.length}`);
+    try {
+      const onConflict = 'sku';
+      let deduped = rawChunk;
+      if (onConflict) {
+        const m = new Map();
+        for (const r of rawChunk) {
+          const k = r[onConflict] || null;
+          if (k === null) continue;
+          m.set(k, r);
+        }
+        deduped = Array.from(m.values());
+      }
+      const chunk = (inventoryCols && inventoryCols.length > 0) ? deduped.map(r => filterToColumns(r, inventoryCols)) : deduped;
+      if (onConflict) {
+        const keys = chunk.map(r => r[onConflict]).filter(Boolean);
+        if (keys.length > 0) {
+          const { data: existing } = await supabase.from('app_inventory').select(onConflict).in(onConflict, keys);
+          const existingSet = new Set((existing || []).map(e => e[onConflict]));
+          for (const row of chunk) {
+            try {
+              const k = row[onConflict] || null;
+              if (k && existingSet.has(k)) {
+                const { error: updErr } = await supabase.from('app_inventory').update(row).eq(onConflict, k);
+                if (updErr) console.error('Update inventory row error', updErr, k);
+                else console.log('Updated inventory', k);
+              } else {
+                const { error: insErr } = await supabase.from('app_inventory').insert([row]);
+                if (insErr) console.error('Insert inventory row error', insErr, k);
+                else console.log('Inserted inventory', k);
+              }
+            } catch (e) {
+              console.error('Failed to upsert inventory row', e, row[onConflict]);
+            }
+          }
+        }
+      } else {
+        const { error: insErr } = await supabase.from('app_inventory').insert(chunk);
+        if (insErr) console.error('Insert inventory chunk error', insErr);
+        else console.log('Inserted inventory chunk', chunk.length);
+      }
+    } catch (err) {
+      console.error('Upsert inventory chunk failed', err);
+    }
   }
 }
 

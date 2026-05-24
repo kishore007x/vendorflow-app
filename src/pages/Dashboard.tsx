@@ -16,14 +16,13 @@ import { useDashboardWidgets } from '@/hooks/useDashboardWidgets';
 
 import { GlobalDateFilter, DateRange } from '@/components/GlobalDateFilter';
 import { EmptyState } from '@/components/EmptyState';
-import { OnboardingWizard } from '@/components/OnboardingWizard';
 import { Progress } from '@/components/ui/progress';
 import {
   DollarSign, ShoppingCart, Package, AlertTriangle, RotateCcw, CreditCard,
   TrendingUp, TrendingDown, Star, Users, UserPlus, UserCheck, Percent,
   Plus, ShieldCheck, ShieldAlert, Hash, UserX, CheckCircle2, BarChart3,
   ArrowUpRight, ArrowDownRight, Clock, ShieldX, PackageCheck, PackageX,
-  CalendarClock, Truck, Rocket, Upload,
+  CalendarClock, Truck, Upload,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -54,24 +53,59 @@ export default function Dashboard() {
   const [expenses, setExpenses] = useState<any[]>([]);
   const [invoices, setInvoices] = useState<any[]>([]);
 
+  const latestOrderDate = useMemo(() => {
+    const latest = orders.reduce((currentLatest, order) => {
+      const candidate = new Date(order.orderDate);
+      if (isNaN(candidate.getTime())) return currentLatest;
+      return candidate > currentLatest ? candidate : currentLatest;
+    }, new Date(0));
+
+    return latest.getTime() > 0 ? latest : new Date();
+  }, [orders]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [ordersData, returnsData, inventoryData, settlementsData, expensesData, invoicesData] = await Promise.all([
-          ordersDb.getAll(),
+          ordersDb.getAllWithItems(),
           returnsDb.getAll(),
           inventoryDb.getAll(),
           settlementsDb.getAll(),
           expensesDb.getAll(),
           supabase.from('invoices').select('*').then(r => r.data || []),
         ]);
-        setOrders(ordersData.map((o: any) => ({
-          ...o, orderId: o.order_number, orderDate: o.order_date, totalAmount: o.total_amount,
-          customerName: o.customer_name, customerId: o.id, customerEmail: o.customer_email,
-          customerPhone: o.customer_phone, customerPinCode: o.customer_pincode,
-          customerCity: o.customer_city, customerState: o.customer_state,
-          shippingAddress: o.customer_address, deliveryDate: o.delivered_date,
-          portalOrderId: o.order_number, items: [],
+        const normalizedOrders = ordersData.map((o: any) => {
+          const items = o.order_items || o.orderItems || [];
+          const totalAmount = Number(o.total_amount ?? o.totalAmount ?? o.total ?? o.amount ?? 0) || items.reduce(
+            (sum: number, item: any) => sum + (Number(item.quantity ?? item.qty ?? 0) * Number(item.unit_price ?? item.price ?? item.selling_price ?? item.total_price ?? 0)),
+            0,
+          );
+
+          return {
+            ...o,
+            orderId: o.order_number || o.id,
+            orderDate: o.order_date || o.created_at,
+            totalAmount,
+            customerName: o.customer_name,
+            customerId: o.id,
+            customerEmail: o.customer_email,
+            customerPhone: o.customer_phone,
+            customerPinCode: o.customer_pincode,
+            customerCity: o.customer_city,
+            customerState: o.customer_state,
+            shippingAddress: o.customer_address,
+            deliveryDate: o.delivered_date,
+            portalOrderId: o.order_number,
+            items,
+          };
+        });
+
+        setOrders(normalizedOrders);
+        setSalesData(normalizedOrders.map((o: any) => ({
+          date: o.orderDate,
+          revenue: Number(o.totalAmount || 0),
+          orders: 1,
+          portal: o.portal,
         })));
         setReturns(returnsData.map((r: any) => ({
           ...r, orderId: r.order_number, requestDate: r.requested_at, items: [],
@@ -109,7 +143,7 @@ export default function Dashboard() {
       if (dateRange.to && new Date(o.orderDate) > dateRange.to) return false;
       return true;
     });
-  }, [selectedPortal, dateRange]);
+  }, [orders, selectedPortal, dateRange]);
 
   const filteredReturns = useMemo(() => {
     return returns.filter(r => {
@@ -118,12 +152,12 @@ export default function Dashboard() {
       if (dateRange.to && new Date(r.requestDate) > dateRange.to) return false;
       return true;
     });
-  }, [selectedPortal, dateRange]);
+  }, [returns, selectedPortal, dateRange]);
 
   // ─── DAILY SALES SUMMARY ───
   const dailySummary = useMemo(() => {
-    const today = new Date().toDateString();
-    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    const today = latestOrderDate.toDateString();
+    const yesterday = new Date(latestOrderDate.getTime() - 86400000).toDateString();
     const todayOrders = orders.filter(o => new Date(o.orderDate).toDateString() === today && (selectedPortal === 'all' || o.portal === selectedPortal));
     const yesterdayOrders = orders.filter(o => new Date(o.orderDate).toDateString() === yesterday && (selectedPortal === 'all' || o.portal === selectedPortal));
     const todayRevenue = todayOrders.reduce((s, o) => s + o.totalAmount, 0);
@@ -131,7 +165,7 @@ export default function Dashboard() {
     const revenueGrowth = yesterdayRevenue > 0 ? +((todayRevenue - yesterdayRevenue) / yesterdayRevenue * 100).toFixed(1) : 0;
     const orderGrowth = yesterdayOrders.length > 0 ? +((todayOrders.length - yesterdayOrders.length) / yesterdayOrders.length * 100).toFixed(1) : 0;
     return { todayCount: todayOrders.length, todayRevenue, revenueGrowth, orderGrowth };
-  }, [selectedPortal]);
+  }, [orders, selectedPortal, latestOrderDate]);
 
   // ─── TOP 5 PRODUCTS BY ORDER COUNT ───
   const topProductsByOrders = useMemo(() => {
@@ -235,13 +269,13 @@ export default function Dashboard() {
 
   const totalUnitsSold = useMemo(() =>
     salesData.filter(d => selectedPortal === 'all' || d.portal === selectedPortal).reduce((s, d) => s + (d.orders || 0), 0),
-  [selectedPortal]);
+  [salesData, selectedPortal]);
 
   const duplicateCustomerCount = useMemo(() => {
     const m: Record<string, number> = {};
     orders.forEach(o => { m[o.customerEmail || o.customerId] = (m[o.customerEmail || o.customerId] || 0) + 1; });
     return Object.values(m).filter(c => c > 1).length;
-  }, []);
+  }, [orders]);
 
   const inventoryStatusData = useMemo(() => {
     const items = selectedPortal === 'all' ? inventoryItems : inventoryItems.filter(i => i.portal === selectedPortal);
@@ -257,7 +291,7 @@ export default function Dashboard() {
       portal: portal.name,
       revenue: salesData.filter(d => d.portal === portal.id).reduce((s, d) => s + (d.revenue || 0), 0),
     })).sort((a, b) => b.revenue - a.revenue),
-  []);
+  [salesData]);
 
   const kpiData = useMemo(() => {
     const defaultKpi = { totalSales: orders.reduce((s, o) => s + (o.totalAmount || 0), 0), ordersToday: orders.filter(o => new Date(o.orderDate).toDateString() === new Date().toDateString()).length, inventoryValue: inventoryItems.reduce((s, i) => s + (i.availableQuantity * 500), 0), lowStockItems: inventoryItems.filter(i => i.availableQuantity <= i.lowStockThreshold).length, pendingReturns: returns.filter(r => r.status === 'requested' || r.status === 'pending').length, pendingSettlements: settlements.filter(s => s.status === 'pending').length, salesGrowth: 0, ordersGrowth: 0 };
@@ -275,62 +309,18 @@ export default function Dashboard() {
       pendingSettlements: ps.filter(s => s.status === 'pending').length,
       salesGrowth: 8.2, ordersGrowth: 5.4,
     };
-  }, [selectedPortal]);
+  }, [orders, inventoryItems, returns, settlements, selectedPortal]);
 
   const maxProductUnits = topProductsByOrders.length > 0 ? topProductsByOrders[0].units : 1;
   const maxBrandRevenue = topBrandsByRevenue.length > 0 ? topBrandsByRevenue[0].revenue : 1;
 
   const hasNoData = orders.length === 0 && inventoryItems.length === 0 && !isLoading;
+  void topBrandsByRevenue;
 
   const [showOnboarding, setShowOnboarding] = useState(false);
 
-  const handleSeedDemoData = async () => {
-    setIsLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-      const response = await supabase.functions.invoke('seed-demo-data');
-      if (response.data?.seeded) {
-        // Refetch data
-        const [ordersData, returnsData, inventoryData, settlementsData] = await Promise.all([
-          ordersDb.getAll(), returnsDb.getAll(), inventoryDb.getAll(), settlementsDb.getAll(),
-        ]);
-        setOrders(ordersData.map((o: any) => ({
-          ...o, orderId: o.order_number, orderDate: o.order_date, totalAmount: o.total_amount,
-          customerName: o.customer_name, customerId: o.id, customerEmail: o.customer_email,
-          customerPhone: o.customer_phone, customerPinCode: o.customer_pincode,
-          customerCity: o.customer_city, customerState: o.customer_state,
-          shippingAddress: o.customer_address, deliveryDate: o.delivered_date,
-          portalOrderId: o.order_number, items: [],
-        })));
-        setReturns(returnsData.map((r: any) => ({
-          ...r, orderId: r.order_number, requestDate: r.requested_at, items: [],
-          claimEligible: false,
-        })));
-        setInventoryItems(inventoryData.map((i: any) => ({
-          ...i, skuId: i.sku_id, productName: i.product_name,
-          availableQuantity: i.available_quantity ?? 0,
-          lowStockThreshold: i.low_stock_threshold ?? 10,
-        })));
-        setSettlements(settlementsData.map((s: any) => ({
-          ...s, settlementId: s.settlement_id, netAmount: s.net_amount,
-          settlementDate: s.settlement_date,
-        })));
-        toast({ title: 'Demo Data Loaded', description: 'Metrics and charts have been populated with sample data.' });
-      } else {
-        toast({ title: 'Demo Data', description: response.data?.message || 'Data already exists.', variant: 'default' });
-      }
-    } catch (e) {
-      console.error('Seed error:', e);
-      toast({ title: 'Error', description: 'Failed to load demo data. Try again.', variant: 'destructive' });
-    }
-    setIsLoading(false);
-  };
-
   return (
     <div className="space-y-6 animate-fade-in relative">
-      <OnboardingWizard />
-
       {/* ═══ EMPTY STATE ═══ */}
       {hasNoData && (
         <Card className="border-dashed border-2 border-primary/20 bg-primary/5">
@@ -344,9 +334,6 @@ export default function Dashboard() {
                 Start by adding products and importing orders, or load sample data to explore the platform instantly.
               </p>
               <div className="flex items-center gap-3 flex-wrap justify-center">
-                <Button onClick={handleSeedDemoData} className="gap-2">
-                  <Rocket className="w-4 h-4" /> Load Demo Data
-                </Button>
                 <Button variant="outline" onClick={() => window.location.href = '/products'} className="gap-2">
                   <Plus className="w-4 h-4" /> Add Products
                 </Button>

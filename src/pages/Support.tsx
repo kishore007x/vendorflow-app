@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
 import {
   PieChart as RPieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList,
 } from 'recharts';
@@ -26,114 +27,25 @@ type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
 type HandlerType = 'human' | 'chatbot';
 
 interface Ticket {
-  ticketId: string;
+  id: string;
   subject: string;
-  issueType: string;
+  issue_type: string;
   priority: TicketPriority;
   status: TicketStatus;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
   description: string;
   channel: string;
   agent: string;
   handler: HandlerType;
-  botTransferred: boolean;
-  botResolved: boolean;
-  autoReplied: boolean;
-  autoReplySuccess: boolean;
+  bot_transferred: boolean;
+  bot_resolved: boolean;
+  auto_replied: boolean;
+  auto_reply_success: boolean;
   rating: number | null;
-  slaHours: number;
+  sla_hours: number;
   timeline: { status: string; timestamp: string; note: string }[];
 }
-
-const daysAgo = (d: number, h = 0) => { const dt = new Date(); dt.setDate(dt.getDate() - d); dt.setHours(dt.getHours() - h); return dt.toISOString(); };
-
-const mockTickets: Ticket[] = [
-  {
-    ticketId: 'TKT-2026-001', subject: 'Settlement delayed for Amazon orders', issueType: 'Payment Issue',
-    priority: 'high', status: 'open', createdAt: daysAgo(0), updatedAt: daysAgo(0),
-    description: 'Amazon settlement for January cycle has not been received yet.',
-    channel: 'amazon', agent: 'Rahul S.', handler: 'human', botTransferred: true, botResolved: false,
-    autoReplied: true, autoReplySuccess: false, rating: null, slaHours: 24,
-    timeline: [{ status: 'Created', timestamp: daysAgo(0), note: 'Ticket raised by vendor' }],
-  },
-  {
-    ticketId: 'TKT-2026-002', subject: 'Product listing not appearing on Flipkart', issueType: 'Listing Issue',
-    priority: 'medium', status: 'in_progress', createdAt: daysAgo(2), updatedAt: daysAgo(1),
-    description: 'SKU-FLK-003 has been inactive for 3 days despite stock availability.',
-    channel: 'flipkart', agent: 'Priya M.', handler: 'human', botTransferred: false, botResolved: false,
-    autoReplied: true, autoReplySuccess: true, rating: null, slaHours: 48,
-    timeline: [
-      { status: 'Created', timestamp: daysAgo(2), note: 'Ticket raised by operations' },
-      { status: 'Assigned', timestamp: daysAgo(2), note: 'Assigned to marketplace team' },
-      { status: 'In Progress', timestamp: daysAgo(1), note: 'Investigating with Flipkart support' },
-    ],
-  },
-  {
-    ticketId: 'TKT-2026-003', subject: 'Incorrect inventory count at Mumbai FC', issueType: 'Inventory Issue',
-    priority: 'urgent', status: 'escalated', createdAt: daysAgo(1), updatedAt: daysAgo(0),
-    description: 'Physical count does not match system count for 12 SKUs.',
-    channel: 'meesho', agent: 'Admin', handler: 'human', botTransferred: true, botResolved: false,
-    autoReplied: false, autoReplySuccess: false, rating: null, slaHours: 12,
-    timeline: [
-      { status: 'Created', timestamp: daysAgo(1), note: 'Discrepancy reported by warehouse' },
-      { status: 'Escalated', timestamp: daysAgo(0), note: 'Escalated to warehouse manager' },
-    ],
-  },
-  {
-    ticketId: 'TKT-2026-004', subject: 'Return claim rejected incorrectly', issueType: 'Returns Issue',
-    priority: 'medium', status: 'resolved', createdAt: daysAgo(5), updatedAt: daysAgo(1),
-    description: 'Return RET-2024-003 was marked ineligible but product was damaged in transit.',
-    channel: 'amazon', agent: 'Priya M.', handler: 'human', botTransferred: false, botResolved: false,
-    autoReplied: true, autoReplySuccess: true, rating: 5, slaHours: 48,
-    timeline: [
-      { status: 'Created', timestamp: daysAgo(5), note: 'Ticket raised by vendor' },
-      { status: 'In Progress', timestamp: daysAgo(4), note: 'Reviewing claim evidence' },
-      { status: 'Resolved', timestamp: daysAgo(1), note: 'Claim approved after review. Refund processed.' },
-    ],
-  },
-  {
-    ticketId: 'TKT-2026-005', subject: 'Bulk upload failing for CSV format', issueType: 'Technical Issue',
-    priority: 'low', status: 'resolved', createdAt: daysAgo(7), updatedAt: daysAgo(3),
-    description: 'CSV files with UTF-8 encoding are failing during upload.',
-    channel: 'own_website', agent: 'Bot', handler: 'chatbot', botTransferred: false, botResolved: true,
-    autoReplied: true, autoReplySuccess: true, rating: 4, slaHours: 72,
-    timeline: [
-      { status: 'Created', timestamp: daysAgo(7), note: 'Bug reported' },
-      { status: 'Resolved', timestamp: daysAgo(3), note: 'Fixed in v1.0.2 update' },
-    ],
-  },
-  {
-    ticketId: 'TKT-2026-006', subject: 'Order tracking link not working', issueType: 'Technical Issue',
-    priority: 'low', status: 'resolved', createdAt: daysAgo(4), updatedAt: daysAgo(2),
-    description: 'Tracking link returns 404 for recent shipments.',
-    channel: 'flipkart', agent: 'Bot', handler: 'chatbot', botTransferred: false, botResolved: true,
-    autoReplied: true, autoReplySuccess: true, rating: 3, slaHours: 72,
-    timeline: [
-      { status: 'Created', timestamp: daysAgo(4), note: 'Auto-detected' },
-      { status: 'Resolved', timestamp: daysAgo(2), note: 'Bot provided updated tracking link' },
-    ],
-  },
-  {
-    ticketId: 'TKT-2026-007', subject: 'GST mismatch on invoice', issueType: 'Payment Issue',
-    priority: 'high', status: 'open', createdAt: daysAgo(0, 6), updatedAt: daysAgo(0, 3),
-    description: 'GST rate on invoice does not match the product HSN code.',
-    channel: 'amazon', agent: 'Rahul S.', handler: 'human', botTransferred: true, botResolved: false,
-    autoReplied: true, autoReplySuccess: false, rating: null, slaHours: 24,
-    timeline: [{ status: 'Created', timestamp: daysAgo(0, 6), note: 'Vendor reported mismatch' }],
-  },
-  {
-    ticketId: 'TKT-2026-008', subject: 'Shipping label generation error', issueType: 'Logistics Issue',
-    priority: 'medium', status: 'in_progress', createdAt: daysAgo(1, 10), updatedAt: daysAgo(0, 5),
-    description: 'Label generation fails for pincode 110001.',
-    channel: 'meesho', agent: 'Priya M.', handler: 'chatbot', botTransferred: true, botResolved: false,
-    autoReplied: true, autoReplySuccess: true, rating: null, slaHours: 36,
-    timeline: [
-      { status: 'Created', timestamp: daysAgo(1, 10), note: 'Auto-detected from error logs' },
-      { status: 'Bot Handled', timestamp: daysAgo(1, 8), note: 'Bot attempted fix, transferred to human' },
-    ],
-  },
-];
 
 const DONUT_COLORS = ['hsl(210, 70%, 50%)', 'hsl(160, 60%, 45%)'];
 const CATEGORY_COLORS = ['hsl(var(--primary))', 'hsl(210, 60%, 55%)', 'hsl(35, 80%, 55%)', 'hsl(160, 55%, 45%)', 'hsl(340, 60%, 55%)', 'hsl(270, 50%, 55%)'];
@@ -163,21 +75,76 @@ export default function Support() {
   const [channelFilter, setChannelFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [agentFilter, setAgentFilter] = useState('all');
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newSubject, setNewSubject] = useState('');
+  const [newIssueType, setNewIssueType] = useState('payment');
+  const [newPriority, setNewPriority] = useState('medium');
+  const [newDescription, setNewDescription] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('support_tickets')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (!mounted) return;
+        if (!error && data) {
+          setTickets(data as Ticket[]);
+        }
+      } catch (e) {
+        console.debug('support_tickets table not available:', e);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const filtered = useMemo(() => {
-    return mockTickets.filter(t => {
+    return tickets.filter(t => {
       if (channelFilter !== 'all' && t.channel !== channelFilter) return false;
-      if (categoryFilter !== 'all' && t.issueType !== categoryFilter) return false;
+      if (categoryFilter !== 'all' && t.issue_type !== categoryFilter) return false;
       if (agentFilter !== 'all' && t.agent !== agentFilter) return false;
-      if (dateRange.from && new Date(t.createdAt) < dateRange.from) return false;
-      if (dateRange.to && new Date(t.createdAt) > dateRange.to) return false;
+      if (dateRange.from && new Date(t.created_at) < dateRange.from) return false;
+      if (dateRange.to && new Date(t.created_at) > dateRange.to) return false;
       return true;
     });
-  }, [channelFilter, categoryFilter, agentFilter, dateRange]);
+  }, [tickets, channelFilter, categoryFilter, agentFilter, dateRange]);
 
-  const categories = [...new Set(mockTickets.map(t => t.issueType))];
-  const agents = [...new Set(mockTickets.map(t => t.agent))];
-  const channels = [...new Set(mockTickets.map(t => t.channel))];
+  const categories = [...new Set(tickets.map(t => t.issue_type))];
+  const agents = [...new Set(tickets.map(t => t.agent))];
+  const channels = [...new Set(tickets.map(t => t.channel))];
+
+  const handleCreateTicket = async () => {
+    if (!newSubject.trim()) { toast({ title: 'Error', description: 'Subject is required', variant: 'destructive' }); return; }
+    try {
+      const { data, error } = await supabase.from('support_tickets').insert({
+        subject: newSubject,
+        issue_type: newIssueType,
+        priority: newPriority,
+        description: newDescription,
+        status: 'open',
+        channel: 'internal',
+        agent: 'Unassigned',
+        handler: 'human',
+        timeline: [{ status: 'Created', timestamp: new Date().toISOString(), note: 'Ticket raised by vendor' }],
+      }).select().single();
+      if (error) throw error;
+      setTickets(prev => [data as Ticket, ...prev]);
+      toast({ title: 'Ticket Created', description: 'Your support ticket has been submitted.' });
+      setIsOpen(false);
+      setNewSubject('');
+      setNewIssueType('payment');
+      setNewPriority('medium');
+      setNewDescription('');
+    } catch (e) {
+      const msg = (e && typeof e === 'object' && 'message' in e) ? (e as {message: string}).message : 'Failed to create ticket. The support_tickets table may not exist yet.';
+      toast({ title: 'Error', description: msg, variant: 'destructive' });
+    }
+  };
 
   // ─── STATUS COUNTS ───
   const openCount = filtered.filter(t => t.status === 'open').length;
@@ -191,10 +158,10 @@ export default function Support() {
     let missed = 0, nearing = 0, within = 0;
     filtered.forEach(t => {
       if (t.status === 'resolved') { within++; return; }
-      const elapsed = (now - new Date(t.createdAt).getTime()) / 3600000;
-      const remaining = t.slaHours - elapsed;
+      const elapsed = (now - new Date(t.created_at).getTime()) / 3600000;
+      const remaining = t.sla_hours - elapsed;
       if (remaining < 0) missed++;
-      else if (remaining < t.slaHours * 0.25) nearing++;
+      else if (remaining < t.sla_hours * 0.25) nearing++;
       else within++;
     });
     return { missed, nearing, within };
@@ -203,7 +170,7 @@ export default function Support() {
   // ─── CATEGORY BREAKDOWN ───
   const categoryData = useMemo(() => {
     const map: Record<string, number> = {};
-    filtered.forEach(t => { map[t.issueType] = (map[t.issueType] || 0) + 1; });
+    filtered.forEach(t => { map[t.issue_type] = (map[t.issue_type] || 0) + 1; });
     return Object.entries(map).map(([name, value]) => ({ name, value }));
   }, [filtered]);
 
@@ -217,13 +184,13 @@ export default function Support() {
   const totalHandled = humanCount + botCount;
 
   // ─── BOT METRICS ───
-  const botTransferred = filtered.filter(t => t.botTransferred).length;
-  const botResolved = filtered.filter(t => t.botResolved).length;
-  const botFailed = filtered.filter(t => t.botTransferred && !t.botResolved && t.handler === 'human').length;
+  const botTransferred = filtered.filter(t => t.bot_transferred).length;
+  const botResolved = filtered.filter(t => t.bot_resolved).length;
+  const botFailed = filtered.filter(t => t.bot_transferred && !t.bot_resolved && t.handler === 'human').length;
 
   // ─── AUTO-REPLY ───
-  const autoReplied = filtered.filter(t => t.autoReplied);
-  const autoSuccess = autoReplied.filter(t => t.autoReplySuccess).length;
+  const autoReplied = filtered.filter(t => t.auto_replied);
+  const autoSuccess = autoReplied.filter(t => t.auto_reply_success).length;
   const autoFailed = autoReplied.length - autoSuccess;
   const flowExecuted = autoReplied.length;
 
@@ -251,11 +218,12 @@ export default function Support() {
               <DialogDescription>Describe your issue and we'll get back to you shortly</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="space-y-2"><Label>Subject</Label><Input placeholder="Brief description of the issue" /></div>
+              <div className="space-y-2"><Label>Subject</Label><Input placeholder="Brief description of the issue" value={newSubject} onChange={e => setNewSubject(e.target.value)} /></div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Issue Type</Label>
-                  <Select><SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                  <Select value={newIssueType} onValueChange={setNewIssueType}>
+                    <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="payment">Payment Issue</SelectItem>
                       <SelectItem value="listing">Listing Issue</SelectItem>
@@ -268,7 +236,8 @@ export default function Support() {
                 </div>
                 <div className="space-y-2">
                   <Label>Priority</Label>
-                  <Select><SelectTrigger><SelectValue placeholder="Select priority" /></SelectTrigger>
+                  <Select value={newPriority} onValueChange={setNewPriority}>
+                    <SelectTrigger><SelectValue placeholder="Select priority" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="low">Low</SelectItem>
                       <SelectItem value="medium">Medium</SelectItem>
@@ -278,11 +247,11 @@ export default function Support() {
                   </Select>
                 </div>
               </div>
-              <div className="space-y-2"><Label>Description</Label><Textarea placeholder="Provide details about your issue..." rows={4} /></div>
+              <div className="space-y-2"><Label>Description</Label><Textarea value={newDescription} onChange={e => setNewDescription(e.target.value)} placeholder="Provide details about your issue..." rows={4} /></div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
-              <Button onClick={() => { toast({ title: 'Ticket Created', description: 'Your support ticket has been submitted.' }); setIsOpen(false); }}>Submit Ticket</Button>
+              <Button onClick={handleCreateTicket} disabled={!newSubject.trim()}>Submit Ticket</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -335,8 +304,8 @@ export default function Support() {
               <Badge variant="outline" className="text-[10px] bg-rose-500/10 text-rose-600 border-rose-500/20 gap-0.5">↓ 12%</Badge>
             </div>
             <p className="text-2xl font-bold">{filtered.length > 0 ? (filtered.reduce((s, t) => {
-              const elapsed = (Date.now() - new Date(t.createdAt).getTime()) / 3600000;
-              return s + Math.min(elapsed, t.slaHours);
+              const elapsed = (Date.now() - new Date(t.created_at).getTime()) / 3600000;
+              return s + Math.min(elapsed, t.sla_hours);
             }, 0) / filtered.length).toFixed(1) : '0'} hrs</p>
             <p className="text-sm text-muted-foreground">Avg Response Time</p>
           </CardContent>
@@ -635,11 +604,23 @@ export default function Support() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map(ticket => (
-                <TableRow key={ticket.ticketId}>
-                  <TableCell className="font-mono text-sm">{ticket.ticketId}</TableCell>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin inline-block mr-2" />Loading tickets...
+                  </TableCell>
+                </TableRow>
+              ) : filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                    No tickets found
+                  </TableCell>
+                </TableRow>
+              ) : filtered.map(ticket => (
+                <TableRow key={ticket.id}>
+                  <TableCell className="font-mono text-sm">{ticket.id}</TableCell>
                   <TableCell className="font-medium max-w-[220px] truncate">{ticket.subject}</TableCell>
-                  <TableCell><Badge variant="secondary" className="text-xs">{ticket.issueType}</Badge></TableCell>
+                  <TableCell><Badge variant="secondary" className="text-xs">{ticket.issue_type}</Badge></TableCell>
                   <TableCell>{priorityBadge(ticket.priority)}</TableCell>
                   <TableCell>{statusBadge(ticket.status)}</TableCell>
                   <TableCell>
@@ -648,16 +629,16 @@ export default function Support() {
                       {ticket.handler === 'chatbot' ? 'Bot' : ticket.agent}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{format(new Date(ticket.createdAt), 'dd MMM yyyy')}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{format(new Date(ticket.created_at), 'dd MMM yyyy')}</TableCell>
                   <TableCell>
-                    <Dialog open={selectedTicket?.ticketId === ticket.ticketId} onOpenChange={open => !open && setSelectedTicket(null)}>
+                    <Dialog open={selectedTicket?.id === ticket.id} onOpenChange={open => !open && setSelectedTicket(null)}>
                       <DialogTrigger asChild>
                         <Button variant="ghost" size="sm" onClick={() => setSelectedTicket(ticket)}>View</Button>
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
                           <DialogTitle>{ticket.subject}</DialogTitle>
-                          <DialogDescription>{ticket.ticketId} • {ticket.issueType}</DialogDescription>
+                          <DialogDescription>{ticket.id} • {ticket.issue_type}</DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                           <div className="flex gap-2 flex-wrap">{priorityBadge(ticket.priority)}{statusBadge(ticket.status)}</div>

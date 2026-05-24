@@ -6,13 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FileSpreadsheet, Package, RotateCcw, CheckCircle, AlertTriangle, XCircle, Lightbulb, Upload, FolderOpen, X, File, Image, FileText } from 'lucide-react';
 
-const validationChecks = [
-  { label: 'Orders Imported', status: 'success' as const, detail: '1,247 records synced' },
-  { label: 'Inventory Synced', status: 'success' as const, detail: 'All warehouses up to date' },
-  { label: 'SKU Mapping Complete', status: 'success' as const, detail: '98% mapped' },
-  { label: 'Missing Product Data', status: 'warning' as const, detail: '3 products missing images' },
-  { label: 'Incorrect Fields', status: 'error' as const, detail: '2 SKUs with invalid barcodes' },
-];
+const validationChecks: { label: string; status: 'success' | 'warning' | 'error'; detail: string }[] = [];
 
 const suggestions = [
   'Upload SKU master to resolve mapping errors',

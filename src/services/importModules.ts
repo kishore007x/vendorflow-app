@@ -103,6 +103,7 @@ export const IMPORT_MODULES: ImportModule[] = [
       { key: 'flipkart_sku', label: 'Flipkart SKU', required: false, type: 'text' },
       { key: 'meesho_sku', label: 'Meesho SKU', required: false, type: 'text' },
       { key: 'firstcry_sku', label: 'FirstCry SKU', required: false, type: 'text' },
+      { key: 'firstcry_url', label: 'FirstCry URL', required: false, type: 'text' },
       { key: 'blinkit_sku', label: 'Blinkit SKU', required: false, type: 'text' },
       { key: 'own_website_sku', label: 'Own Website SKU', required: false, type: 'text' },
     ],

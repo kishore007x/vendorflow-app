@@ -44,44 +44,9 @@ export default function Inventory() {
   const [importOpen, setImportOpen] = useState(false);
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   const [activeTab, setActiveTab] = useState('inventory');
-  const [syncLogs, setSyncLogs] = useState<SyncLogEntry[]>([
-    {
-      id: 'SYNC-001',
-      orderId: 'ORD-2024-010',
-      portal: 'amazon',
-      skuId: 'SKU-AMZ-001',
-      productName: 'Premium Wireless Earbuds Pro',
-      quantityDeducted: 5,
-      masterQuantityBefore: 250,
-      masterQuantityAfter: 245,
-      channelAllocationBefore: 150,
-      channelAllocationAfter: 145,
-      syncType: 'order_confirmed',
-      timestamp: new Date(Date.now() - 3600000).toISOString(),
-      status: 'synced',
-    },
-    {
-      id: 'SYNC-002',
-      orderId: 'ORD-2024-005',
-      portal: 'blinkit',
-      skuId: 'SKU-BLK-004',
-      productName: 'Stainless Steel Water Bottle',
-      quantityDeducted: 3,
-      masterQuantityBefore: 45,
-      masterQuantityAfter: 42,
-      channelAllocationBefore: 30,
-      channelAllocationAfter: 27,
-      syncType: 'order_shipped',
-      timestamp: new Date(Date.now() - 7200000).toISOString(),
-      status: 'synced',
-    },
-  ]);
+  const [syncLogs, setSyncLogs] = useState<SyncLogEntry[]>([]);
 
-  const [changeLogs, setChangeLogs] = useState<InventoryChangeLog[]>([
-    { id: 'CL-001', skuId: 'SKU-AMZ-001', productName: 'Premium Wireless Earbuds Pro', type: 'order_confirmed', quantityBefore: 250, quantityAfter: 245, reason: 'Order ORD-2024-010 confirmed', user: 'System', timestamp: new Date(Date.now() - 3600000).toISOString() },
-    { id: 'CL-002', skuId: 'SKU-BLK-004', productName: 'Stainless Steel Water Bottle', type: 'order_confirmed', quantityBefore: 11, quantityAfter: 8, reason: 'Order ORD-2024-005 confirmed', user: 'System', timestamp: new Date(Date.now() - 7200000).toISOString() },
-    { id: 'CL-003', skuId: 'SKU-AMZ-006', productName: 'Portable Bluetooth Speaker', type: 'adjustment', quantityBefore: 8, quantityAfter: 5, reason: 'Physical count discrepancy', user: 'Admin', timestamp: new Date(Date.now() - 86400000).toISOString() },
-  ]);
+  const [changeLogs, setChangeLogs] = useState<InventoryChangeLog[]>([]);
 
   // Adjustment dialog
   const [adjustSku, setAdjustSku] = useState<string | null>(null);
