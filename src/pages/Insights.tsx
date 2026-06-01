@@ -33,14 +33,17 @@ const sortOptions = [
   { id: 'units', name: 'Units' },
 ];
 
+type SalesPeriod = 'day' | 'month' | 'year';
+
 interface DBOrder { totalAmount?: number; total_amount?: number; total?: number; portal?: string; order_date?: string; created_at?: string; commission?: number; shipping_fee?: number; }
 
 const defaultDaily = Array.from({ length: 14 }, (_, i) => ({ day: `Day ${i + 1}`, revenue: 0, orders: 0, cost: 0 }));
 
 // ---- Filter bar component ----
-function InsightsFilterBar({ channel, onChannelChange, sortBy, onSortChange }: {
+function InsightsFilterBar({ channel, onChannelChange, sortBy, onSortChange, children }: {
   channel: string; onChannelChange: (v: string) => void;
   sortBy: string; onSortChange: (v: string) => void;
+  children?: React.ReactNode;
 }) {
   return (
     <div className="flex items-center gap-3 flex-wrap">
@@ -68,8 +71,46 @@ function InsightsFilterBar({ channel, onChannelChange, sortBy, onSortChange }: {
           ))}
         </SelectContent>
       </Select>
+      {children}
     </div>
   );
+}
+
+function groupOrdersByPeriod(orders: any[], period: SalesPeriod) {
+  const grouped: Record<string, { day: string; revenue: number; orders: number; cost: number; sortKey: number }> = {};
+
+  orders.forEach((order: any) => {
+    const orderDate = new Date(order.order_date || order.created_at || null);
+    if (isNaN(orderDate.getTime())) return;
+
+    let key: string;
+    let label: string;
+    let sortKey: number;
+
+    if (period === 'year') {
+      key = `${orderDate.getFullYear()}`;
+      label = key;
+      sortKey = orderDate.getFullYear();
+    } else if (period === 'month') {
+      const month = orderDate.getMonth() + 1;
+      key = `${orderDate.getFullYear()}-${String(month).padStart(2, '0')}`;
+      label = orderDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      sortKey = orderDate.getFullYear() * 100 + month;
+    } else {
+      key = orderDate.toISOString().slice(0, 10);
+      label = orderDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      sortKey = orderDate.getTime();
+    }
+
+    if (!grouped[key]) grouped[key] = { day: label, revenue: 0, orders: 0, cost: 0, sortKey };
+    const amount = Number(order.totalAmount ?? order.total_amount ?? order.total ?? 0) || 0;
+    grouped[key].revenue += amount;
+    grouped[key].orders += 1;
+  });
+
+  return Object.values(grouped)
+    .sort((a, b) => a.sortKey - b.sortKey)
+    .map(({ sortKey, ...row }) => row);
 }
 
 // ---- Stat card component ----
@@ -221,7 +262,8 @@ function SalesDashboard() {
   const [sortBy, setSortBy] = useState('date');
   const [products, setProducts] = useState<any[]>([]);
   const [sortedProducts, setSortedProducts] = useState<any[]>([]);
-  const [dailySalesLocal, setDailySalesLocal] = useState(defaultDaily);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [period, setPeriod] = useState<SalesPeriod>('day');
 
   useEffect(() => {
     let mounted = true;
@@ -233,25 +275,20 @@ function SalesDashboard() {
         ]);
         if (!mounted) return;
         setProducts(pr || []);
+        setOrders(ords || []);
         const top = (pr || []).map((p: any) => ({ name: p.name || p.product_name || 'Unknown', revenue: p.revenue || p.total_sales || 0, orders: p.orders_count || p.sales_count || 0, growth: 0 }));
         setSortedProducts(top);
-        // group by month for chart
-        const byMonth: Record<string, { revenue: number; orders: number }> = {};
-        (ords || []).forEach((o: any) => {
-          const od = new Date(o.order_date || o.created_at || null);
-          if (isNaN(od.getTime())) return;
-          const key = `${od.getFullYear()}-${(od.getMonth()+1).toString().padStart(2,'0')}`;
-          if (!byMonth[key]) byMonth[key] = { revenue: 0, orders: 0 };
-          const amt = Number(o.totalAmount ?? o.total_amount ?? o.total ?? 0) || 0;
-          byMonth[key].revenue += amt;
-          byMonth[key].orders += 1;
-        });
-        const ds = Object.keys(byMonth).sort().map(k => ({ day: k, revenue: Math.round(byMonth[k].revenue), orders: byMonth[k].orders, cost: 0 }));
-        setDailySalesLocal(ds);
       } catch (e) { console.debug('failed load products & orders', e); }
     })();
     return () => { mounted = false; };
   }, []);
+
+  const filteredOrders = useMemo(() => {
+    if (channel === 'all') return orders;
+    return orders.filter((order: any) => (order.portal || '').toLowerCase() === channel.toLowerCase());
+  }, [orders, channel]);
+
+  const dailySalesLocal = useMemo(() => groupOrdersByPeriod(filteredOrders, period), [filteredOrders, period]);
 
   useEffect(() => {
     const data = [...sortedProducts];
@@ -262,15 +299,27 @@ function SalesDashboard() {
 
   const totalOrders = dailySalesLocal.reduce((s, d) => s + d.orders, 0);
   const totalRev = dailySalesLocal.reduce((s, d) => s + d.revenue, 0);
+  const avgOrderValue = totalOrders > 0 ? Math.round(totalRev / totalOrders) : 0;
 
   return (
     <div className="space-y-6">
-      <InsightsFilterBar channel={channel} onChannelChange={setChannel} sortBy={sortBy} onSortChange={setSortBy} />
+      <InsightsFilterBar channel={channel} onChannelChange={setChannel} sortBy={sortBy} onSortChange={setSortBy}>
+        <Select value={period} onValueChange={(v) => setPeriod(v as SalesPeriod)}>
+          <SelectTrigger className="w-[140px] h-8 text-xs">
+            <SelectValue placeholder="Period" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="day">Day</SelectItem>
+            <SelectItem value="month">Month</SelectItem>
+            <SelectItem value="year">Year</SelectItem>
+          </SelectContent>
+        </Select>
+      </InsightsFilterBar>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard icon={IndianRupee} label="Period Revenue" value={fmt(totalRev)} change={11.4} variant="success" />
         <StatCard icon={ShoppingCart} label="Total Orders" value={totalOrders.toString()} change={7.2} />
         <StatCard icon={TrendingUp} label="Conversion Rate" value="3.8%" change={0.4} variant="success" />
-        <StatCard icon={Package} label="Avg Order Value" value={fmt(Math.round(totalRev / totalOrders))} change={2.1} />
+        <StatCard icon={Package} label="Avg Order Value" value={fmt(avgOrderValue)} change={2.1} />
       </div>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -600,7 +649,7 @@ export default function Insights() {
           {/* ExecutiveWidgets integrated into ExecutiveDashboard below */}
           <div className="mt-6"><ExecutiveDashboard /></div>
         </TabsContent>
-        <TabsContent value="sales"><Dashboard /></TabsContent>
+        <TabsContent value="sales"><SalesDashboard /></TabsContent>
         <TabsContent value="support"><SupportDashboard /></TabsContent>
         <TabsContent value="financial"><FinancialDashboard /></TabsContent>
         <TabsContent value="operations"><OperationsDashboard /></TabsContent>

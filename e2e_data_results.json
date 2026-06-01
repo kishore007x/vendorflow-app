@@ -1,0 +1,32 @@
+{
+  "/orders": {
+    "tableRows": 50,
+    "cards": 13,
+    "noResults": false
+  },
+  "/products-catalog": {
+    "tableRows": 147,
+    "cards": 5,
+    "noResults": false
+  },
+  "/inventory": {
+    "tableRows": 431,
+    "cards": 5,
+    "noResults": false
+  },
+  "/returns": {
+    "tableRows": 585,
+    "cards": 13,
+    "noResults": false
+  },
+  "/invoices": {
+    "tableRows": 122,
+    "cards": 0,
+    "noResults": false
+  },
+  "/customers": {
+    "tableRows": 50,
+    "cards": 7,
+    "noResults": false
+  }
+}

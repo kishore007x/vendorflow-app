@@ -6,7 +6,7 @@ import { useAIAccess } from '@/contexts/AIAccessContext';
 import { Portal } from '@/types';
 import { getChannels } from '@/services/channelManager';
 import { ChannelIcon } from '@/components/ChannelIcon';
-import { ordersDb, inventoryDb, returnsDb, settlementsDb, expensesDb } from '@/services/database';
+import { ordersDb, productsDb, inventoryDb, returnsDb, settlementsDb, expensesDb } from '@/services/database';
 import { supabase } from '@/integrations/supabase/client';
 import { KPICard } from '@/components/dashboard/KPICard';
 import { InventoryChart, PortalSalesChart, CHART_COLORS } from '@/components/dashboard/Charts';
@@ -33,9 +33,36 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList,
 } from 'recharts';
 
+function deriveLineItemRevenue(item: any, priceLookup: Map<string, number>) {
+  const quantity = Number(item.quantity ?? item.qty ?? 1) || 1;
+  const directAmount = Number(item.total ?? item.total_price ?? item.line_total ?? 0) || 0;
+  if (directAmount > 0) return directAmount;
+
+  const directUnitPrice = Number(item.unit_price ?? item.price ?? item.selling_price ?? 0) || 0;
+  if (directUnitPrice > 0) return directUnitPrice * quantity;
+
+  const lookupKeys = [item.product_id, item.sku, item.productName, item.product_name]
+    .filter(Boolean)
+    .map((value) => String(value).toLowerCase());
+
+  for (const key of lookupKeys) {
+    const matchedPrice = priceLookup.get(key);
+    if (matchedPrice && matchedPrice > 0) return matchedPrice * quantity;
+  }
+
+  return 0;
+}
+
+function deriveOrderRevenue(order: any, priceLookup: Map<string, number>) {
+  const items = order.items || order.order_items || order.orderItems || [];
+  const itemRevenue = items.reduce((sum: number, item: any) => sum + deriveLineItemRevenue(item, priceLookup), 0);
+  const directRevenue = Number(order.totalAmount ?? order.total_amount ?? order.total ?? order.amount ?? 0) || 0;
+  return directRevenue > 0 ? directRevenue : itemRevenue;
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const { criticalDecisionToggle } = useAIAccess();
   const [selectedPortal, setSelectedPortal] = useState<Portal | 'all'>('all');
@@ -52,6 +79,7 @@ export default function Dashboard() {
   const [settlements, setSettlements] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<any[]>([]);
   const [invoices, setInvoices] = useState<any[]>([]);
+  const userId = user?.id ?? null;
 
   const latestOrderDate = useMemo(() => {
     const latest = orders.reduce((currentLatest, order) => {
@@ -64,10 +92,30 @@ export default function Dashboard() {
   }, [orders]);
 
   useEffect(() => {
+    if (authLoading) {
+      return;
+    }
+
+    if (!userId) {
+      setOrders([]);
+      setReturns([]);
+      setSalesData([]);
+      setInventoryItems([]);
+      setSettlements([]);
+      setExpenses([]);
+      setInvoices([]);
+      setIsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsLoading(true);
+
     const fetchData = async () => {
       try {
-        const [ordersData, returnsData, inventoryData, settlementsData, expensesData, invoicesData] = await Promise.all([
+        const [ordersData, productsData, returnsData, inventoryData, settlementsData, expensesData, invoicesData] = await Promise.all([
           ordersDb.getAllWithItems(),
+          productsDb.getAll().catch(() => []),
           returnsDb.getAll(),
           inventoryDb.getAll(),
           settlementsDb.getAll(),
@@ -76,10 +124,7 @@ export default function Dashboard() {
         ]);
         const normalizedOrders = ordersData.map((o: any) => {
           const items = o.order_items || o.orderItems || [];
-          const totalAmount = Number(o.total_amount ?? o.totalAmount ?? o.total ?? o.amount ?? 0) || items.reduce(
-            (sum: number, item: any) => sum + (Number(item.quantity ?? item.qty ?? 0) * Number(item.unit_price ?? item.price ?? item.selling_price ?? item.total_price ?? 0)),
-            0,
-          );
+          const totalAmount = Number(o.total_amount ?? o.totalAmount ?? o.total ?? o.amount ?? 0) || 0;
 
           return {
             ...o,
@@ -100,13 +145,76 @@ export default function Dashboard() {
           };
         });
 
-        setOrders(normalizedOrders);
-        setSalesData(normalizedOrders.map((o: any) => ({
-          date: o.orderDate,
-          revenue: Number(o.totalAmount || 0),
-          orders: 1,
-          portal: o.portal,
-        })));
+        const productPriceLookup = new Map<string, number>();
+        (productsData || []).forEach((product: any) => {
+          const price = Number(product.base_price ?? product.price ?? product.selling_price ?? product.portal_price ?? 0) || 0;
+          if (price <= 0) return;
+          [product.id, product.sku, product.name, product.product_name].filter(Boolean).forEach((key) => {
+            productPriceLookup.set(String(key).toLowerCase(), price);
+          });
+        });
+
+        const revenueNormalizedOrders = normalizedOrders.map((order: any) => ({
+          ...order,
+          totalAmount: deriveOrderRevenue(order, productPriceLookup),
+        }));
+
+        // If some orders still have zero totalAmount, try to fetch order_items rows
+        // from the DB for those orders and compute a fallback total from actual items.
+        const zeroOrders = revenueNormalizedOrders.filter((o: any) => !o.totalAmount || Number(o.totalAmount) === 0);
+        if (zeroOrders.length > 0) {
+          try {
+            const zeroIds = zeroOrders.map((o: any) => o.id).filter(Boolean);
+            if (zeroIds.length > 0) {
+              const { data: rawItems, error: itemsErr } = await supabase.from('order_items')
+                .select('order_id,product_id,product_name,sku,quantity,unit_price,total')
+                .in('order_id', zeroIds);
+              if (!itemsErr && rawItems && rawItems.length > 0) {
+                const itemsByOrder = new Map<string, any[]>();
+                rawItems.forEach((it: any) => {
+                  const key = it.order_id;
+                  if (!itemsByOrder.has(key)) itemsByOrder.set(key, []);
+                  itemsByOrder.get(key)!.push(it);
+                });
+
+                // compute sums and merge into revenueNormalizedOrders
+                const merged = revenueNormalizedOrders.map((ord: any) => {
+                  if (ord.totalAmount && Number(ord.totalAmount) > 0) return ord;
+                  const its = itemsByOrder.get(ord.id) || [];
+                  if (its.length === 0) return ord;
+                  const sum = its.reduce((s: number, it: any) => {
+                    const derived = deriveLineItemRevenue(it, productPriceLookup);
+                    // if derive returns 0, fall back to explicit total or unit_price*quantity
+                    const explicit = Number(it.total ?? 0) || (Number(it.unit_price ?? 0) * Number(it.quantity ?? 1));
+                    return s + (derived > 0 ? derived : explicit);
+                  }, 0);
+                  return { ...ord, totalAmount: sum };
+                });
+                if (cancelled) return;
+                setOrders(merged);
+                setSalesData(merged.map((o: any) => ({ date: o.orderDate, revenue: Number(o.totalAmount || 0), orders: 1, portal: o.portal })));
+              } else {
+                if (cancelled) return;
+                setOrders(revenueNormalizedOrders);
+                setSalesData(revenueNormalizedOrders.map((o: any) => ({ date: o.orderDate, revenue: Number(o.totalAmount || 0), orders: 1, portal: o.portal })));
+              }
+            } else {
+              if (cancelled) return;
+              setOrders(revenueNormalizedOrders);
+              setSalesData(revenueNormalizedOrders.map((o: any) => ({ date: o.orderDate, revenue: Number(o.totalAmount || 0), orders: 1, portal: o.portal })));
+            }
+          } catch (e) {
+            console.error('Error fetching fallback order_items', e);
+            if (cancelled) return;
+            setOrders(revenueNormalizedOrders);
+            setSalesData(revenueNormalizedOrders.map((o: any) => ({ date: o.orderDate, revenue: Number(o.totalAmount || 0), orders: 1, portal: o.portal })));
+          }
+        } else {
+          if (cancelled) return;
+          setOrders(revenueNormalizedOrders);
+          setSalesData(revenueNormalizedOrders.map((o: any) => ({ date: o.orderDate, revenue: Number(o.totalAmount || 0), orders: 1, portal: o.portal })));
+        }
+        if (cancelled) return;
         setReturns(returnsData.map((r: any) => ({
           ...r, orderId: r.order_number, requestDate: r.requested_at, items: [],
           claimEligible: false,
@@ -123,10 +231,14 @@ export default function Dashboard() {
         setExpenses(expensesData);
         setInvoices(invoicesData);
       } catch (e) { console.error(e); }
-      setIsLoading(false);
+      if (!cancelled) setIsLoading(false);
     };
     fetchData();
-  }, []);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, userId]);
 
   const formatCurrency = (value: number) => {
     if (value >= 10000000) return `₹${(value / 10000000).toFixed(2)}Cr`;
@@ -156,15 +268,43 @@ export default function Dashboard() {
 
   // ─── DAILY SALES SUMMARY ───
   const dailySummary = useMemo(() => {
+    // Use latestOrderDate as the source-of-truth for "today" in the dashboard.
     const today = latestOrderDate.toDateString();
     const yesterday = new Date(latestOrderDate.getTime() - 86400000).toDateString();
     const todayOrders = orders.filter(o => new Date(o.orderDate).toDateString() === today && (selectedPortal === 'all' || o.portal === selectedPortal));
     const yesterdayOrders = orders.filter(o => new Date(o.orderDate).toDateString() === yesterday && (selectedPortal === 'all' || o.portal === selectedPortal));
-    const todayRevenue = todayOrders.reduce((s, o) => s + o.totalAmount, 0);
-    const yesterdayRevenue = yesterdayOrders.reduce((s, o) => s + o.totalAmount, 0);
+    const todayRevenue = todayOrders.reduce((s, o) => s + (Number(o.totalAmount || 0) || 0), 0);
+    const yesterdayRevenue = yesterdayOrders.reduce((s, o) => s + (Number(o.totalAmount || 0) || 0), 0);
     const revenueGrowth = yesterdayRevenue > 0 ? +((todayRevenue - yesterdayRevenue) / yesterdayRevenue * 100).toFixed(1) : 0;
     const orderGrowth = yesterdayOrders.length > 0 ? +((todayOrders.length - yesterdayOrders.length) / yesterdayOrders.length * 100).toFixed(1) : 0;
-    return { todayCount: todayOrders.length, todayRevenue, revenueGrowth, orderGrowth };
+
+    // If the latest day has orders but zero revenue (likely missing item-level data),
+    // fall back to the most recent prior day that has non-zero revenue so the dashboard
+    // doesn't misleadingly show ₹0. Also surface a flag so UI can warn users.
+    let displayRevenue = todayRevenue;
+    let fallbackUsed = false;
+    let fallbackDate: string | null = null;
+    if (todayOrders.length > 0 && todayRevenue === 0) {
+      // find most recent date before latestOrderDate with revenue > 0
+      const byDate: Record<string, number> = {};
+      orders.forEach(o => {
+        const d = new Date(o.orderDate).toDateString();
+        if (selectedPortal !== 'all' && o.portal !== selectedPortal) return;
+        byDate[d] = (byDate[d] || 0) + (Number(o.totalAmount || 0) || 0);
+      });
+      const sortedDates = Object.keys(byDate).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+      for (const d of sortedDates) {
+        if (d === today) continue;
+        if ((byDate[d] || 0) > 0) {
+          displayRevenue = byDate[d];
+          fallbackUsed = true;
+          fallbackDate = d;
+          break;
+        }
+      }
+    }
+
+    return { todayCount: todayOrders.length, todayRevenue: displayRevenue, revenueGrowth, orderGrowth, fallbackUsed, fallbackDate, rawTodayRevenue: todayRevenue };
   }, [orders, selectedPortal, latestOrderDate]);
 
   // ─── TOP 5 PRODUCTS BY ORDER COUNT ───
@@ -414,6 +554,11 @@ export default function Dashboard() {
             <CheckCircle2 className="w-2.5 h-2.5" /> Updated
           </Badge>
         </h2>
+        {dailySummary.fallbackUsed && (
+          <div className="mb-3 p-3 rounded border border-amber-300 bg-amber-50 text-sm text-amber-800">
+            Latest orders contain no item-level revenue; showing figures for <strong>{dailySummary.fallbackDate}</strong> instead. Raw latest-day revenue is ₹{dailySummary.rawTodayRevenue}.
+          </div>
+        )}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="pt-5 pb-4">

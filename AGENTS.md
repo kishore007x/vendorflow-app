@@ -43,6 +43,15 @@ supabase/
 - `error` boundary: API functions throw on Supabase errors, callers handle
 - Orders use a client-side cache (60s TTL) + in-flight request dedup
 
+## Data Loading
+- For order and revenue views, prefer `ordersDb.getAllWithItems()` over raw `ordersDb.getAll()` so line-item data is available when `total_amount` is missing.
+- Normalize revenue from `order_items` first, then fall back to `orders.total_amount`; do not hide missing data behind hardcoded defaults.
+- Wait for auth readiness before Supabase queries in dashboard pages. Use `authLoading` and a stable `userId` guard to avoid empty RLS-scoped reads on first render.
+- If a card or chart shows zero unexpectedly, check `src/contexts/AuthContext.tsx`, `src/services/database.ts`, `src/pages/Orders.tsx`, `src/pages/Dashboard.tsx`, and `src/components/dashboard/FinancialOverview.tsx` together.
+- When revenue is zero but orders exist, inspect whether `order_items.unit_price`, `order_items.total`, or product price fields are missing before changing UI defaults.
+- Do not mask missing revenue with hardcoded fallback values or random chart data when real Supabase rows exist; derive the metric from normalized order rows first.
+- If website-wide data appears to stop appending, trace the flow from the Supabase query to the page-level normalization and memoized aggregates before touching the UI.
+- For dashboard charts, prefer deterministic aggregates over synthetic trends so empty data and partial data stay distinguishable during debugging.
 ## Developer commands
 ```bash
 npm run verify:imports  # Check script imports are correct

@@ -26,6 +26,22 @@ const COLORS = {
   pending: 'hsl(0, 84%, 60%)',
 };
 
+function deriveOrderRevenue(order: any): number {
+  const items = order.items || order.order_items || order.orderItems || [];
+  const itemRevenue = items.reduce((sum: number, item: any) => {
+    const quantity = Number(item.quantity ?? item.qty ?? 1) || 1;
+    const directAmount = Number(item.total ?? item.total_price ?? item.line_total ?? 0) || 0;
+    if (directAmount > 0) return sum + directAmount;
+
+    const directUnitPrice = Number(item.unit_price ?? item.price ?? item.selling_price ?? 0) || 0;
+    if (directUnitPrice > 0) return sum + (directUnitPrice * quantity);
+
+    return sum;
+  }, 0);
+
+  const directRevenue = Number(order.totalAmount ?? order.total_amount ?? order.total ?? order.amount ?? 0) || 0;
+  return directRevenue > 0 ? directRevenue : itemRevenue;
+}
 interface FinancialOverviewProps {
   orders: any[];
   settlements: any[];
@@ -102,7 +118,7 @@ export function FinancialOverview({ orders, settlements, expenses, invoices }: F
     if (orders.length === 0 && totalExpenses === 0) {
       return months.map(month => ({ month, revenue: 0, cost: 0, profit: 0 }));
     }
-    const totalRev = orders.reduce((s, o) => s + Number(o.total_amount || 0), 0);
+    const totalRev = orders.reduce((s, o) => s + deriveOrderRevenue(o), 0);
     const totalCost = totalExpenses + settlements.reduce((s, v) => s + Number(v.commission || 0), 0);
     return months.map((month, i) => {
       const factor = 0.8 + Math.random() * 0.4;
@@ -115,12 +131,11 @@ export function FinancialOverview({ orders, settlements, expenses, invoices }: F
   // ─── B2B vs B2C SALES SPLIT ───
   const b2bB2cSplit = useMemo(() => {
     const b2bPortals = ['amazon', 'flipkart'];
-    const b2b = orders.filter(o => b2bPortals.includes(o.portal)).reduce((s, o) => s + Number(o.total_amount || 0), 0);
-    const b2c = orders.filter(o => !b2bPortals.includes(o.portal)).reduce((s, o) => s + Number(o.total_amount || 0), 0);
-    const total = b2b + b2c;
+    const b2b = orders.filter(o => b2bPortals.includes(o.portal)).reduce((s, o) => s + deriveOrderRevenue(o), 0);
+    const b2c = orders.filter(o => !b2bPortals.includes(o.portal)).reduce((s, o) => s + deriveOrderRevenue(o), 0);
     return [
-      { name: 'B2B Sales', value: b2b || 320000, color: COLORS.b2b },
-      { name: 'B2C Sales', value: b2c || 165000, color: COLORS.b2c },
+      { name: 'B2B Sales', value: b2b, color: COLORS.b2b },
+      { name: 'B2C Sales', value: b2c, color: COLORS.b2c },
     ];
   }, [orders]);
 

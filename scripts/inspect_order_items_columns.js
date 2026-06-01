@@ -10,4 +10,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { auth:{persistSession
   if(error){ console.error('Error selecting order_items', error); process.exit(1); }
   if(!data || data.length===0){ console.log('order_items exists but has no rows'); process.exit(0); }
   console.log('Sample order_items keys:', Object.keys(data[0]));
+  const { data: sampleRows, error: sampleErr } = await supabase.from('order_items').select('order_id,product_id,product_name,sku,quantity,unit_price,total').limit(5);
+  if(sampleErr){ console.error('Error sampling order_items', sampleErr); process.exit(1); }
+  console.log('Sample order_items rows:', JSON.stringify(sampleRows, null, 2));
 })();

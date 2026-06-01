@@ -1,0 +1,206 @@
+{
+  "/channels": {
+    "status": "Success",
+    "errors": []
+  },
+  "/brands": {
+    "status": "Success",
+    "errors": []
+  },
+  "/products-catalog": {
+    "status": "Success",
+    "errors": []
+  },
+  "/product-health": {
+    "status": "Success",
+    "errors": []
+  },
+  "/inventory": {
+    "status": "Success",
+    "errors": []
+  },
+  "/orders": {
+    "status": "Success",
+    "errors": []
+  },
+  "/consolidated-orders": {
+    "status": "Success",
+    "errors": []
+  },
+  "/returns": {
+    "status": "Success",
+    "errors": []
+  },
+  "/invoices": {
+    "status": "Success",
+    "errors": []
+  },
+  "/settlements": {
+    "status": "Success",
+    "errors": []
+  },
+  "/sku-mapping": {
+    "status": "Success",
+    "errors": []
+  },
+  "/reconciliation": {
+    "status": "Success",
+    "errors": []
+  },
+  "/stock-reconciliation": {
+    "status": "Success",
+    "errors": []
+  },
+  "/affiliated": {
+    "status": "Success",
+    "errors": []
+  },
+  "/data-import": {
+    "status": "Success",
+    "errors": []
+  },
+  "/social-insights": {
+    "status": "Success",
+    "errors": []
+  },
+  "/subscription": {
+    "status": "Success",
+    "errors": []
+  },
+  "/support": {
+    "status": "Success",
+    "errors": []
+  },
+  "/alerts": {
+    "status": "Success",
+    "errors": []
+  },
+  "/vendors": {
+    "status": "Success",
+    "errors": []
+  },
+  "/warehouses": {
+    "status": "Success",
+    "errors": []
+  },
+  "/tasks": {
+    "status": "Success",
+    "errors": []
+  },
+  "/analytics": {
+    "status": "Success",
+    "errors": []
+  },
+  "/ecommerce": {
+    "status": "Success",
+    "errors": []
+  },
+  "/chatbot": {
+    "status": "Success",
+    "errors": []
+  },
+  "/permissions": {
+    "status": "Success",
+    "errors": []
+  },
+  "/reports": {
+    "status": "Success",
+    "errors": []
+  },
+  "/price-payout": {
+    "status": "Success",
+    "errors": []
+  },
+  "/system-settings": {
+    "status": "Success",
+    "errors": []
+  },
+  "/finance": {
+    "status": "Success",
+    "errors": []
+  },
+  "/api-settings": {
+    "status": "Success",
+    "errors": []
+  },
+  "/video-management": {
+    "status": "Success",
+    "errors": []
+  },
+  "/legal-compliance": {
+    "status": "Success",
+    "errors": []
+  },
+  "/leads": {
+    "status": "Success",
+    "errors": []
+  },
+  "/whatsapp": {
+    "status": "Success",
+    "errors": []
+  },
+  "/onboarding": {
+    "status": "Success",
+    "errors": []
+  },
+  "/customers": {
+    "status": "Success",
+    "errors": []
+  },
+  "/insights": {
+    "status": "Success",
+    "errors": []
+  },
+  "/marketing-config": {
+    "status": "Success",
+    "errors": []
+  },
+  "/expenses": {
+    "status": "Success",
+    "errors": []
+  },
+  "/staff": {
+    "status": "Success",
+    "errors": []
+  },
+  "/technical-docs": {
+    "status": "Success",
+    "errors": []
+  },
+  "/broadcast": {
+    "status": "Success",
+    "errors": []
+  },
+  "/integrations": {
+    "status": "Success",
+    "errors": []
+  },
+  "/purchase": {
+    "status": "Success",
+    "errors": []
+  },
+  "/review-analytics": {
+    "status": "Success",
+    "errors": []
+  },
+  "/data-intelligence": {
+    "status": "Success",
+    "errors": []
+  },
+  "/email-marketing": {
+    "status": "Success",
+    "errors": []
+  },
+  "/google-meet": {
+    "status": "Success",
+    "errors": []
+  },
+  "/storage": {
+    "status": "Success",
+    "errors": []
+  },
+  "/ai-learning": {
+    "status": "Success",
+    "errors": []
+  }
+}
