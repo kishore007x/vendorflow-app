@@ -22,6 +22,7 @@ import { DateFilter, ExportButton, useRowSelection, SelectAllCheckbox, RowCheckb
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { GlobalDateFilter, type DateRange } from '@/components/GlobalDateFilter';
+import { useAuth } from '@/contexts/AuthContext';
 import { returnsDb } from '@/services/database';
 
 // Return types
@@ -169,6 +170,7 @@ const settlementStages: LifecycleStage[] = ['refund_approved', 'settlement_adjus
 
 export default function Returns() {
   const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuth();
   const [selectedPortal, setSelectedPortal] = useState<Portal | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [stageFilter, setStageFilter] = useState<string>('all');
@@ -183,6 +185,8 @@ export default function Returns() {
   const [activeTab, setActiveTab] = useState('returns');
 
   useEffect(() => {
+    if (authLoading || !user?.id) return;
+
     let mounted = true;
     (async () => {
       try {
@@ -195,7 +199,7 @@ export default function Returns() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [authLoading, user?.id]);
 
   const toggleSort = (field: SortField) => {
     if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc');

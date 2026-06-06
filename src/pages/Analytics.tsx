@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { getChannels } from '@/services/channelManager';
 import { ChannelIcon } from '@/components/ChannelIcon';
+import { useAuth } from '@/contexts/AuthContext';
 import { ordersDb, inventoryDb, returnsDb, settlementsDb } from '@/services/database';
 import { BarChart3, ShoppingCart, Package, RotateCcw, TrendingUp, TrendingDown, AlertTriangle, IndianRupee, Facebook, Target, Trophy, Star, ArrowUpRight, ArrowDownRight, Users, Shield, FileCheck, Bot, Zap, ClipboardCheck, Lock, Eye, Crown, UserCheck, Settings, Loader2, XCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend, ComposedChart, Area } from 'recharts';
@@ -17,6 +18,7 @@ import { Separator } from '@/components/ui/separator';
 const COLORS = ['hsl(142, 71%, 45%)', 'hsl(217, 91%, 60%)', 'hsl(340, 82%, 52%)', 'hsl(199, 89%, 48%)', 'hsl(45, 100%, 51%)', 'hsl(262, 83%, 58%)'];
 
 export default function Analytics() {
+  const { user, isLoading: authLoading } = useAuth();
   const [dateRange, setDateRange] = useState('30');
   const [channelFilter, setChannelFilter] = useState('all');
   const [adPlatform, setAdPlatform] = useState<'facebook' | 'google'>('facebook');
@@ -28,6 +30,12 @@ export default function Analytics() {
   const [settlements, setSettlements] = useState<any[]>([]);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user?.id) {
+      setIsLoading(false);
+      return;
+    }
+
     const load = async () => {
       try {
         const [o, i, r, s] = await Promise.all([
@@ -47,7 +55,7 @@ export default function Analytics() {
       }
     };
     load();
-  }, []);
+  }, [authLoading, user?.id]);
 
   // Ad performance data computed from channel revenue estimates
   const adData = useMemo(() => {

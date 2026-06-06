@@ -24,6 +24,8 @@ const defaultBuckets = [
 const totalUsed = 496.8;
 const totalCapacity = 5000;
 
+const tabActiveClass = "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground";
+
 const driveFeatures = [
   { title: "Google Drive Sync", desc: "Auto-sync invoices, reports, and documents to Google Drive folders", status: "coming_soon" },
   { title: "OneDrive Integration", desc: "Connect Microsoft OneDrive for centralized file storage", status: "coming_soon" },

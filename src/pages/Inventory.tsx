@@ -19,6 +19,7 @@ import { Search, AlertTriangle, Package, Upload, History, Minus, Plus, RotateCcw
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DateFilter, ExportButton, useRowSelection, SelectAllCheckbox, RowCheckbox, ImportModal } from '@/components/TableEnhancements';
 import { format } from 'date-fns';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 interface InventoryChangeLog {
@@ -35,6 +36,7 @@ interface InventoryChangeLog {
 
 export default function Inventory() {
   const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuth();
   const [selectedPortal, setSelectedPortal] = useState<Portal | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [warehouseFilter, setWarehouseFilter] = useState<string>('all');
@@ -79,7 +81,10 @@ export default function Inventory() {
     } catch (e) { console.error(e); } finally { setInventoryLoading(false); }
   };
 
-  useEffect(() => { fetchInventory(); }, [selectedPortal, warehouseFilter, searchQuery]);
+  useEffect(() => {
+    if (authLoading || !user?.id) return;
+    fetchInventory();
+  }, [authLoading, user?.id, selectedPortal, warehouseFilter, searchQuery]);
 
   const warehouses = useMemo(() => {
     const unique = new Set(inventoryState.map(i => i.warehouse));

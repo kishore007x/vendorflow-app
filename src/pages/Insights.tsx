@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2 } from 'lucide-react';
 import {
   TrendingUp, TrendingDown, IndianRupee, Users, ShoppingCart, Package,
   BarChart3, HeadphonesIcon, Clock, AlertTriangle, Activity, Zap,
@@ -14,6 +15,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LabelList,
 } from 'recharts';
 import { ordersDb, productsDb, inventoryDb, returnsDb } from '@/services/database';
+import { useAuth } from '@/contexts/AuthContext';
 import { getChannels } from '@/services/channelManager';
 import Dashboard from '@/pages/Dashboard';
 import { ExecutiveWidgets } from '@/components/dashboard/ExecutiveWidgets';
@@ -626,6 +628,25 @@ function OperationsDashboard() {
 
 // ---- Main Page ----
 export default function Insights() {
+  const { user, isLoading: authLoading } = useAuth();
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-foreground">Insights</h1>
+        <p className="text-muted-foreground">Sign in to view business intelligence dashboards.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

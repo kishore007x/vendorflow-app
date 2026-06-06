@@ -21,6 +21,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   Search, Plus, Package, Edit, Eye, Video, Image, CheckCircle, XCircle, Upload, FileSpreadsheet, 
   ArrowUpDown, ArrowUp, ArrowDown, AlertTriangle, ToggleLeft, Filter, Link2, Copy, FileText, DollarSign,
@@ -33,6 +34,7 @@ const PORTALS: Portal[] = ['amazon', 'flipkart', 'meesho', 'firstcry', 'blinkit'
 
 export default function Products() {
   const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -107,7 +109,10 @@ export default function Products() {
     } catch (e) { console.error(e); }
   };
 
-  useEffect(() => { fetchProducts(); }, []);
+  useEffect(() => {
+    if (authLoading || !user?.id) return;
+    fetchProducts();
+  }, [authLoading, user?.id]);
 
   const categories = useMemo(() => {
     const unique = new Set(allProducts.map((p: any) => p.category as string).filter(Boolean));
