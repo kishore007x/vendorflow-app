@@ -27,7 +27,39 @@ export const productsDb = {
     if (search) query = query.or(`name.ilike.%${search}%,sku.ilike.%${search}%,brand.ilike.%${search}%`);
     const { data, error } = await query;
     if (error) throw error;
-    return data;
+    if (!data || data.length === 0) return data;
+
+    try {
+      const { data: mappings } = await supabase.from('sku_mappings').select('master_sku_id, product_name, brand, mrp');
+      const mappingByMasterSku = new Map<string, any>();
+      (mappings || []).forEach((m: any) => {
+        if (m?.master_sku_id) mappingByMasterSku.set(String(m.master_sku_id).toLowerCase(), m);
+      });
+
+      const looksNumeric = (s: any) => typeof s === 'string' && /^\d{4,}$/.test(s.trim());
+
+      return (data || []).map((p: any) => {
+        const enriched = { ...p };
+        const skuKey = String(p.sku || '').toLowerCase();
+        const mapping = skuKey ? mappingByMasterSku.get(skuKey) : null;
+        const mappingName = mapping?.product_name;
+        const mappingBrand = mapping?.brand;
+
+        if ((!enriched.name || looksNumeric(enriched.name)) && mappingName) {
+          enriched.name = mappingName;
+        }
+        if ((!enriched.brand || enriched.brand === 'GET IT') && mappingBrand) {
+          enriched.brand = mappingBrand;
+        }
+        if ((!enriched.mrp || Number(enriched.mrp) === 0) && mapping?.mrp) {
+          enriched.mrp = mapping.mrp;
+        }
+        return enriched;
+      });
+    } catch (e) {
+      console.debug('productsDb.getAll enrichment failed', e);
+      return data;
+    }
   },
   async getById(id: string) {
     const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
@@ -772,6 +804,87 @@ export const productHealthDb = {
     if (filters?.search) query = query.ilike('product_name', `%${filters.search}%`);
     const { data, error } = await query;
     if (error) throw error;
+
+    if (data && data.length > 0) {
+      const { data: products } = await supabase.from('products').select('id, name, sku, portals_enabled');
+      const productMap = new Map((products || []).map((p: any) => [p.id, p]));
+      const productBySku = new Map((products || []).map((p: any) => [String(p.sku || '').toLowerCase(), p]));
+
+      const { data: mappings } = await supabase.from('sku_mappings').select('*');
+      const mappingById = new Map((mappings || []).map((m: any) => [m.id, m]));
+      const mappingByMasterSku = new Map(
+        (mappings || []).map((m: any) => [String(m.master_sku_id || '').toLowerCase(), m])
+      );
+
+      const urlToPortal: Record<string, string> = {
+        amazon_url: 'amazon', flipkart_url: 'flipkart', meesho_url: 'meesho',
+        firstcry_url: 'firstcry', blinkit_url: 'blinkit', own_website_url: 'own_website',
+      };
+      const urlKeys = Object.keys(urlToPortal);
+
+      return data.map((record: any) => {
+        const enriched = { ...record };
+        const productId = record.product_id;
+
+        const looksNumeric = (s: any) => typeof s === 'string' && /^\d{4,}$/.test(s.trim());
+
+        const resolveFromProduct = (product: any) => {
+          if (!product) return null;
+          if (product.name && !looksNumeric(product.name)) return product.name;
+          const skuKey = String(product.sku || '').toLowerCase();
+          const mapping = skuKey ? mappingByMasterSku.get(skuKey) : null;
+          return mapping?.product_name || null;
+        };
+
+        if (productId && productMap.has(productId)) {
+          const product = productMap.get(productId);
+          const resolved = resolveFromProduct(product);
+          if (resolved && (looksNumeric(enriched.product_name) || enriched.product_name === productId)) {
+            enriched.product_name = resolved;
+          }
+        } else {
+          const skuKey = String(record.sku || record.master_sku || '').toLowerCase();
+          if (skuKey) {
+            const mapping = mappingByMasterSku.get(skuKey);
+            if (mapping?.product_name && (looksNumeric(enriched.product_name) || !enriched.product_name)) {
+              enriched.product_name = mapping.product_name;
+            }
+            const product = productBySku.get(skuKey);
+            if (product) {
+              const resolved = resolveFromProduct(product);
+              if (resolved && (looksNumeric(enriched.product_name) || !enriched.product_name)) {
+                enriched.product_name = resolved;
+              }
+            }
+          }
+        }
+
+        if (!enriched.portal_status || Object.keys(enriched.portal_status).length === 0) {
+          const portalStatus: Record<string, string> = {};
+          const mappingId = record.sku_mapping_id;
+          const mapping = mappingById.get(mappingId);
+          if (mapping) {
+            for (const urlKey of urlKeys) {
+              if (mapping[urlKey]) {
+                portalStatus[urlToPortal[urlKey]] = 'live';
+              }
+            }
+          }
+          if (Object.keys(portalStatus).length === 0 && productId && productMap.has(productId)) {
+            const product = productMap.get(productId);
+            if (product.portals_enabled && Array.isArray(product.portals_enabled)) {
+              for (const portal of product.portals_enabled) {
+                portalStatus[portal] = 'live';
+              }
+            }
+          }
+          enriched.portal_status = portalStatus;
+        }
+
+        return enriched;
+      });
+    }
+
     return data as any[];
   },
   async create(record: any) {

@@ -83,26 +83,18 @@ export default function Permissions() {
     (async () => {
       try {
         const db = await import('@/services/database');
-        const [vendors, orders] = await Promise.all([
-          db.vendorsDb.getAll().catch(() => []),
-          db.ordersDb.getAll().catch(() => []),
-        ]);
+        const rows = await db.activityLogsDb.getAll({ limit: 100 }).catch(() => []);
         if (!mounted) return;
-        const logs: AuditLogEntry[] = [];
-        (orders || []).slice(0, 20).forEach((o: any) => {
-          if (o.status === 'delivered' || o.status === 'shipped') {
-            logs.push({
-              id: `AL-${o.id || Date.now()}-${logs.length}`,
-              action: 'approval',
-              user: o.vendor_name || o.customer_name || 'System',
-              role: 'Operations Manager',
-              description: `Order ${o.order_id || o.id} marked as ${o.status}`,
-              timestamp: o.updated_at || o.created_at || new Date().toISOString(),
-              module: 'Orders',
-            });
-          }
-        });
-        setAuditLog(logs.slice(0, 50));
+        const logs: AuditLogEntry[] = (rows || []).map((r: any) => ({
+          id: r.id,
+          action: r.action || 'permission_change',
+          user: r.user_name || r.user_id || 'System',
+          role: '—',
+          description: r.description || '—',
+          timestamp: r.created_at || new Date().toISOString(),
+          module: r.module,
+        }));
+        setAuditLog(logs);
       } catch (e) { console.debug('load permissions failed', e); }
     })();
     return () => { mounted = false; };
@@ -232,8 +224,12 @@ export default function Permissions() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {auditLog.map(log => {
-                    const cfg = actionConfig[log.action];
+                  {auditLog.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center text-sm text-muted-foreground py-8">No activity recorded yet.</TableCell>
+                    </TableRow>
+                  ) : auditLog.map(log => {
+                    const cfg = actionConfig[log.action] || actionConfig.permission_change;
                     const Icon = cfg.icon;
                     return (
                       <TableRow key={log.id}>
@@ -241,7 +237,7 @@ export default function Permissions() {
                         <TableCell><Badge variant="secondary" className={`gap-1 ${cfg.color}`}><Icon className="w-3 h-3" />{cfg.label}</Badge></TableCell>
                         <TableCell className="font-medium text-sm">{log.user}</TableCell>
                         <TableCell><Badge variant="outline" className="text-xs">{log.role}</Badge></TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{log.module}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{log.module || '—'}</TableCell>
                         <TableCell className="text-sm max-w-[250px] truncate">{log.description}</TableCell>
                       </TableRow>
                     );

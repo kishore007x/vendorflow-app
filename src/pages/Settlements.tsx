@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { DateFilter, ExportButton, useRowSelection, SelectAllCheckbox, RowCheckbox } from '@/components/TableEnhancements';
 import { useAuth } from '@/contexts/AuthContext';
+import { settlementsDb } from '@/services/database';
 import { GlobalDateFilter, type DateRange } from '@/components/GlobalDateFilter';
 import OrderPaymentSettlement from '@/components/settlements/OrderPaymentSettlement';
 import LandingCostAnalysis from '@/components/settlements/LandingCostAnalysis';
@@ -188,7 +189,7 @@ export default function Settlements() {
       pending: slist.filter(s => s.status === 'pending').reduce((sum, s) => sum + (s.netAmount || 0), 0),
       delayed: slist.filter(s => s.status === 'delayed').length,
     };
-  }, [selectedPortal]);
+  }, [selectedPortal, allSettlements]);
 
   const paymentBatches = useMemo(() => {
     const upcoming = allSettlements.filter(s => s.status === 'pending');

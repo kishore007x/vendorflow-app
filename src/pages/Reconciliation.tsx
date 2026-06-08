@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getChannels } from '@/services/channelManager';
 import { ChannelIcon } from '@/components/ChannelIcon';
-import { reconciliationDb } from '@/services/database';
+import { reconciliationDb, settlementsDb, ordersDb } from '@/services/database';
 import { Portal } from '@/types';
 import { CheckCircle2, AlertTriangle, TrendingUp, TrendingDown, Activity, Target, XCircle, SlidersHorizontal } from 'lucide-react';
 import { format } from 'date-fns';
@@ -79,6 +79,7 @@ export default function Reconciliation() {
   const [activeTab, setActiveTab] = useState('overview');
   const [globalDateRange, setGlobalDateRange] = useState<DateRange>({ from: undefined, to: undefined });
   const [records, setRecords] = useState<ReconRecord[]>([]);
+  const [healthMetrics, setHealthMetrics] = useState<{ delayedPct: number; chargebackLossPct: number }>({ delayedPct: 0, chargebackLossPct: 0 });
 
   // Get tolerance from shared settings
   const reconSettings = useSyncExternalStore(
@@ -91,9 +92,30 @@ export default function Reconciliation() {
     let mounted = true;
     (async () => {
       try {
-        const rows = await reconciliationDb.getAll().catch(() => []);
+        const [rows, settlements, orders] = await Promise.all([
+          reconciliationDb.getAll().catch(() => []),
+          settlementsDb.getAll().catch(() => []),
+          ordersDb.getAll().catch(() => []),
+        ]);
         if (!mounted) return;
         setRecords((rows || []).map(mapReconciliationRow));
+
+        // Delayed %: share of settlements that are disputed or failed
+        const settleArr = (settlements || []) as any[];
+        const delayedCount = settleArr.filter(s => s.status === 'disputed' || s.status === 'failed').length;
+        const delayedPct = settleArr.length > 0 ? (delayedCount / settleArr.length) * 100 : 0;
+
+        // Chargeback loss %: sum of negative `difference` in reconciliation_logs over total order revenue
+        const reconLoss = (rows || []).reduce((s: number, r: any) => {
+          const d = Number(r.difference ?? 0);
+          return s + (d < 0 ? -d : 0);
+        }, 0);
+        const totalRevenue = (orders || []).reduce((s: number, o: any) => {
+          return s + (Number(o.total_amount ?? o.totalAmount ?? 0) || 0);
+        }, 0);
+        const chargebackLossPct = totalRevenue > 0 ? (reconLoss / totalRevenue) * 100 : 0;
+
+        setHealthMetrics({ delayedPct, chargebackLossPct });
       } catch (error) {
         console.error('Failed to load reconciliation data', error);
       }
@@ -152,7 +174,7 @@ export default function Reconciliation() {
         </div>
       </div>
 
-      <ReconciliationHealthScore matchedPct={matchedPct} mismatchPct={mismatchPct} delayedPct={37.5} chargebackLossPct={4.2} />
+      <ReconciliationHealthScore matchedPct={matchedPct} mismatchPct={mismatchPct} delayedPct={healthMetrics.delayedPct} chargebackLossPct={healthMetrics.chargebackLossPct} />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="flex-wrap h-auto gap-1.5 bg-muted/50 p-1.5">

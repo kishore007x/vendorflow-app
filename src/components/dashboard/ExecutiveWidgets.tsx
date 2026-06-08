@@ -32,21 +32,34 @@ const CHANNEL_COLORS = [
   'hsl(330, 60%, 55%)',
 ];
 
-// Indian holidays for 2026
-const UPCOMING_HOLIDAYS = [
-  { name: 'Holi', date: '2026-03-20', type: 'Festival' },
-  { name: 'Good Friday', date: '2026-04-03', type: 'National' },
-  { name: 'Eid ul-Fitr', date: '2026-04-01', type: 'Festival' },
-  { name: 'Baisakhi', date: '2026-04-14', type: 'Regional' },
-  { name: 'Buddha Purnima', date: '2026-05-12', type: 'National' },
-  { name: 'Independence Day', date: '2026-08-15', type: 'National' },
-  { name: 'Raksha Bandhan', date: '2026-08-21', type: 'Festival' },
-  { name: 'Ganesh Chaturthi', date: '2026-09-07', type: 'Festival' },
-  { name: 'Navratri Start', date: '2026-09-28', type: 'Festival' },
-  { name: 'Dussehra', date: '2026-10-07', type: 'Festival' },
-  { name: 'Diwali', date: '2026-10-26', type: 'Festival' },
-  { name: 'Christmas', date: '2026-12-25', type: 'National' },
+// Indian holidays — month-day templates; year is filled in at runtime
+// so the list stays current as the calendar rolls over.
+const HOLIDAY_TEMPLATES: { name: string; month: number; day: number; type: 'Festival' | 'National' | 'Regional' }[] = [
+  { name: 'Republic Day', month: 1, day: 26, type: 'National' },
+  { name: 'Maha Shivaratri', month: 2, day: 17, type: 'Festival' },
+  { name: 'Holi', month: 3, day: 4, type: 'Festival' },
+  { name: 'Eid ul-Fitr', month: 3, day: 31, type: 'Festival' },
+  { name: 'Good Friday', month: 4, day: 18, type: 'National' },
+  { name: 'Baisakhi', month: 4, day: 14, type: 'Regional' },
+  { name: 'Buddha Purnima', month: 5, day: 12, type: 'National' },
+  { name: 'Independence Day', month: 8, day: 15, type: 'National' },
+  { name: 'Raksha Bandhan', month: 8, day: 19, type: 'Festival' },
+  { name: 'Ganesh Chaturthi', month: 8, day: 27, type: 'Festival' },
+  { name: 'Navratri Start', month: 9, day: 22, type: 'Festival' },
+  { name: 'Dussehra', month: 10, day: 2, type: 'Festival' },
+  { name: 'Diwali', month: 10, day: 20, type: 'Festival' },
+  { name: 'Christmas', month: 12, day: 25, type: 'National' },
 ];
+
+function buildHolidaysForYears(years: number[]): { name: string; date: string; type: string }[] {
+  return years.flatMap(y =>
+    HOLIDAY_TEMPLATES.map(t => ({
+      name: t.name,
+      date: `${y}-${String(t.month).padStart(2, '0')}-${String(t.day).padStart(2, '0')}`,
+      type: t.type,
+    })),
+  );
+}
 
 export function ExecutiveWidgets({ orders, formatCurrency }: ExecutiveWidgetsProps) {
   const [vendors, setVendors] = useState<any[]>([]);
@@ -180,7 +193,8 @@ export function ExecutiveWidgets({ orders, formatCurrency }: ExecutiveWidgetsPro
   // ─── UPCOMING HOLIDAYS ───
   const upcomingHolidays = useMemo(() => {
     const now = new Date();
-    return UPCOMING_HOLIDAYS
+    const years = [now.getFullYear(), now.getFullYear() + 1];
+    return buildHolidaysForYears(years)
       .filter(h => new Date(h.date) >= now)
       .slice(0, 5)
       .map(h => {

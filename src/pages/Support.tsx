@@ -152,6 +152,37 @@ export default function Support() {
   const resolvedCount = filtered.filter(t => t.status === 'resolved').length;
   const escalatedCount = filtered.filter(t => t.status === 'escalated').length;
 
+  // ─── TRENDS (last 30d vs prior 30d) ───
+  const trends = useMemo(() => {
+    const now = Date.now();
+    const last30Start = now - 30 * 86400000;
+    const prior30Start = now - 60 * 86400000;
+    const inWindow = (t: Ticket, start: number, end: number) => {
+      const ts = new Date(t.created_at).getTime();
+      return ts >= start && ts < end;
+    };
+    const pct = (current: number, prior: number): number => {
+      if (prior === 0) return current === 0 ? 0 : 100;
+      return Math.round(((current - prior) / prior) * 1000) / 10;
+    };
+    const last30 = filtered.filter(t => inWindow(t, last30Start, now));
+    const prior30 = filtered.filter(t => inWindow(t, prior30Start, last30Start));
+    const openDelta = pct(last30.filter(t => t.status === 'open' || t.status === 'in_progress').length,
+                          prior30.filter(t => t.status === 'open' || t.status === 'in_progress').length);
+    const avgResp = (arr: Ticket[]) => arr.length === 0 ? 0
+      : arr.reduce((s, t) => s + Math.min((Date.now() - new Date(t.created_at).getTime()) / 3600000, t.sla_hours || 24), 0) / arr.length;
+    const respDelta = pct(avgResp(last30), avgResp(prior30));
+    const resDelta = pct(last30.filter(t => t.status === 'resolved').length,
+                        prior30.filter(t => t.status === 'resolved').length);
+    const ratedLast = last30.filter(t => t.rating);
+    const ratedPrior = prior30.filter(t => t.rating);
+    const satDelta = pct(
+      ratedLast.length ? ratedLast.filter(t => (t.rating || 0) >= 4).length / ratedLast.length * 100 : 0,
+      ratedPrior.length ? ratedPrior.filter(t => (t.rating || 0) >= 4).length / ratedPrior.length * 100 : 0,
+    );
+    return { openDelta, respDelta, resDelta, satDelta };
+  }, [filtered]);
+
   // ─── SLA ───
   const slaData = useMemo(() => {
     const now = Date.now();
@@ -291,7 +322,7 @@ export default function Support() {
           <CardContent className="pt-5 pb-4">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-amber-500/10"><MessageSquare className="w-5 h-5 text-amber-600" /></div>
-              <Badge variant="outline" className="text-[10px] bg-rose-500/10 text-rose-600 border-rose-500/20 gap-0.5">↓ {openCount > 0 ? Math.min(openCount, 12) : 0}%</Badge>
+              <Badge variant="outline" className={`text-[10px] gap-0.5 ${trends.openDelta > 0 ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' : trends.openDelta < 0 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-muted text-muted-foreground'}`}>{trends.openDelta > 0 ? '↑' : trends.openDelta < 0 ? '↓' : '·'} {Math.abs(trends.openDelta)}%</Badge>
             </div>
             <p className="text-2xl font-bold">{openCount + pendingCount}</p>
             <p className="text-sm text-muted-foreground">Open Tickets</p>
@@ -301,7 +332,7 @@ export default function Support() {
           <CardContent className="pt-5 pb-4">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-blue-500/10"><Clock className="w-5 h-5 text-blue-600" /></div>
-              <Badge variant="outline" className="text-[10px] bg-rose-500/10 text-rose-600 border-rose-500/20 gap-0.5">↓ 12%</Badge>
+              <Badge variant="outline" className={`text-[10px] gap-0.5 ${trends.respDelta > 0 ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' : trends.respDelta < 0 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-muted text-muted-foreground'}`}>{trends.respDelta > 0 ? '↑' : trends.respDelta < 0 ? '↓' : '·'} {Math.abs(trends.respDelta)}%</Badge>
             </div>
             <p className="text-2xl font-bold">{filtered.length > 0 ? (filtered.reduce((s, t) => {
               const elapsed = (Date.now() - new Date(t.created_at).getTime()) / 3600000;
@@ -314,7 +345,7 @@ export default function Support() {
           <CardContent className="pt-5 pb-4">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-emerald-500/10"><CheckCircle2 className="w-5 h-5 text-emerald-600" /></div>
-              <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 border-emerald-500/20 gap-0.5">↑ 3%</Badge>
+              <Badge variant="outline" className={`text-[10px] gap-0.5 ${trends.resDelta >= 0 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-rose-500/10 text-rose-600 border-rose-500/20'}`}>{trends.resDelta >= 0 ? '↑' : '↓'} {Math.abs(trends.resDelta)}%</Badge>
             </div>
             <p className="text-2xl font-bold">{filtered.length > 0 ? Math.round((resolvedCount / filtered.length) * 100) : 0}%</p>
             <p className="text-sm text-muted-foreground">Resolution Rate</p>
@@ -324,9 +355,9 @@ export default function Support() {
           <CardContent className="pt-5 pb-4">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2.5 rounded-xl bg-primary/10"><User className="w-5 h-5 text-primary" /></div>
-              <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 border-emerald-500/20 gap-0.5">↑ 1.5%</Badge>
+              <Badge variant="outline" className={`text-[10px] gap-0.5 ${trends.satDelta >= 0 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-rose-500/10 text-rose-600 border-rose-500/20'}`}>{trends.satDelta >= 0 ? '↑' : '↓'} {Math.abs(trends.satDelta)}%</Badge>
             </div>
-            <p className="text-2xl font-bold">{ratedTickets.length > 0 ? Math.round((positiveCount / ratedTickets.length) * 100) : 92}%</p>
+            <p className="text-2xl font-bold">{ratedTickets.length > 0 ? Math.round((positiveCount / ratedTickets.length) * 100) : 0}%</p>
             <p className="text-sm text-muted-foreground">Customer Retention</p>
           </CardContent>
         </Card>

@@ -68,9 +68,8 @@ export default function Inventory() {
       });
       setInventoryState(data.map((i: any) => ({
         ...i,
-        portal: i.portal || 'firstcry',
         skuId: i.sku || i.vendor_style_code || i.product_id || i.id,
-        productName: i.product_name || 'Firstcry item',
+        productName: i.product_name || 'Unnamed product',
         availableQuantity: i.quantity_available ?? i.available_quantity ?? 0,
         masterQuantity: i.quantity_available ?? i.master_quantity ?? 0,
         reservedQuantity: i.quantity_reserved ?? i.reserved_quantity ?? 0,

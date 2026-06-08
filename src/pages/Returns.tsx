@@ -143,7 +143,7 @@ const mapAppReturn = (row: any): ReturnLifecycle => {
     skuId,
     reason: getReturnReason(row.reason || row.metadata?.subreason || row.metadata?.subtype_reason),
     returnType,
-    refundAmount: quantity * 100,
+    refundAmount: Number(row.refund_amount ?? row.amount ?? 0),
     currentStage: stage,
     responsibleUser: 'System',
     warehouseReceived: ['warehouse_received', 'physical_verification', 'claim_raised', 'claim_approved', 'claim_rejected', 'refund_approved', 'settlement_adjusted'].includes(stage),
@@ -155,7 +155,7 @@ const mapAppReturn = (row: any): ReturnLifecycle => {
       conditionEligible: true,
       categoryRestricted: false,
     },
-    linkedSettlementId: stage === 'settlement_adjusted' ? `STL-${returnId}` : undefined,
+    linkedSettlementId: stage === 'settlement_adjusted' && row.linked_settlement_id ? row.linked_settlement_id : (stage === 'settlement_adjusted' ? `STL-${returnId}` : undefined),
     returnDate,
     customerReturnNote: row.reason || row.metadata?.subreason || row.metadata?.subtype_reason || undefined,
     timeline: [{ stage, timestamp: returnDate, user: 'System', note: row.reason || row.metadata?.subreason || undefined }],
@@ -298,7 +298,7 @@ export default function Returns() {
       if (nextStage === 'warehouse_received') updated.warehouseReceived = true;
       if (nextStage === 'physical_verification') updated.physicalVerification = 'passed' as const;
       if (nextStage === 'refund_approved') updated.refundApproved = true;
-      if (nextStage === 'settlement_adjusted') updated.linkedSettlementId = `STL-2024-${String(Math.floor(Math.random() * 900) + 100)}`;
+      if (nextStage === 'settlement_adjusted') updated.linkedSettlementId = `STL-${new Date().getFullYear()}-${String(Date.now()).slice(-5)}`;
       return updated;
     }));
     toast({ title: 'Stage Advanced', description: `Return ${returnId} moved to next stage` });

@@ -1,18 +1,11 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { SmartExcelImport } from '@/components/SmartExcelImport';
 import { BarcodeScanner } from '@/components/BarcodeScanner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FileSpreadsheet, Package, RotateCcw, CheckCircle, AlertTriangle, XCircle, Lightbulb, Upload, FolderOpen, X, File, Image, FileText } from 'lucide-react';
-
-const validationChecks: { label: string; status: 'success' | 'warning' | 'error'; detail: string }[] = [];
-
-const suggestions = [
-  'Upload SKU master to resolve mapping errors',
-  'Update product images for 3 incomplete listings',
-  'Review barcode format for SKU-MSH-007 and SKU-BLK-004',
-];
 
 interface UploadedFileInfo {
   id: string;
@@ -36,8 +29,86 @@ function getFileIcon(type: string) {
 export default function DataImport() {
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFileInfo[]>([]);
+  const [productsCount, setProductsCount] = useState<0 | number>(0);
+  const [productsWithImage, setProductsWithImage] = useState(0);
+  const [productsWithSku, setProductsWithSku] = useState(0);
+  const [ordersCount, setOrdersCount] = useState(0);
+  const [ordersWithCustomer, setOrdersWithCustomer] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const [products, orders] = await Promise.all([
+          supabase.from('products').select('id, sku, image_url').then(r => r.data || []),
+          supabase.from('orders').select('id, customer_name, customer_email').then(r => r.data || []),
+        ]);
+        if (!mounted) return;
+        setProductsCount(products.length as 0 | number);
+        setProductsWithImage(products.filter((p: any) => p.image_url).length);
+        setProductsWithSku(products.filter((p: any) => p.sku).length);
+        setOrdersCount(orders.length);
+        setOrdersWithCustomer(orders.filter((o: any) => o.customer_name && o.customer_email).length);
+      } catch (e) { console.debug('DataImport stats fetch failed', e); }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  const validationChecks = useMemo(() => {
+    const checks: { label: string; status: 'success' | 'warning' | 'error'; detail: string }[] = [];
+    if (productsCount > 0) {
+      const noImage = productsCount - productsWithImage;
+      if (noImage > 0) {
+        checks.push({
+          label: 'Product images',
+          status: noImage > productsCount * 0.2 ? 'error' : 'warning',
+          detail: `${noImage} of ${productsCount} products missing image_url`,
+        });
+      } else {
+        checks.push({ label: 'Product images', status: 'success', detail: `All ${productsCount} products have images` });
+      }
+      const noSku = productsCount - productsWithSku;
+      if (noSku > 0) {
+        checks.push({
+          label: 'Product SKUs',
+          status: 'error',
+          detail: `${noSku} of ${productsCount} products missing SKU`,
+        });
+      } else {
+        checks.push({ label: 'Product SKUs', status: 'success', detail: `All ${productsCount} products have SKUs` });
+      }
+    }
+    if (ordersCount > 0) {
+      const noCustomer = ordersCount - ordersWithCustomer;
+      if (noCustomer > 0) {
+        checks.push({
+          label: 'Customer info',
+          status: noCustomer > ordersCount * 0.1 ? 'warning' : 'success',
+          detail: `${noCustomer} of ${ordersCount} orders missing customer name or email`,
+        });
+      } else {
+        checks.push({ label: 'Customer info', status: 'success', detail: `All ${ordersCount} orders have customer info` });
+      }
+    }
+    if (productsCount === 0 && ordersCount === 0) {
+      checks.push({ label: 'No data yet', status: 'warning', detail: 'Import data to run validation checks' });
+    }
+    return checks;
+  }, [productsCount, productsWithImage, productsWithSku, ordersCount, ordersWithCustomer]);
+
+  const suggestions = useMemo(() => {
+    const out: string[] = [];
+    const noImage = productsCount - productsWithImage;
+    const noSku = productsCount - productsWithSku;
+    if (noImage > 0) out.push(`Update product images for ${noImage} incomplete listing${noImage === 1 ? '' : 's'}`);
+    if (noSku > 0) out.push(`Assign SKUs to ${noSku} product${noSku === 1 ? '' : 's'} to enable portal mapping`);
+    const noCustomer = ordersCount - ordersWithCustomer;
+    if (noCustomer > 0) out.push(`Backfill customer name/email for ${noCustomer} order${noCustomer === 1 ? '' : 's'}`);
+    if (out.length === 0) out.push('All datasets look healthy — keep going!');
+    return out;
+  }, [productsCount, productsWithImage, productsWithSku, ordersCount, ordersWithCustomer]);
 
   const handleFiles = useCallback((files: FileList | null) => {
     if (!files) return;

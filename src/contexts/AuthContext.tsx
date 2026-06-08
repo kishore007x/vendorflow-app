@@ -30,8 +30,9 @@ async function fetchUserRole(userId: string): Promise<UserRole> {
     .from('user_roles')
     .select('role')
     .eq('user_id', userId)
+    .order('role', { ascending: true })
     .limit(1)
-    .single();
+    .maybeSingle();
   return (data?.role as UserRole) || 'vendor';
 }
 

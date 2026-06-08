@@ -158,8 +158,8 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="relative">
                     <Bell className="w-5 h-5" />
-                    <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-destructive">
-                      3
+                    <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-destructive hidden">
+                      0
                     </Badge>
                   </Button>
                 </DropdownMenuTrigger>
@@ -176,31 +176,8 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--glass-border)' }}>
                     <h4 className="font-semibold text-sm">Notifications</h4>
                   </div>
-                  <DropdownMenuItem className="flex flex-col items-start gap-1 p-4">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-destructive" />
-                      <span className="font-medium text-sm">Critical Low Stock</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">Bluetooth Speaker - 5 units left</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex flex-col items-start gap-1 p-4">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-warning" />
-                      <span className="font-medium text-sm">Settlement Delayed</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">FirstCry payment overdue by 7 days</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex flex-col items-start gap-1 p-4">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-info" />
-                      <span className="font-medium text-sm">New Return Request</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">Order ORD-2024-002 return initiated</span>
-                  </DropdownMenuItem>
-                  <div className="p-2" style={{ borderTop: '1px solid var(--glass-border)' }}>
-                    <Button variant="ghost" className="w-full text-sm">
-                      View all notifications
-                    </Button>
+                  <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+                    No notifications
                   </div>
                 </DropdownMenuContent>
               </DropdownMenu>

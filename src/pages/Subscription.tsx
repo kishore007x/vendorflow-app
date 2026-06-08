@@ -117,15 +117,6 @@ interface VendorSub {
   lockedModules: string[];
 }
 
-const defaultVendorSubs: VendorSub[] = [
-  { vendorId: 'VEN-001', name: 'TechGadgets India Pvt Ltd', plan: 'Pro', status: 'active', enabled: true, lastPayment: '2026-02-01', expiryDate: '2026-03-01', daysRemaining: 17, paymentStatus: 'paid', whatsappReminder: true, email: 'admin@techgadgets.in', phone: '+91 98765 43210', lockedModules: [] },
-  { vendorId: 'VEN-002', name: 'FashionHub Exports', plan: 'Enterprise', status: 'active', enabled: true, lastPayment: '2026-02-05', expiryDate: '2026-03-05', daysRemaining: 21, paymentStatus: 'paid', whatsappReminder: false, email: 'ops@fashionhub.com', phone: '+91 87654 32109', lockedModules: [] },
-  { vendorId: 'VEN-003', name: 'BabyCare Essentials', plan: 'Basic', status: 'expired', enabled: false, lastPayment: '2026-01-15', expiryDate: '2026-02-15', daysRemaining: -3, paymentStatus: 'overdue', whatsappReminder: true, email: 'info@babycare.in', phone: '+91 76543 21098', lockedModules: ['Returns', 'Settlements', 'SKU Mapping', 'Analytics', 'AI Hub'] },
-  { vendorId: 'VEN-004', name: 'HomeLiving Store', plan: 'Trial', status: 'trial', enabled: true, lastPayment: '—', expiryDate: '2026-03-10', daysRemaining: 4, paymentStatus: 'na', whatsappReminder: true, email: 'hello@homeliving.in', phone: '+91 65432 10987', lockedModules: ['Returns', 'Settlements', 'SKU Mapping', 'Analytics'] },
-  { vendorId: 'VEN-005', name: 'SportsFit Global', plan: 'Basic', status: 'active', enabled: true, lastPayment: '2026-02-08', expiryDate: '2026-03-08', daysRemaining: 24, paymentStatus: 'paid', whatsappReminder: false, email: 'sales@sportsfit.com', phone: '+91 54321 09876', lockedModules: [] },
-  { vendorId: 'VEN-006', name: 'GreenLeaf Organics', plan: 'Trial', status: 'trial', enabled: true, lastPayment: '—', expiryDate: '2026-02-16', daysRemaining: 3, paymentStatus: 'na', whatsappReminder: false, email: 'contact@greenleaf.in', phone: '+91 43210 98765', lockedModules: ['Returns', 'Settlements', 'SKU Mapping', 'Analytics'] },
-];
-
 export default function Subscription() {
   const { toast } = useToast();
   const [vendorSubs, setVendorSubs] = useState<VendorSub[]>([]);
@@ -354,6 +345,13 @@ export default function Subscription() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
+                  {vendorSubs.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
+                        No vendor subscriptions found. Add vendors in the Vendors module to manage subscriptions.
+                      </TableCell>
+                    </TableRow>
+                  )}
                   {vendorSubs.map(v => (
                     <TableRow key={v.vendorId} className={!v.enabled ? 'opacity-60' : ''}>
                       <TableCell className="font-mono text-sm">{v.vendorId}</TableCell>

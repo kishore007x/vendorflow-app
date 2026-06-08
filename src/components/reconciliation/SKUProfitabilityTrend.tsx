@@ -18,8 +18,6 @@ interface SKUTrend {
   dropAlert: boolean;
 }
 
-const mockSKUTrends: SKUTrend[] = [];
-
 export default function SKUProfitabilityTrend() {
   const [trends, setTrends] = useState<SKUTrend[]>([]);
   const [channels, setChannels] = useState<any[]>([]);
@@ -29,13 +27,35 @@ export default function SKUProfitabilityTrend() {
     (async () => {
       try {
         const db = await import('@/services/database');
-        const products = await db.productsDb.getAll();
+        const [products, orders] = await Promise.all([
+          db.productsDb.getAll().catch(() => []),
+          db.ordersDb.getAll().catch(() => []),
+        ]);
         if (!mounted) return;
+        // Count orders per product (last 30 days vs prior 30 days) as trend proxy
+        const now = Date.now();
+        const thirtyDaysAgo = now - 30 * 86400000;
+        const sixtyDaysAgo = now - 60 * 86400000;
+        const realized: Record<string, { recent: number; prior: number }> = {};
+        (orders || []).forEach((o: any) => {
+          const sku = (o.sku || o.product_sku || '').toString().toLowerCase();
+          if (!sku) return;
+          const orderDate = new Date(o.order_date || o.created_at || 0).getTime();
+          if (!realized[sku]) realized[sku] = { recent: 0, prior: 0 };
+          if (orderDate >= thirtyDaysAgo) realized[sku].recent += 1;
+          else if (orderDate >= sixtyDaysAgo) realized[sku].prior += 1;
+        });
         const mapped = (products || []).map((p: any) => {
           const mrp = Number(p.mrp || p.price || p.list_price || 0);
           const cost = Number(p.land_cost || p.cost || 0);
           const currentMargin = mrp ? ((mrp - cost) / mrp) * 100 : 0;
-          const lastMonthMargin = currentMargin - (Math.random() * 5 - 2.5); // approximate
+          const skuKey = (p.sku || '').toString().toLowerCase();
+          const r = realized[skuKey] || { recent: 0, prior: 0 };
+          const hasHistory = r.recent > 0 || r.prior > 0;
+          // No historical margin in DB: use order-volume trend as proxy
+          const trend: 'up' | 'down' | 'stable' = !hasHistory ? 'stable' : r.recent > r.prior ? 'up' : r.recent < r.prior ? 'down' : 'stable';
+          // If no order history, leave lastMonthMargin as currentMargin (no fake change)
+          const lastMonthMargin = hasHistory ? currentMargin : currentMargin;
           return {
             id: p.id,
             sku: p.sku || p.sku_id || p.id,
@@ -43,7 +63,7 @@ export default function SKUProfitabilityTrend() {
             portal: p.portal || 'firstcry',
             currentMargin: Number(currentMargin.toFixed(1)),
             lastMonthMargin: Number(lastMonthMargin.toFixed(1)),
-            trend: currentMargin > lastMonthMargin ? 'up' : currentMargin < lastMonthMargin ? 'down' : 'stable',
+            trend,
             dropAlert: currentMargin < 10,
           } as SKUTrend;
         });
@@ -95,7 +115,7 @@ export default function SKUProfitabilityTrend() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {(trends.length ? trends : mockSKUTrends).map(s => {
+                {trends.map(s => {
                   const portal = channels.find((p: any) => p.id === s.portal) || channels.find((p: any) => p.key === s.portal) || { id: s.portal, name: s.portal, icon: undefined };
                   const diff = s.currentMargin - s.lastMonthMargin;
                   return (

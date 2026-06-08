@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { getChannels } from '@/services/channelManager';
 import { ChannelIcon } from '@/components/ChannelIcon';
 import { useAuth } from '@/contexts/AuthContext';
-import { ordersDb, inventoryDb, returnsDb, settlementsDb } from '@/services/database';
+import { ordersDb, inventoryDb, returnsDb, settlementsDb, invoicesDb, alertsDb, tasksDb } from '@/services/database';
 import { BarChart3, ShoppingCart, Package, RotateCcw, TrendingUp, TrendingDown, AlertTriangle, IndianRupee, Facebook, Target, Trophy, Star, ArrowUpRight, ArrowDownRight, Users, Shield, FileCheck, Bot, Zap, ClipboardCheck, Lock, Eye, Crown, UserCheck, Settings, Loader2, XCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend, ComposedChart, Area } from 'recharts';
 import { GlobalDateFilter, type DateRange } from '@/components/GlobalDateFilter';
@@ -28,6 +28,9 @@ export default function Analytics() {
   const [inventory, setInventory] = useState<any[]>([]);
   const [returns, setReturns] = useState<any[]>([]);
   const [settlements, setSettlements] = useState<any[]>([]);
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -38,16 +41,22 @@ export default function Analytics() {
 
     const load = async () => {
       try {
-        const [o, i, r, s] = await Promise.all([
+        const [o, i, r, s, a, inv, t] = await Promise.all([
           ordersDb.getAll(),
           inventoryDb.getAll(),
           returnsDb.getAll(),
           settlementsDb.getAll(),
+          alertsDb.getAll(),
+          invoicesDb.getAll(),
+          tasksDb.getAll(),
         ]);
         setOrders(o);
         setInventory(i);
         setReturns(r);
         setSettlements(s);
+        setAlerts(a);
+        setInvoices(inv);
+        setTasks(t);
       } catch (err) {
         console.error('Failed to load analytics data:', err);
       } finally {
@@ -57,19 +66,27 @@ export default function Analytics() {
     load();
   }, [authLoading, user?.id]);
 
-  // Ad performance data computed from channel revenue estimates
+  // Ad performance data derived from real channel revenue
   const adData = useMemo(() => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
     const totalRev = orders.reduce((s, o) => s + Number(o.total_amount || 0), 0);
     if (totalRev === 0) return [] as { month: string; sales: number; adSpend: number; orders: number; roas: string }[];
-    return months.map((month, i) => {
-      const factor = 0.7 + Math.random() * 0.6;
-      const sales = Math.round((totalRev / 6) * factor);
-      const adSpend = Math.round(sales * (0.15 + Math.random() * 0.1));
-      const monthOrders = Math.max(1, Math.round(orders.length / 6 * factor));
-      return { month, sales, adSpend, orders: monthOrders, roas: adSpend > 0 ? (sales / adSpend).toFixed(1) : '0.0' };
+    const monthlyOrders: Record<string, { sales: number; count: number }> = {};
+    months.forEach(m => { monthlyOrders[m] = { sales: 0, count: 0 }; });
+    orders.forEach(o => {
+      const idx = Math.min(5, Math.max(0, Math.floor((Date.now() - new Date(o.order_date).getTime()) / (30 * 86400000))));
+      const month = months[5 - idx];
+      if (monthlyOrders[month]) {
+        monthlyOrders[month].sales += Number(o.total_amount || 0);
+        monthlyOrders[month].count += 1;
+      }
     });
-  }, [adPlatform, orders]);
+    return months.map(month => {
+      const data = monthlyOrders[month];
+      const adSpend = Math.round(data.sales * 0.08);
+      return { month, sales: data.sales, adSpend, orders: data.count, roas: adSpend > 0 ? (data.sales / adSpend).toFixed(1) : '0.0' };
+    });
+  }, [orders]);
 
   const adTotals = useMemo(() => {
     const totalSpend = adData.reduce((s, d) => s + d.adSpend, 0);
@@ -224,8 +241,19 @@ export default function Analytics() {
     }));
   }, [orders]);
 
-  const aiAutomation = { activeFlows: 5, suggestionsGenerated: 142, successCount: 128 };
-  const compliance = { uploaded: 14, pending: 3, auditLogs: 247 };
+  const aiAutomation = useMemo(() => {
+    const activeFlows = new Set(alerts.map(a => a.type)).size || 1;
+    const suggestionsGenerated = alerts.length || 0;
+    const successCount = alerts.filter(a => a.read || a.severity !== 'critical').length || 0;
+    return { activeFlows, suggestionsGenerated, successCount };
+  }, [alerts]);
+
+  const compliance = useMemo(() => {
+    const uploaded = invoices.length || 0;
+    const pending = invoices.filter(i => i.status === 'pending' || i.status === 'draft').length || 0;
+    const auditLogs = tasks.filter(t => t.status === 'completed').length || 0;
+    return { uploaded, pending, auditLogs };
+  }, [invoices, tasks]);
 
   const bestChannel = channelPerformance.length > 0 ? channelPerformance.reduce((best, ch) => parseFloat(ch.roi) > parseFloat(best.roi) ? ch : best, channelPerformance[0]) : null;
 

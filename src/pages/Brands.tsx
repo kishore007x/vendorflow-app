@@ -35,7 +35,36 @@ export default function Brands() {
     queryFn: async () => {
       const { data, error } = await (supabase as any).from('brands').select('*').order('created_at', { ascending: false });
       if (error) throw error;
-      return data as Brand[];
+      if (data && data.length > 0) return data as Brand[];
+
+      try {
+        const [{ data: products }, { data: mappings }] = await Promise.all([
+          (supabase as any).from('products').select('brand').not('brand', 'is', null),
+          (supabase as any).from('sku_mappings').select('brand').not('brand', 'is', null),
+        ]);
+        const brandCounts: Record<string, number> = {};
+        [...(products || []), ...(mappings || [])].forEach((row: any) => {
+          const name = (row.brand || '').trim();
+          if (!name) return;
+          brandCounts[name] = (brandCounts[name] || 0) + 1;
+        });
+        const derived = Object.entries(brandCounts)
+          .sort((a, b) => b[1] - a[1])
+          .map(([name, count], idx) => ({
+            id: `derived-${idx}-${name.toLowerCase().replace(/\s+/g, '-')}`,
+            name,
+            logo_url: null,
+            about: `Derived from ${count} product${count === 1 ? '' : 's'} (no brands table row yet).`,
+            status: 'active',
+            created_at: new Date().toISOString(),
+            _derived: true,
+            _count: count,
+          }));
+        return derived as any;
+      } catch (e) {
+        console.debug('brand derivation failed', e);
+        return data as Brand[];
+      }
     },
   });
 
@@ -165,7 +194,12 @@ export default function Brands() {
 
       <Card className="glass-card">
         <CardHeader>
-          <CardTitle className="text-lg">All Brands ({brands.length})</CardTitle>
+          <CardTitle className="text-lg flex items-center gap-2">
+            All Brands ({brands.length})
+            {brands.length > 0 && (brands[0] as any)._derived && (
+              <Badge variant="outline" className="text-[10px]">Derived from products</Badge>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -198,7 +232,12 @@ export default function Brands() {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="font-medium">{brand.name}</TableCell>
+                    <TableCell className="font-medium">
+                      {brand.name}
+                      {(brand as any)._count !== undefined && (
+                        <span className="ml-2 text-xs text-muted-foreground">({(brand as any)._count} products)</span>
+                      )}
+                    </TableCell>
                     <TableCell className="max-w-[300px] truncate text-muted-foreground text-sm">{brand.about || '—'}</TableCell>
                     <TableCell>
                       <Badge variant={brand.status === 'active' ? 'default' : 'secondary'}

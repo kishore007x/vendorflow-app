@@ -21,8 +21,8 @@ const defaultBuckets = [
   { id: "order-videos", name: "Order Videos", isPublic: false, icon: Film, color: "text-purple-500", files: 0, size: "0 MB", used: 0 },
 ];
 
-const totalUsed = 496.8;
-const totalCapacity = 5000;
+// Total storage capacity (MB) is a plan-level config; default to Supabase free tier 1 GB.
+const TOTAL_CAPACITY_MB = 1024;
 
 const tabActiveClass = "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground";
 
@@ -43,23 +43,41 @@ export default function StorageDashboard() {
     (async () => {
       try {
         const db = await import('@/services/database');
-        const [products, videos] = await Promise.all([
+        const [products, videos, returns] = await Promise.all([
           db.productsDb.getAll().catch(() => []),
           db.videosDb?.getAll().catch(() => []) || Promise.resolve([]),
+          db.returnsDb?.getAll?.().catch(() => []) || Promise.resolve([]),
         ]);
         if (!mounted) return;
         const productCount = (products || []).length;
         const videoCount = (videos || []).length;
+        const returnCount = (returns || []).length;
         setBuckets(prev => prev.map(b => {
-          if (b.id === "product-images") return { ...b, files: productCount, size: `${(productCount * 1.2).toFixed(0)} MB`, used: productCount * 1.2 };
-          if (b.id === "invoices") return { ...b, files: 3, size: "4.5 MB", used: 4.5 };
-          if (b.id === "order-videos") return { ...b, files: videoCount, size: `${(videoCount * 8).toFixed(0)} MB`, used: videoCount * 8 };
+          if (b.id === "product-images") {
+            const size = productCount * 1.2;
+            return { ...b, files: productCount, size: `${size.toFixed(0)} MB`, used: size };
+          }
+          if (b.id === "invoices") {
+            const size = Math.max(productCount, 1) * 0.05;
+            return { ...b, files: productCount, size: `${size.toFixed(1)} MB`, used: size };
+          }
+          if (b.id === "order-videos") {
+            const size = videoCount * 8;
+            return { ...b, files: videoCount, size: `${size.toFixed(0)} MB`, used: size };
+          }
+          if (b.id === "return-evidence") {
+            const size = returnCount * 0.3;
+            return { ...b, files: returnCount, size: `${size.toFixed(1)} MB`, used: size };
+          }
           return b;
         }));
       } catch (e) { console.debug('load storage failed', e); }
     })();
     return () => { mounted = false; };
   }, []);
+
+  const totalUsed = buckets.reduce((s, b) => s + (b.used || 0), 0);
+  const totalCapacity = TOTAL_CAPACITY_MB;
 
   const filteredFiles = recentFiles.filter(f =>
     f.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

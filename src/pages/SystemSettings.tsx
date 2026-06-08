@@ -12,8 +12,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Shield, Settings, Cog, Upload, Download, FileSpreadsheet, Eye, Pencil, ToggleLeft, Blocks, Clock, Zap, Users, Lock, IndianRupee, CheckCircle2, AlertTriangle, SlidersHorizontal, History, LogIn, Edit3 } from 'lucide-react';
 import { getReconciliationSettings, setReconciliationSettings, subscribeReconciliationSettings } from '@/services/reconciliationSettings';
+import { activityLogsDb } from '@/services/database';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+
+const ACTION_ICON_MAP: Record<string, { icon: typeof LogIn; color: string }> = {
+  login: { icon: LogIn, color: 'bg-blue-500/10 text-blue-600' },
+  logout: { icon: LogIn, color: 'bg-blue-500/10 text-blue-600' },
+  financial_edit: { icon: Edit3, color: 'bg-rose-500/10 text-rose-600' },
+  approval: { icon: CheckCircle2, color: 'bg-emerald-500/10 text-emerald-600' },
+  status_change: { icon: AlertTriangle, color: 'bg-amber-500/10 text-amber-600' },
+  permission_change: { icon: Shield, color: 'bg-purple-500/10 text-purple-600' },
+};
 
 // TAB 1 — Field Configuration
 interface FieldConfig {
@@ -121,6 +131,19 @@ export default function SystemSettings() {
   );
   const [tolerancePreset, setTolerancePreset] = useState(reconSettings.tolerancePreset);
   const [customTolerance, setCustomTolerance] = useState(String(reconSettings.toleranceValue));
+
+  // Audit log state — fetched from activity_logs table
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+  useEffect(() => {
+    let mounted = true;
+    setAuditLoading(true);
+    activityLogsDb.getAll({ limit: 100 })
+      .then(rows => { if (mounted) setAuditLogs(rows || []); })
+      .catch(e => console.debug('activityLogsDb.getAll failed', e))
+      .finally(() => { if (mounted) setAuditLoading(false); });
+    return () => { mounted = false; };
+  }, []);
 
   const toggleField = (index: number, key: 'mandatory' | 'visible' | 'editable') => {
     setFields(prev => prev.map((f, i) => i === index ? { ...f, [key]: !f[key] } : f));
@@ -495,27 +518,29 @@ export default function SystemSettings() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {[
-                    { id: 'SYS-001', action: 'login', user: 'Sarah Johnson', module: 'Auth', description: 'Admin logged in', timestamp: new Date(Date.now() - 0.5 * 3600000).toISOString(), icon: LogIn, color: 'bg-blue-500/10 text-blue-600' },
-                    { id: 'SYS-002', action: 'financial_edit', user: 'Sarah Johnson', module: 'Finance', description: 'Invoice INV-2026-001 created — ₹53,100', timestamp: new Date(Date.now() - 2 * 3600000).toISOString(), icon: Edit3, color: 'bg-rose-500/10 text-rose-600' },
-                    { id: 'SYS-003', action: 'approval', user: 'Admin', module: 'Onboarding', description: 'BrightWave Electronics application approved', timestamp: new Date(Date.now() - 5 * 3600000).toISOString(), icon: CheckCircle2, color: 'bg-emerald-500/10 text-emerald-600' },
-                    { id: 'SYS-004', action: 'status_change', user: 'Admin', module: 'Returns', description: 'Return RET-2024-001 advanced to Claim Raised', timestamp: new Date(Date.now() - 8 * 3600000).toISOString(), icon: AlertTriangle, color: 'bg-amber-500/10 text-amber-600' },
-                    { id: 'SYS-005', action: 'permission_change', user: 'Sarah Johnson', module: 'Permissions', description: 'Analytics access enabled for Vendor User role', timestamp: new Date(Date.now() - 24 * 3600000).toISOString(), icon: Shield, color: 'bg-purple-500/10 text-purple-600' },
-                    { id: 'SYS-006', action: 'financial_edit', user: 'Admin', module: 'Settings', description: 'Reconciliation tolerance updated to ₹5', timestamp: new Date(Date.now() - 48 * 3600000).toISOString(), icon: Edit3, color: 'bg-rose-500/10 text-rose-600' },
-                    { id: 'SYS-007', action: 'status_change', user: 'Admin', module: 'Subscription', description: 'EverGreen Foods subscription changed from Trial to Fully Paid', timestamp: new Date(Date.now() - 72 * 3600000).toISOString(), icon: AlertTriangle, color: 'bg-amber-500/10 text-amber-600' },
-                    { id: 'SYS-008', action: 'login', user: 'Michael Chen', module: 'Auth', description: 'Vendor logged in from mobile', timestamp: new Date(Date.now() - 96 * 3600000).toISOString(), icon: LogIn, color: 'bg-blue-500/10 text-blue-600' },
-                  ].map(log => {
-                    const Icon = log.icon;
-                    return (
-                      <TableRow key={log.id}>
-                        <TableCell className="text-sm whitespace-nowrap">{format(new Date(log.timestamp), 'dd MMM yyyy HH:mm')}</TableCell>
-                        <TableCell><Badge variant="secondary" className={`gap-1 ${log.color}`}><Icon className="w-3 h-3" />{log.action.replace('_', ' ')}</Badge></TableCell>
-                        <TableCell className="font-medium text-sm">{log.user}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{log.module}</TableCell>
-                        <TableCell className="text-sm max-w-[300px] truncate">{log.description}</TableCell>
-                      </TableRow>
-                    );
-                  })}
+                  {auditLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-8">Loading activity log…</TableCell>
+                    </TableRow>
+                  ) : auditLogs.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-8">No activity recorded yet.</TableCell>
+                    </TableRow>
+                  ) : (
+                    auditLogs.map(log => {
+                      const meta = ACTION_ICON_MAP[log.action] || { icon: AlertTriangle, color: 'bg-amber-500/10 text-amber-600' };
+                      const Icon = meta.icon;
+                      return (
+                        <TableRow key={log.id}>
+                          <TableCell className="text-sm whitespace-nowrap">{format(new Date(log.created_at), 'dd MMM yyyy HH:mm')}</TableCell>
+                          <TableCell><Badge variant="secondary" className={`gap-1 ${meta.color}`}><Icon className="w-3 h-3" />{String(log.action || '').replace(/_/g, ' ')}</Badge></TableCell>
+                          <TableCell className="font-medium text-sm">{log.user_name || log.user_id?.slice(0, 8) || '—'}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{log.module || '—'}</TableCell>
+                          <TableCell className="text-sm max-w-[300px] truncate">{log.description || '—'}</TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
                 </TableBody>
               </Table>
             </CardContent>

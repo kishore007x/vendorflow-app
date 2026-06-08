@@ -27,54 +27,6 @@ interface Meeting {
   keyTopics?: string[];
 }
 
-const defaultMeetings: Meeting[] = [
-  {
-    id: 'M-001', title: 'Weekly Vendor Sync – Amazon Performance', date: '2026-03-18', time: '10:00 AM', duration: '45 min',
-    participants: ['Vikram P.', 'Meena S.', 'Amit K.'], status: 'completed', hasNotes: true, hasRecording: true,
-    aiSummary: 'Discussed Amazon sales dip in electronics category. Agreed to increase ad spend by 20% and revise pricing for 5 underperforming SKUs. Meena to share competitor analysis by Friday.',
-    actionItems: [
-      { task: 'Increase Amazon PPC budget by 20%', assignee: 'Vikram P.', due: '2026-03-20', done: false },
-      { task: 'Revise pricing for 5 underperforming SKUs', assignee: 'Amit K.', due: '2026-03-21', done: false },
-      { task: 'Share competitor analysis report', assignee: 'Meena S.', due: '2026-03-22', done: true },
-      { task: 'Update product images for top 10 listings', assignee: 'Vikram P.', due: '2026-03-25', done: false },
-    ],
-    keyTopics: ['Amazon sales dip', 'PPC budget increase', 'Competitor analysis', 'SKU pricing'],
-  },
-  {
-    id: 'M-002', title: 'Return Rate Analysis – Q1 Review', date: '2026-03-17', time: '2:00 PM', duration: '30 min',
-    participants: ['Sneha R.', 'Ravi J.', 'Priya N.'], status: 'completed', hasNotes: true, hasRecording: false,
-    aiSummary: 'Q1 return rate at 8.2%, up from 6.5% in Q4. Main drivers: size issues (42%) and product damage (28%). Decided to add size charts to all clothing listings and upgrade packaging for fragile items.',
-    actionItems: [
-      { task: 'Add detailed size charts to all clothing SKUs', assignee: 'Sneha R.', due: '2026-03-24', done: false },
-      { task: 'Source better packaging for fragile electronics', assignee: 'Ravi J.', due: '2026-03-22', done: true },
-      { task: 'Set up automated return reason tracking', assignee: 'Priya N.', due: '2026-03-26', done: false },
-    ],
-    keyTopics: ['Return rate increase', 'Size issues', 'Packaging upgrade', 'Return tracking'],
-  },
-  {
-    id: 'M-003', title: 'New Product Launch Planning', date: '2026-03-19', time: '11:00 AM', duration: '60 min',
-    participants: ['Vikram P.', 'Karan S.', 'Anita D.', 'Sneha R.'], status: 'scheduled', hasNotes: false, hasRecording: false,
-  },
-  {
-    id: 'M-004', title: 'Flipkart Partnership Discussion', date: '2026-03-19', time: '3:00 PM', duration: '30 min',
-    participants: ['Amit K.', 'External: Flipkart Team'], status: 'scheduled', hasNotes: false, hasRecording: false,
-  },
-  {
-    id: 'M-005', title: 'Monthly Finance Review', date: '2026-03-15', time: '4:00 PM', duration: '45 min',
-    participants: ['Meena S.', 'Priya N.'], status: 'completed', hasNotes: true, hasRecording: true,
-    aiSummary: 'Revenue up 12% MoM. Settlement delays from Meesho flagged — pending ₹2.3L. COGS increased by 8% due to raw material price hikes. Recommended renegotiating supplier contracts.',
-    actionItems: [
-      { task: 'Follow up with Meesho on pending settlements', assignee: 'Meena S.', due: '2026-03-18', done: true },
-      { task: 'Renegotiate supplier contracts for raw materials', assignee: 'Priya N.', due: '2026-03-28', done: false },
-    ],
-    keyTopics: ['Revenue growth', 'Meesho settlement delay', 'COGS increase', 'Supplier contracts'],
-  },
-  {
-    id: 'M-006', title: 'Team Standup – Operations', date: '2026-03-16', time: '9:30 AM', duration: '15 min',
-    participants: ['Ravi J.', 'Karan S.'], status: 'cancelled', hasNotes: false, hasRecording: false,
-  },
-];
-
 const statusStyle: Record<string, string> = {
   completed: 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30',
   scheduled: 'bg-amber-500/15 text-amber-600 border-amber-500/30',
@@ -96,25 +48,21 @@ export default function GoogleMeetIntegration() {
         const db = await import('@/services/database');
         const tasks = await db.tasksDb.getAll().catch(() => []);
         if (!mounted) return;
-        if ((tasks || []).length > 0) {
-          const generated: Meeting[] = (tasks || []).slice(0, 8).map((t: any, i: number) => ({
-            id: `M-${String(i + 1).padStart(3, '0')}`,
-            title: t.title || t.task_name || t.description || `Meeting ${i + 1}`,
-            date: t.due_date || t.created_at || new Date().toISOString().split('T')[0],
-            time: '10:00 AM',
-            duration: '30 min',
-            participants: [t.assignee || t.assigned_to || 'Team Member'],
-            status: (t.status === 'completed' || t.status === 'scheduled' || t.status === 'cancelled') ? t.status as any : t.status === 'in_progress' ? 'in_progress' : 'completed',
-            hasNotes: t.notes ? true : false,
-            hasRecording: false,
-            aiSummary: t.notes || undefined,
-            actionItems: t.checklist?.length ? t.checklist.map((c: any) => ({ task: c.text || c.title || c, assignee: t.assignee || '', due: t.due_date || '', done: c.done || c.completed || false })) : undefined,
-            keyTopics: t.tags || t.labels || undefined,
-          }));
-          setMeetings(generated);
-        } else {
-          setMeetings(defaultMeetings);
-        }
+        const generated: Meeting[] = (tasks || []).slice(0, 8).map((t: any, i: number) => ({
+          id: `M-${String(i + 1).padStart(3, '0')}`,
+          title: t.title || t.task_name || t.description || `Meeting ${i + 1}`,
+          date: (t.due_date || t.created_at || new Date().toISOString()).split('T')[0],
+          time: '10:00 AM',
+          duration: '30 min',
+          participants: [t.assignee || t.assigned_to || 'Team Member'],
+          status: (t.status === 'completed' || t.status === 'scheduled' || t.status === 'cancelled') ? t.status as any : t.status === 'in_progress' ? 'in_progress' : 'completed',
+          hasNotes: t.notes ? true : false,
+          hasRecording: false,
+          aiSummary: t.notes || undefined,
+          actionItems: t.checklist?.length ? t.checklist.map((c: any) => ({ task: c.text || c.title || c, assignee: t.assignee || '', due: t.due_date || '', done: c.done || c.completed || false })) : undefined,
+          keyTopics: t.tags || t.labels || undefined,
+        }));
+        setMeetings(generated);
       } catch (e) { console.debug('load meetings failed', e); }
     })();
     return () => { mounted = false; };
@@ -159,6 +107,14 @@ export default function GoogleMeetIntegration() {
         {/* Meeting List */}
         <div className="lg:col-span-1 space-y-3">
           <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">Meetings</h3>
+          {meetings.length === 0 && (
+            <Card>
+              <CardContent className="py-10 text-center">
+                <Video className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">No meetings yet. Schedule one or import tasks to populate.</p>
+              </CardContent>
+            </Card>
+          )}
           {meetings.map(m => (
             <Card
               key={m.id}

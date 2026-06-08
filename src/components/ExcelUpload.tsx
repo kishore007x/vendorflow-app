@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -16,9 +16,6 @@ interface UploadedFile {
   progress: number;
   status: 'uploading' | 'complete' | 'error';
 }
-
-const mockPreviewData: any[] = [];
-const mockFileHistory: UploadedFile[] = [];
 
 export function ExcelUpload() {
   const [isDragActive, setIsDragActive] = useState(false);
@@ -61,36 +58,67 @@ export function ExcelUpload() {
     else if (e.type === 'dragleave') setIsDragActive(false);
   }, []);
 
+  const formatSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+  };
+
+  const countCSVRows = (file: File): Promise<number> => {
+    return new Promise((resolve) => {
+      const isCSV = file.name.toLowerCase().endsWith('.csv');
+      if (!isCSV) { resolve(0); return; }
+      let count = 0;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const text = String(ev.target?.result || '');
+        count = text.split(/\r?\n/).filter(l => l.trim().length > 0).length;
+        resolve(Math.max(0, count - 1));
+      };
+      reader.onerror = () => resolve(0);
+      reader.readAsText(file.slice(0, 512 * 1024));
+    });
+  };
+
   const processFiles = (files: FileList | null) => {
     if (!files) return;
     const newFiles: UploadedFile[] = Array.from(files).map((file, index) => ({
       id: `file-${Date.now()}-${index}`,
       name: file.name,
-      size: `${(file.size / 1024).toFixed(1)} KB`,
-      rows: Math.floor(Math.random() * 500) + 100,
+      size: formatSize(file.size),
+      rows: 0,
       uploadedAt: new Date().toLocaleString(),
       progress: 0,
       status: 'uploading' as const,
     }));
 
     setUploadedFiles((prev) => [...prev, ...newFiles]);
+    setShowPreview(true);
 
-    // Simulate upload progress
     newFiles.forEach(f => {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += Math.random() * 30 + 10;
-        if (progress >= 100) {
-          progress = 100;
-          clearInterval(interval);
-          setUploadedFiles(prev => prev.map(uf => uf.id === f.id ? { ...uf, progress: 100, status: 'complete' } : uf));
-        } else {
-          setUploadedFiles(prev => prev.map(uf => uf.id === f.id ? { ...uf, progress: Math.min(progress, 95) } : uf));
+      const fileObj = Array.from(files).find(x => x.name === f.name && !x.uploaded);
+      if (!fileObj) {
+        setUploadedFiles(prev => prev.map(uf => uf.id === f.id ? { ...uf, progress: 100, status: 'complete' } : uf));
+        return;
+      }
+      // Real row count for CSVs
+      countCSVRows(fileObj).then(rows => {
+        setUploadedFiles(prev => prev.map(uf => uf.id === f.id ? { ...uf, rows } : uf));
+      });
+      // Real upload progress via XHR if user wires it up, otherwise mark complete after brief delay
+      const reader = new FileReader();
+      reader.onloadstart = () => setUploadedFiles(prev => prev.map(uf => uf.id === f.id ? { ...uf, progress: 10 } : uf));
+      reader.onprogress = (ev) => {
+        if (ev.lengthComputable) {
+          const pct = Math.min(95, Math.round((ev.loaded / ev.total) * 100));
+          setUploadedFiles(prev => prev.map(uf => uf.id === f.id ? { ...uf, progress: pct } : uf));
         }
-      }, 400);
+      };
+      reader.onload = () => setUploadedFiles(prev => prev.map(uf => uf.id === f.id ? { ...uf, progress: 100, status: 'complete' } : uf));
+      reader.onerror = () => setUploadedFiles(prev => prev.map(uf => uf.id === f.id ? { ...uf, status: 'error' as const, progress: 0 } : uf));
+      reader.readAsArrayBuffer(fileObj.slice(0, 64 * 1024));
     });
 
-    setShowPreview(true);
     toast({ title: 'Files Uploaded', description: `${files.length} file(s) uploaded successfully.` });
   };
 
@@ -195,7 +223,7 @@ export function ExcelUpload() {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            {(history.length ? history : mockFileHistory).map(file => (
+            {history.map(file => (
               <div key={file.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                 <div className="flex items-center gap-3">
                   <FileSpreadsheet className="w-5 h-5 text-muted-foreground" />
@@ -221,20 +249,20 @@ export function ExcelUpload() {
           <CardContent>
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>SKU ID</TableHead>
-                  <TableHead>Product Name</TableHead>
-                  <TableHead className="text-right">Quantity</TableHead>
-                  <TableHead className="text-right">Price (₹)</TableHead>
-                </TableRow>
+                  <TableRow>
+                    <TableHead>File</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead className="text-right">Rows Detected</TableHead>
+                    <TableHead className="text-right">Size</TableHead>
+                  </TableRow>
               </TableHeader>
                 <TableBody>
-                  {(uploadedFiles.length ? uploadedFiles.slice(0,5).map((f, idx) => ({ skuId: `PREV-${idx+1}`, productName: f.name, quantity: f.rows || 0, price: 0 })) : mockPreviewData).map((row: any) => (
-                    <TableRow key={row.skuId}>
-                      <TableCell className="font-mono text-sm">{row.skuId}</TableCell>
-                      <TableCell>{row.productName}</TableCell>
-                      <TableCell className="text-right">{row.quantity}</TableCell>
-                      <TableCell className="text-right">₹{row.price?.toLocaleString ? row.price.toLocaleString() : row.price}</TableCell>
+                  {uploadedFiles.slice(0, 5).map((f) => (
+                    <TableRow key={f.id}>
+                      <TableCell className="font-mono text-sm">{f.name}</TableCell>
+                      <TableCell className="text-sm">{f.name}</TableCell>
+                      <TableCell className="text-right">{f.rows > 0 ? f.rows.toLocaleString() : '—'}</TableCell>
+                      <TableCell className="text-right">{f.size}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

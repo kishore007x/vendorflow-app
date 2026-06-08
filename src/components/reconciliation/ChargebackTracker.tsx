@@ -21,8 +21,6 @@ interface Chargeback {
   responsibleUser: string;
 }
 
-const mockChargebacks: Chargeback[] = [];
-
 const statusConfig: Record<ChargebackStatus, { label: string; className: string; icon: React.ElementType }> = {
   initiated: { label: 'Initiated', className: 'bg-blue-500/15 text-blue-600 border-blue-500/30', icon: Clock },
   under_review: { label: 'Under Review', className: 'bg-amber-500/15 text-amber-600 border-amber-500/30', icon: AlertCircle },
@@ -72,10 +70,10 @@ export default function ChargebackTracker() {
   }, [filterStatus, chargebacks]);
 
   const stats = useMemo(() => ({
-    total: mockChargebacks.length,
-    totalLost: mockChargebacks.filter(c => c.status === 'lost').reduce((s, c) => s + c.amount, 0),
-    openDisputes: mockChargebacks.filter(c => c.status === 'initiated' || c.status === 'under_review').length,
-  }), []);
+    total: chargebacks.length,
+    totalLost: chargebacks.filter(c => c.status === 'lost').reduce((s, c) => s + c.amount, 0),
+    openDisputes: chargebacks.filter(c => c.status === 'initiated' || c.status === 'under_review').length,
+  }), [chargebacks]);
 
   return (
     <div className="space-y-4">

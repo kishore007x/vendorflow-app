@@ -11,6 +11,7 @@ import { getChannels } from '@/services/channelManager';
 import { ChannelIcon } from '@/components/ChannelIcon';
 import { ordersDb } from '@/services/database';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Download, FileSpreadsheet, FileDown, FileText, TrendingUp, TrendingDown, Calendar,
   ArrowUpRight, ArrowDownRight, Trophy, AlertTriangle, BarChart3,
@@ -19,7 +20,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { GlobalDateFilter, type DateRange } from '@/components/GlobalDateFilter';
 
-const portals = ['amazon', 'flipkart', 'meesho', 'firstcry', 'blinkit', 'own_website'] as const;
+const portals = getChannels().map(c => c.id);
 
 const dateRanges = [
   { value: 'today', label: 'Today' },
@@ -111,18 +112,28 @@ interface ConsolidatedRow {
   masterSku: string;
   barcode: string;
   brand: string;
-  amazon: number;
-  flipkart: number;
-  meesho: number;
-  firstcry: number;
-  blinkit: number;
-  own_website: number;
   total: number;
 }
 
 const tabActiveClass = "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground";
 
+function getDateBounds(range: string): { currStart: Date; currEnd: Date; prevStart: Date; prevEnd: Date } {
+  const now = new Date();
+  const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+  switch (range) {
+    case 'today': return { currStart: new Date(now.getFullYear(), now.getMonth(), now.getDate()), currEnd: endOfToday, prevStart: new Date(now.getTime() - 86400000), prevEnd: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59) };
+    case '7days': return { currStart: new Date(now.getTime() - 7 * 86400000), currEnd: endOfToday, prevStart: new Date(now.getTime() - 14 * 86400000), prevEnd: new Date(now.getTime() - 7 * 86400000) };
+    case '30days': return { currStart: new Date(now.getTime() - 30 * 86400000), currEnd: endOfToday, prevStart: new Date(now.getTime() - 60 * 86400000), prevEnd: new Date(now.getTime() - 30 * 86400000) };
+    case 'quarter': return { currStart: new Date(now.getTime() - 90 * 86400000), currEnd: endOfToday, prevStart: new Date(now.getTime() - 180 * 86400000), prevEnd: new Date(now.getTime() - 90 * 86400000) };
+    case 'this_year': return { currStart: new Date(now.getFullYear(), 0, 1), currEnd: endOfToday, prevStart: new Date(now.getFullYear() - 1, 0, 1), prevEnd: new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59) };
+    case 'last_year': return { currStart: new Date(now.getFullYear() - 1, 0, 1), currEnd: new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59), prevStart: new Date(now.getFullYear() - 2, 0, 1), prevEnd: new Date(now.getFullYear() - 2, 11, 31, 23, 59, 59) };
+    case 'yoy': return { currStart: new Date(now.getFullYear(), 0, 1), currEnd: endOfToday, prevStart: new Date(now.getFullYear() - 1, 0, 1), prevEnd: new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59) };
+    default: return { currStart: new Date(0), currEnd: endOfToday, prevStart: new Date(0), prevEnd: endOfToday };
+  }
+}
+
 export default function ConsolidatedOrders() {
+  const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [dateRange, setDateRange] = useState('7days');
   const [viewMode, setViewMode] = useState<'normal' | 'comparison'>('normal');
@@ -139,6 +150,11 @@ export default function ConsolidatedOrders() {
   const activeView = isYoY ? 'comparison' : viewMode;
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user?.id) {
+      setIsLoading(false);
+      return;
+    }
     const load = async () => {
       try {
         const ordersData = await ordersDb.getAll();
@@ -156,30 +172,47 @@ export default function ConsolidatedOrders() {
       }
     };
     load();
-  }, []);
+  }, [authLoading, user?.id]);
 
-  const consolidatedData = useMemo((): ConsolidatedRow[] => {
+  const dateBounds = useMemo(() => getDateBounds(isYoY ? 'yoy' : dateRange), [dateRange, isYoY]);
+
+  const filteredOrderItems = useMemo(() => {
+    return orderItems.filter((item: any) => {
+      const orderDate = new Date(item.orders?.order_date || item.created_at || 0);
+      return orderDate >= dateBounds.currStart && orderDate <= dateBounds.currEnd;
+    });
+  }, [orderItems, dateBounds]);
+
+  const prevOrderItems = useMemo(() => {
+    return orderItems.filter((item: any) => {
+      const orderDate = new Date(item.orders?.order_date || item.created_at || 0);
+      return orderDate >= dateBounds.prevStart && orderDate <= dateBounds.prevEnd;
+    });
+  }, [orderItems, dateBounds]);
+
+  const consolidate = (items: any[], label: string): ConsolidatedRow[] => {
     const skuMap: Record<string, ConsolidatedRow> = {};
-    orderItems.forEach((item: any) => {
-      const portal = (item as any).orders?.portal || 'unknown';
-      const key = item.sku || item.product_name;
+    items.forEach((item: any) => {
+      const portal = item.orders?.portal || 'unknown';
+      const key = item.sku || item.product_name || label;
       if (!skuMap[key]) {
         const mapping = skuMappings.find(m => m.master_sku_id === item.sku ||
           m.amazon_sku === item.sku || m.flipkart_sku === item.sku ||
           m.meesho_sku === item.sku || m.firstcry_sku === item.sku ||
           m.blinkit_sku === item.sku || m.own_website_sku === item.sku
         );
-        skuMap[key] = {
-          productName: item.product_name,
+        const row: any = {
+          productName: item.product_name || 'Unknown Product',
           sku: item.sku || 'N/A',
           masterSku: mapping?.master_sku_id || item.sku || 'N/A',
           barcode: mapping?.master_sku_id || item.sku || `BC-${(item.product_name || '').replace(/\s/g, '').slice(0, 8).toUpperCase()}`,
           brand: mapping?.brand || 'General',
-          amazon: 0, flipkart: 0, meesho: 0, firstcry: 0, blinkit: 0, own_website: 0,
           total: 0,
         };
+        portals.forEach(p => { row[p] = 0; });
+        skuMap[key] = row as ConsolidatedRow;
       }
-      if (portals.includes(portal as any)) {
+      if (portals.includes(portal)) {
         (skuMap[key] as any)[portal] += item.quantity || 1;
       }
     });
@@ -187,27 +220,25 @@ export default function ConsolidatedOrders() {
       row.total = portals.reduce((s, p) => s + (row as any)[p], 0);
     });
     return Object.values(skuMap).sort((a, b) => b.total - a.total);
-  }, [orderItems, skuMappings]);
+  };
+
+  const consolidatedData = useMemo(() => consolidate(filteredOrderItems, 'Current'), [filteredOrderItems, skuMappings]);
+  const prevConsolidatedData = useMemo(() => consolidate(prevOrderItems, 'Previous'), [prevOrderItems, skuMappings]);
 
   const fallbackData = useMemo((): ConsolidatedRow[] => {
     if (orderItems.length > 0) return [];
     const portalMap: Record<string, number> = {};
     orders.forEach(o => { portalMap[o.portal] = (portalMap[o.portal] || 0) + 1; });
-    return [{
+    const row: any = {
       productName: 'All Products', sku: 'AGGREGATE', masterSku: 'AGGREGATE', barcode: 'AGGREGATE', brand: '-',
-      amazon: portalMap['amazon'] || 0, flipkart: portalMap['flipkart'] || 0, meesho: portalMap['meesho'] || 0,
-      firstcry: portalMap['firstcry'] || 0, blinkit: portalMap['blinkit'] || 0, own_website: portalMap['own_website'] || 0,
       total: orders.length,
-    }];
+    };
+    portals.forEach(p => { row[p] = portalMap[p] || 0; });
+    return [row as ConsolidatedRow];
   }, [orders, orderItems]);
 
   const currentData = consolidatedData.length > 0 ? consolidatedData : fallbackData;
-  const prevData = currentData.map(row => ({
-    ...row,
-    amazon: Math.round(row.amazon * 0.8), flipkart: Math.round(row.flipkart * 0.78),
-    meesho: Math.round(row.meesho * 0.7), firstcry: Math.round(row.firstcry * 0.82),
-    blinkit: Math.round(row.blinkit * 0.65), own_website: Math.round(row.own_website * 0.6), total: 0,
-  })).map(row => ({ ...row, total: portals.reduce((s, p) => s + (row as any)[p], 0) }));
+  const prevData = prevConsolidatedData.length > 0 ? prevConsolidatedData : currentData.map(row => ({ ...row, ...Object.fromEntries(portals.map(p => [p, 0])), total: 0 }));
 
   const totalOrders = currentData.reduce((sum, row) => sum + row.total, 0);
   const prevTotalOrders = prevData.reduce((sum, row) => sum + row.total, 0);
@@ -536,7 +567,7 @@ export default function ConsolidatedOrders() {
                     </TableHeader>
                     <TableBody>
                       {currentData.map((row, i) => {
-                        const prevRow = prevData[i];
+                        const prevRow = prevData.find(p => p.masterSku === row.masterSku || p.sku === row.sku);
                         const isHighVolume = row.total >= highVolumeThreshold;
                         return (
                           <TableRow key={row.sku + i} className={isHighVolume ? 'bg-emerald-500/5' : ''}>

@@ -41,6 +41,39 @@ interface DBOrder { totalAmount?: number; total_amount?: number; total?: number;
 
 const defaultDaily = Array.from({ length: 14 }, (_, i) => ({ day: `Day ${i + 1}`, revenue: 0, orders: 0, cost: 0 }));
 
+function buildPriceLookup(products: any[]): Map<string, number> {
+  const map = new Map<string, number>();
+  (products || []).forEach((p: any) => {
+    const price = Number(p.base_price ?? p.price ?? p.selling_price ?? p.mrp ?? 0) || 0;
+    if (price <= 0) return;
+    [p.id, p.sku, p.name, p.product_name].filter(Boolean).forEach((k: any) => {
+      map.set(String(k).toLowerCase(), price);
+    });
+  });
+  return map;
+}
+
+function deriveOrderRevenue(order: any, priceLookup?: Map<string, number>): number {
+  const items = order.order_items || order.items || order.orderItems || [];
+  const itemRevenue = items.reduce((sum: number, item: any) => {
+    const quantity = Number(item.quantity ?? item.qty ?? 1) || 1;
+    const directAmount = Number(item.total ?? item.total_price ?? item.line_total ?? 0) || 0;
+    if (directAmount > 0) return sum + directAmount;
+    const unit = Number(item.unit_price ?? item.price ?? item.selling_price ?? 0) || 0;
+    if (unit > 0) return sum + unit * quantity;
+    if (priceLookup && priceLookup.size > 0) {
+      const keys = [item.product_id, item.sku, item.product_name].filter(Boolean);
+      for (const k of keys) {
+        const lk = String(k).toLowerCase();
+        if (priceLookup.has(lk)) return sum + (priceLookup.get(lk) || 0) * quantity;
+      }
+    }
+    return sum;
+  }, 0);
+  const direct = Number(order.totalAmount ?? order.total_amount ?? order.total ?? order.amount ?? 0) || 0;
+  return direct > 0 ? direct : itemRevenue;
+}
+
 // ---- Filter bar component ----
 function InsightsFilterBar({ channel, onChannelChange, sortBy, onSortChange, children }: {
   channel: string; onChannelChange: (v: string) => void;
@@ -78,7 +111,7 @@ function InsightsFilterBar({ channel, onChannelChange, sortBy, onSortChange, chi
   );
 }
 
-function groupOrdersByPeriod(orders: any[], period: SalesPeriod) {
+function groupOrdersByPeriod(orders: any[], period: SalesPeriod, priceLookup?: Map<string, number>) {
   const grouped: Record<string, { day: string; revenue: number; orders: number; cost: number; sortKey: number }> = {};
 
   orders.forEach((order: any) => {
@@ -105,8 +138,7 @@ function groupOrdersByPeriod(orders: any[], period: SalesPeriod) {
     }
 
     if (!grouped[key]) grouped[key] = { day: label, revenue: 0, orders: 0, cost: 0, sortKey };
-    const amount = Number(order.totalAmount ?? order.total_amount ?? order.total ?? 0) || 0;
-    grouped[key].revenue += amount;
+    grouped[key].revenue += deriveOrderRevenue(order, priceLookup);
     grouped[key].orders += 1;
   });
 
@@ -154,12 +186,14 @@ function ExecutiveDashboard() {
   const [activeVendorCount, setActiveVendorCount] = useState(0);
   const [alertsCount, setAlertsCount] = useState(0);
 
+  const priceLookup = useMemo(() => buildPriceLookup(products), [products]);
+
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
         const [ords, prds, vends, alts] = await Promise.all([
-          ordersDb.getAll().catch(() => []),
+          ordersDb.getAllWithItems().catch(() => []),
           productsDb.getAll().catch(() => []),
           (await import('@/services/database')).vendorsDb.getAll().catch(() => []),
           (await import('@/services/database')).alertsDb.getAll().catch(() => []),
@@ -170,15 +204,15 @@ function ExecutiveDashboard() {
         setActiveVendorCount((vends || []).length);
         setAlertsCount((alts || []).filter((a: any) => a.type === 'risk' || a.severity === 'high').length);
 
-        // group orders by month for chart
+        const lookup = buildPriceLookup(prds || []);
+
         const byMonth: Record<string, { revenue: number; orders: number }> = {};
         (ords || []).forEach((o: any) => {
           const od = new Date(o.order_date || o.created_at || null);
           if (isNaN(od.getTime())) return;
           const key = `${od.getFullYear()}-${(od.getMonth()+1).toString().padStart(2,'0')}`;
           if (!byMonth[key]) byMonth[key] = { revenue: 0, orders: 0 };
-          const amt = Number(o.totalAmount ?? o.total_amount ?? o.total ?? 0) || 0;
-          byMonth[key].revenue += amt;
+          byMonth[key].revenue += deriveOrderRevenue(o, lookup);
           byMonth[key].orders += 1;
         });
         const ds = Object.keys(byMonth).sort().map(k => ({ day: k, revenue: Math.round(byMonth[k].revenue), orders: byMonth[k].orders, cost: 0 }));
@@ -190,30 +224,38 @@ function ExecutiveDashboard() {
     return () => { mounted = false; };
   }, []);
 
-  const filteredChannelRevenue = useMemo(() => {
-    // build channel revenue from orders if present
+  const channelRevenue = useMemo(() => {
     const map: Record<string, number> = {};
-    orders.forEach(o => { map[o.portal] = (map[o.portal] || 0) + (o.totalAmount || o.total_amount || o.total || 0); });
-    const data = Object.entries(map).map(([k, v]) => ({ id: k, name: k, value: v, color: 'hsl(var(--chart-1))' }));
-    let res = channel === 'all' ? data : data.filter(c => c.name.toLowerCase() === channel);
+    orders.forEach((o: any) => {
+      const portal = o.portal || 'unknown';
+      map[portal] = (map[portal] || 0) + deriveOrderRevenue(o, priceLookup);
+    });
+    const palette = ['hsl(217, 91%, 60%)', 'hsl(142, 71%, 45%)', 'hsl(340, 82%, 52%)', 'hsl(38, 92%, 50%)', 'hsl(262, 83%, 58%)', 'hsl(173, 80%, 40%)'];
+    return Object.entries(map).map(([k, v], i) => ({ id: k, name: k, value: v, color: palette[i % palette.length] }));
+  }, [orders, priceLookup]);
+
+  const filteredChannelRevenue = useMemo(() => {
+    let res = channel === 'all' ? channelRevenue : channelRevenue.filter(c => c.name.toLowerCase() === channel);
     if (sortBy === 'revenue') res = [...res].sort((a, b) => b.value - a.value);
     return res;
-  }, [channel, sortBy, orders]);
+  }, [channel, sortBy, channelRevenue]);
 
   const totalRevenue = filteredChannelRevenue.reduce((s, c) => s + c.value, 0);
-  const topChannel = filteredChannelRevenue.length ? filteredChannelRevenue.reduce((a, b) => a.value > b.value ? a : b) : { name: 'N/A', value: 0 };
+  const topChannel = channelRevenue.length
+    ? channelRevenue.reduce((a, b) => (a.value > b.value ? a : b))
+    : { name: 'N/A', value: 0 };
 
   const totalOrderCount = orders.length;
-  const totalCost = orders.reduce((s: number, o: any) => s + Number(o.commission || 0) + Number(o.shipping_fee || 0), 0);
+  const totalCost = orders.reduce((s: number, o: any) => s + (Number(o.commission) || 0) + (Number(o.shipping_fee) || 0), 0);
   const netProfit = totalRevenue - totalCost;
-  const growthPct = orders.length > 0 ? totalRevenue > 0 ? ((totalRevenue - totalCost) / totalRevenue * 100).toFixed(1) : '0' : '0';
+  const marginPct = totalRevenue > 0 ? (((totalRevenue - totalCost) / totalRevenue) * 100).toFixed(1) : '0';
 
   return (
     <div className="space-y-6">
       <InsightsFilterBar channel={channel} onChannelChange={setChannel} sortBy={sortBy} onSortChange={setSortBy} />
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatCard icon={IndianRupee} label="Total Revenue" value={fmt(totalRevenue)} variant="success" />
-        <StatCard icon={TrendingUp} label="Margin %" value={`${growthPct}%`} variant="success" />
+        <StatCard icon={TrendingUp} label="Margin %" value={`${marginPct}%`} variant="success" />
         <StatCard icon={Users} label="Active Vendors" value={activeVendorCount.toString()} />
         <StatCard icon={IndianRupee} label="Net Profit" value={fmt(netProfit)} variant="success" />
         <StatCard icon={BarChart3} label="Top Channel" value={topChannel.name} />
@@ -273,12 +315,48 @@ function SalesDashboard() {
       try {
         const [pr, ords] = await Promise.all([
           productsDb.getAll().catch(() => []),
-          ordersDb.getAll().catch(() => []),
+          ordersDb.getAllWithItems().catch(() => []),
         ]);
         if (!mounted) return;
         setProducts(pr || []);
         setOrders(ords || []);
-        const top = (pr || []).map((p: any) => ({ name: p.name || p.product_name || 'Unknown', revenue: p.revenue || p.total_sales || 0, orders: p.orders_count || p.sales_count || 0, growth: 0 }));
+        const lookup = buildPriceLookup(pr || []);
+        const productRevenue: Record<string, { revenue: number; count: number }> = {};
+        (ords || []).forEach((o: any) => {
+          const items = o.order_items || o.items || [];
+          if (items.length > 0) {
+            items.forEach((it: any) => {
+              const ipName = it.product_name || it.name || it.sku || 'Unknown';
+              const qty = Number(it.quantity ?? it.qty ?? 1) || 1;
+              let iAmt = Number(it.total ?? it.total_price ?? it.line_total ?? 0) || 0;
+              if (iAmt === 0) {
+                const unit = Number(it.unit_price ?? it.price ?? it.selling_price ?? 0) || 0;
+                if (unit > 0) iAmt = unit * qty;
+                else {
+                  const keys = [it.product_id, it.sku, it.product_name].filter(Boolean);
+                  for (const k of keys) {
+                    const lk = String(k).toLowerCase();
+                    if (lookup.has(lk)) { iAmt = (lookup.get(lk) || 0) * qty; break; }
+                  }
+                }
+              }
+              if (!productRevenue[ipName]) productRevenue[ipName] = { revenue: 0, count: 0 };
+              productRevenue[ipName].revenue += iAmt;
+              productRevenue[ipName].count += qty;
+            });
+          } else {
+            const pName = o.product_name || o.productName || o.name || 'Unknown';
+            const amt = deriveOrderRevenue(o, lookup);
+            if (!productRevenue[pName]) productRevenue[pName] = { revenue: 0, count: 0 };
+            productRevenue[pName].revenue += amt;
+            productRevenue[pName].count += 1;
+          }
+        });
+        const top = (pr || []).map((p: any) => {
+          const name = p.name || p.product_name || 'Unknown';
+          const rev = productRevenue[name];
+          return { name, revenue: rev?.revenue || 0, orders: rev?.count || 0, growth: 0 };
+        });
         setSortedProducts(top);
       } catch (e) { console.debug('failed load products & orders', e); }
     })();
@@ -290,7 +368,8 @@ function SalesDashboard() {
     return orders.filter((order: any) => (order.portal || '').toLowerCase() === channel.toLowerCase());
   }, [orders, channel]);
 
-  const dailySalesLocal = useMemo(() => groupOrdersByPeriod(filteredOrders, period), [filteredOrders, period]);
+  const priceLookup = useMemo(() => buildPriceLookup(products), [products]);
+  const dailySalesLocal = useMemo(() => groupOrdersByPeriod(filteredOrders, period, priceLookup), [filteredOrders, period, priceLookup]);
 
   useEffect(() => {
     const data = [...sortedProducts];
@@ -302,6 +381,9 @@ function SalesDashboard() {
   const totalOrders = dailySalesLocal.reduce((s, d) => s + d.orders, 0);
   const totalRev = dailySalesLocal.reduce((s, d) => s + d.revenue, 0);
   const avgOrderValue = totalOrders > 0 ? Math.round(totalRev / totalOrders) : 0;
+  const uniqueCustomers = new Set(filteredOrders.map((o: any) => o.customer_email || o.customerEmail || o.customer_id || o.customerId || o.phone || o.phone_number)).size;
+  const repeatOrders = totalOrders - uniqueCustomers;
+  const repeatRate = totalOrders > 0 ? Math.round((repeatOrders / totalOrders) * 100) : 0;
 
   return (
     <div className="space-y-6">
@@ -318,10 +400,10 @@ function SalesDashboard() {
         </Select>
       </InsightsFilterBar>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={IndianRupee} label="Period Revenue" value={fmt(totalRev)} change={11.4} variant="success" />
-        <StatCard icon={ShoppingCart} label="Total Orders" value={totalOrders.toString()} change={7.2} />
-        <StatCard icon={TrendingUp} label="Conversion Rate" value="3.8%" change={0.4} variant="success" />
-        <StatCard icon={Package} label="Avg Order Value" value={fmt(avgOrderValue)} change={2.1} />
+        <StatCard icon={IndianRupee} label="Period Revenue" value={fmt(totalRev)} variant="success" />
+        <StatCard icon={ShoppingCart} label="Total Orders" value={totalOrders.toString()} />
+        <StatCard icon={TrendingUp} label="Repeat Rate" value={`${repeatRate}%`} variant={repeatRate > 20 ? 'success' : 'default'} />
+        <StatCard icon={Package} label="Avg Order Value" value={fmt(avgOrderValue)} />
       </div>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -374,53 +456,109 @@ function SalesDashboard() {
 function SupportDashboard() {
   const [channel, setChannel] = useState('all');
   const [sortBy, setSortBy] = useState('date');
-  const [ticketDataLocal, setTicketDataLocal] = useState<{ category: string; count: number; trend: number }[]>([]);
-  const totalTickets = ticketDataLocal.reduce((s, t) => s + t.count, 0);
+  const [returns, setReturns] = useState<any[]>([]);
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [customerCount, setCustomerCount] = useState(0);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        const alerts = await (await import('@/services/database')).alertsDb.getAll().catch(() => []);
+        const db = await import('@/services/database');
+        const [rets, alts, custs] = await Promise.all([
+          returnsDb.getAll().catch(() => []),
+          db.alertsDb.getAll().catch(() => []),
+          db.customersDb.getAll().catch(() => []),
+        ]);
         if (!mounted) return;
-        // aggregate by type
-        const map: Record<string, number> = {};
-        (alerts || []).forEach((a: any) => { map[a.type || 'General'] = (map[a.type || 'General'] || 0) + 1; });
-        const data = Object.entries(map).map(([k, v]) => ({ category: k, count: v, trend: 0 }));
-        setTicketDataLocal(data);
-      } catch (e) { console.debug('failed to load alerts', e); }
+        setReturns(rets || []);
+        setAlerts(alts || []);
+        setCustomerCount((custs || []).length);
+      } catch (e) { console.debug('failed to load support data', e); }
     })();
     return () => { mounted = false; };
   }, []);
+
+  const filteredReturns = useMemo(() => {
+    if (channel === 'all') return returns;
+    return returns.filter((r: any) => (r.portal || '').toLowerCase() === channel);
+  }, [returns, channel]);
+
+  const filteredAlerts = useMemo(() => {
+    if (channel === 'all') return alerts;
+    return alerts.filter((a: any) => (a.portal || '').toLowerCase() === channel);
+  }, [alerts, channel]);
+
+  const resolvedStatuses = new Set(['closed', 'refund_initiated', 'completed', 'resolved']);
+  const openReturns = filteredReturns.filter((r: any) => !resolvedStatuses.has((r.status || '').toLowerCase())).length;
+  const resolvedReturns = filteredReturns.length - openReturns;
+  const openAlerts = filteredAlerts.filter((a: any) => !a.read).length;
+  const totalTickets = filteredReturns.length + filteredAlerts.length;
+  const openTickets = openReturns + openAlerts;
+  const resolutionRate = totalTickets > 0
+    ? Math.round(((resolvedReturns + (filteredAlerts.length - openAlerts)) / totalTickets) * 100)
+    : 0;
+
+  const ticketDataLocal = useMemo(() => {
+    const map: Record<string, { count: number; resolved: number }> = {};
+    filteredReturns.forEach((r: any) => {
+      const cat = (r.reason || 'Other Returns').toString().trim() || 'Other Returns';
+      if (!map[cat]) map[cat] = { count: 0, resolved: 0 };
+      map[cat].count += 1;
+      if (resolvedStatuses.has((r.status || '').toLowerCase())) map[cat].resolved += 1;
+    });
+    filteredAlerts.forEach((a: any) => {
+      const cat = a.type ? `Alert: ${a.type}` : 'Alerts';
+      if (!map[cat]) map[cat] = { count: 0, resolved: 0 };
+      map[cat].count += 1;
+      if (a.read) map[cat].resolved += 1;
+    });
+    let rows = Object.entries(map).map(([category, v]) => ({
+      category,
+      count: v.count,
+      openCount: v.count - v.resolved,
+      resolvedCount: v.resolved,
+      trend: v.count > 0 ? Math.round((1 - v.resolved / v.count) * 100) : 0,
+    }));
+    if (sortBy === 'revenue') rows = rows.sort((a, b) => b.count - a.count);
+    return rows;
+  }, [filteredReturns, filteredAlerts, sortBy]);
 
   return (
     <div className="space-y-6">
       <InsightsFilterBar channel={channel} onChannelChange={setChannel} sortBy={sortBy} onSortChange={setSortBy} />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={HeadphonesIcon} label="Open Tickets" value={totalTickets.toString()} change={-6} variant="warning" />
-        <StatCard icon={Clock} label="Avg Response Time" value="2.4 hrs" change={-12} variant="success" />
-        <StatCard icon={CheckCircle2} label="Resolution Rate" value="87%" change={3} variant="success" />
-        <StatCard icon={Users} label="Customer Retention" value="92%" change={1.5} variant="success" />
+        <StatCard icon={HeadphonesIcon} label="Open Tickets" value={openTickets.toString()} variant={openTickets > 0 ? 'warning' : 'success'} />
+        <StatCard icon={CheckCircle2} label="Resolution Rate" value={`${resolutionRate}%`} variant={resolutionRate > 60 ? 'success' : 'warning'} />
+        <StatCard icon={Users} label="Unique Customers" value={customerCount.toString()} />
+        <StatCard icon={Activity} label="Categories" value={ticketDataLocal.length.toString()} />
       </div>
       <Card>
-        <CardHeader><CardTitle className="text-base">Issue Categories</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-base">Issue Categories</CardTitle>
+          <CardDescription>{totalTickets} total · {openTickets} open · {resolvedReturns + (filteredAlerts.length - openAlerts)} resolved</CardDescription>
+        </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {ticketDataLocal.map(t => (
-              <div key={t.category} className="space-y-1.5">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{t.category}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">{t.count} tickets</span>
-                    <Badge variant="secondary" className={`text-xs ${t.trend <= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                      {t.trend <= 0 ? '↓' : '↑'} {Math.abs(t.trend)}%
-                    </Badge>
+          {ticketDataLocal.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">No support tickets or alerts yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {ticketDataLocal.map(t => (
+                <div key={t.category} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">{t.category}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">{t.count} tickets ({t.openCount} open)</span>
+                      <Badge variant="secondary" className={`text-xs ${t.trend <= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        {t.trend <= 0 ? '↓' : '↑'} {Math.abs(t.trend)}%
+                      </Badge>
+                    </div>
                   </div>
+                  <Progress value={totalTickets > 0 ? (t.count / totalTickets) * 100 : 0} className="h-2" />
                 </div>
-                <Progress value={totalTickets > 0 ? (t.count / totalTickets) * 100 : 0} className="h-2" />
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -431,40 +569,100 @@ function SupportDashboard() {
 function FinancialDashboard() {
   const [channel, setChannel] = useState('all');
   const [sortBy, setSortBy] = useState('date');
-  const [profitTrendLocal, setProfitTrendLocal] = useState(() => Array.from({ length: 6 }, (_, i) => ({ month: `M${i+1}`, revenue: 0, cost: 0, profit: 0, margin: 0 })));
+  const [orders, setOrders] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [expenses, setExpenses] = useState<any[]>([]);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        const orders = await ordersDb.getAll().catch(() => []);
+        const db = await import('@/services/database');
+        const [ords, prds, exps] = await Promise.all([
+          ordersDb.getAllWithItems().catch(() => []),
+          productsDb.getAll().catch(() => []),
+          db.expensesDb.getAll().catch(() => []),
+        ]);
         if (!mounted) return;
-        // collect all months with orders
-        const monthMap: Record<string, number> = {};
-        (orders || []).forEach((o: any) => {
-          const od = new Date(o.order_date || o.created_at || o.orderDate || null);
-          if (isNaN(od.getTime())) return;
-          const key = `${od.getFullYear()}-${(od.getMonth()+1).toString().padStart(2,'0')}`;
-          const amt = Number(o.totalAmount ?? o.total_amount ?? o.total ?? 0) || 0;
-          monthMap[key] = (monthMap[key] || 0) + amt;
-        });
-        const trend = Object.keys(monthMap).sort().map(k => ({ month: k, revenue: Math.round(monthMap[k]), cost: 0, profit: Math.round(monthMap[k]), margin: 100 }));
-        setProfitTrendLocal(trend);
-      } catch (e) { console.debug('failed profit trend', e); }
+        setOrders(ords || []);
+        setProducts(prds || []);
+        setExpenses(exps || []);
+      } catch (e) { console.debug('failed financial load', e); }
     })();
     return () => { mounted = false; };
   }, []);
-  const latestLocal = profitTrendLocal[profitTrendLocal.length - 1] || { margin: 0 };
-  const marginWarningLocal = latestLocal.margin < 25;
+
+  const priceLookup = useMemo(() => buildPriceLookup(products), [products]);
+
+  const filteredOrders = useMemo(() => {
+    if (channel === 'all') return orders;
+    return orders.filter((o: any) => (o.portal || '').toLowerCase() === channel);
+  }, [orders, channel]);
+
+  const profitTrendLocal = useMemo(() => {
+    const monthMap: Record<string, { revenue: number; cost: number }> = {};
+    filteredOrders.forEach((o: any) => {
+      const od = new Date(o.order_date || o.created_at || null);
+      if (isNaN(od.getTime())) return;
+      const key = `${od.getFullYear()}-${(od.getMonth()+1).toString().padStart(2,'0')}`;
+      if (!monthMap[key]) monthMap[key] = { revenue: 0, cost: 0 };
+      monthMap[key].revenue += deriveOrderRevenue(o, priceLookup);
+      monthMap[key].cost += (Number(o.commission) || 0) + (Number(o.shipping_fee) || 0);
+    });
+    // Expenses are not channel-scoped — only include when "all" channels
+    if (channel === 'all') {
+      expenses.forEach((e: any) => {
+        const ed = new Date(e.expense_date || e.created_at || null);
+        if (isNaN(ed.getTime())) return;
+        const key = `${ed.getFullYear()}-${(ed.getMonth()+1).toString().padStart(2,'0')}`;
+        if (!monthMap[key]) monthMap[key] = { revenue: 0, cost: 0 };
+        monthMap[key].cost += Number(e.amount) || 0;
+      });
+    }
+    let rows = Object.keys(monthMap).sort().map(k => {
+      const r = Math.round(monthMap[k].revenue);
+      const c = Math.round(monthMap[k].cost);
+      const p = r - c;
+      const m = r > 0 ? Math.round((p / r) * 100) : 0;
+      return { month: k, revenue: r, cost: c, profit: p, margin: m };
+    });
+    if (sortBy === 'revenue') rows = [...rows].sort((a, b) => b.revenue - a.revenue);
+    return rows;
+  }, [filteredOrders, expenses, priceLookup, channel, sortBy]);
+
+  // Aggregate totals (more honest than "latest month")
+  const totals = useMemo(() => {
+    return profitTrendLocal.reduce(
+      (acc, r) => ({
+        revenue: acc.revenue + r.revenue,
+        cost: acc.cost + r.cost,
+        profit: acc.profit + r.profit,
+      }),
+      { revenue: 0, cost: 0, profit: 0 }
+    );
+  }, [profitTrendLocal]);
+
+  const margin = totals.revenue > 0 ? Math.round((totals.profit / totals.revenue) * 100) : 0;
+
+  // Find latest non-empty months for growth comparison
+  const nonEmpty = profitTrendLocal.filter(r => r.revenue > 0);
+  const latest = nonEmpty[nonEmpty.length - 1];
+  const prev = nonEmpty.length > 1 ? nonEmpty[nonEmpty.length - 2] : null;
+  const revenueGrowth = prev && prev.revenue > 0
+    ? Math.round(((latest!.revenue - prev.revenue) / prev.revenue) * 100)
+    : 0;
+
+  const marginWarningLocal = totals.revenue > 0 && margin < 25;
+  const maxMargin = Math.max(50, ...profitTrendLocal.map(r => r.margin));
 
   return (
     <div className="space-y-6">
       <InsightsFilterBar channel={channel} onChannelChange={setChannel} sortBy={sortBy} onSortChange={setSortBy} />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={IndianRupee} label="Revenue (Latest)" value={fmt(latestLocal.revenue || 0)} change={8.3} variant="success" />
-        <StatCard icon={TrendingDown} label="Total Cost" value={fmt(latestLocal.cost || 0)} change={4.1} variant="warning" />
-        <StatCard icon={TrendingUp} label="Net Profit" value={fmt(latestLocal.profit || 0)} change={12.6} variant="success" />
-        <StatCard icon={AlertTriangle} label="Profit Margin" value={`${latestLocal.margin || 0}%`} variant={marginWarningLocal ? 'danger' : 'success'} />
+        <StatCard icon={IndianRupee} label="Total Revenue" value={fmt(totals.revenue)} change={revenueGrowth} variant={revenueGrowth >= 0 ? 'success' : 'danger'} />
+        <StatCard icon={TrendingDown} label="Total Cost" value={fmt(totals.cost)} variant="warning" />
+        <StatCard icon={TrendingUp} label="Net Profit" value={fmt(totals.profit)} variant={totals.profit >= 0 ? 'success' : 'danger'} />
+        <StatCard icon={AlertTriangle} label="Profit Margin" value={`${margin}%`} variant={marginWarningLocal ? 'danger' : 'success'} />
       </div>
       {marginWarningLocal && (
         <Card className="border-rose-500/30 bg-rose-500/5">
@@ -485,32 +683,40 @@ function FinancialDashboard() {
           </Badge>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={profitTrendLocal}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis dataKey="month" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
-              <YAxis tick={{ fontSize: 11 }} className="fill-muted-foreground" />
-              <Tooltip formatter={(v: number) => fmt(v)} />
-              <Legend />
-              <Line type="monotone" dataKey="revenue" name="Revenue" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="cost" name="Cost" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={{ r: 3 }} />
-              <Line type="monotone" dataKey="profit" name="Profit" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={{ r: 3 }} />
-            </LineChart>
-          </ResponsiveContainer>
+          {profitTrendLocal.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">No financial data for the selected channel.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={profitTrendLocal}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                <YAxis tick={{ fontSize: 11 }} className="fill-muted-foreground" tickFormatter={(v: number) => v >= 1000 ? `₹${(v/1000).toFixed(0)}K` : `₹${v}`} />
+                <Tooltip formatter={(v: number) => fmt(v)} />
+                <Legend />
+                <Line type="monotone" dataKey="revenue" name="Revenue" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="cost" name="Cost" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="profit" name="Profit" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={{ r: 3 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
       <Card>
         <CardHeader><CardTitle className="text-base">Profit Margin Trend</CardTitle></CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={profitTrendLocal}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis dataKey="month" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
-              <YAxis tick={{ fontSize: 11 }} domain={[0, 50]} className="fill-muted-foreground" />
-              <Tooltip formatter={(v: number) => `${v}%`} />
-              <Area type="monotone" dataKey="margin" stroke="hsl(var(--chart-2))" fill="hsl(var(--chart-2)/.15)" strokeWidth={2} />
-            </AreaChart>
-          </ResponsiveContainer>
+          {profitTrendLocal.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">No margin data yet.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={profitTrendLocal}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                <YAxis tick={{ fontSize: 11 }} domain={[0, maxMargin]} className="fill-muted-foreground" tickFormatter={(v: number) => `${v}%`} />
+                <Tooltip formatter={(v: number) => `${v}%`} />
+                <Area type="monotone" dataKey="margin" stroke="hsl(var(--chart-2))" fill="hsl(var(--chart-2)/.15)" strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
     </div>

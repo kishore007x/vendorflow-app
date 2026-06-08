@@ -105,10 +105,13 @@ export function FinancialOverview({ orders, settlements, expenses, invoices }: F
     if (settlements.length === 0) {
       return months.map(month => ({ month, expected: 0, actual: 0, discrepancy: 0, mismatchCount: 0 }));
     }
+    const sorted = [...settlements].sort((a, b) => new Date(a.settlement_date || a.created_at || 0).getTime() - new Date(b.settlement_date || b.created_at || 0).getTime());
+    const bucketSize = Math.max(1, Math.floor(sorted.length / months.length));
     return months.map((month, i) => {
-      const expected = Math.round(settlements.reduce((s, v) => s + Number(v.amount || 0), 0) / 6 * (0.9 + Math.random() * 0.2));
-      const actual = Math.round(expected * (0.92 + Math.random() * 0.1));
-      return { month, expected, actual, discrepancy: expected - actual, mismatchCount: Math.max(0, Math.floor(Math.random() * 8)) };
+      const slice = sorted.slice(i * bucketSize, (i + 1) * bucketSize);
+      const expected = slice.reduce((s, v) => s + Number(v.amount || 0), 0);
+      const actual = slice.reduce((s, v) => s + Number(v.net_amount || v.amount || 0), 0);
+      return { month, expected, actual, discrepancy: expected - actual, mismatchCount: 0 };
     });
   }, [settlements]);
 
@@ -118,12 +121,14 @@ export function FinancialOverview({ orders, settlements, expenses, invoices }: F
     if (orders.length === 0 && totalExpenses === 0) {
       return months.map(month => ({ month, revenue: 0, cost: 0, profit: 0 }));
     }
-    const totalRev = orders.reduce((s, o) => s + deriveOrderRevenue(o), 0);
+    const sorted = [...orders].sort((a, b) => new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime());
+    const bucketSize = Math.max(1, Math.floor(sorted.length / months.length));
     const totalCost = totalExpenses + settlements.reduce((s, v) => s + Number(v.commission || 0), 0);
+    const costPerOrder = orders.length > 0 ? totalCost / orders.length : 0;
     return months.map((month, i) => {
-      const factor = 0.8 + Math.random() * 0.4;
-      const rev = Math.round((totalRev / 6) * factor);
-      const cost = Math.round((totalCost / 6) * factor * 0.9);
+      const slice = sorted.slice(i * bucketSize, (i + 1) * bucketSize);
+      const rev = slice.reduce((s, o) => s + deriveOrderRevenue(o), 0);
+      const cost = Math.round(slice.length * costPerOrder);
       return { month, revenue: rev, cost, profit: rev - cost };
     });
   }, [orders, totalExpenses, settlements]);
@@ -147,12 +152,11 @@ export function FinancialOverview({ orders, settlements, expenses, invoices }: F
         s.portal?.toLowerCase() === portal.toLowerCase()
       );
       const ecomValue = portalSettlements.reduce((s, v) => s + Number(v.amount || 0), 0);
-      const bankValue = ecomValue > 0 ? Math.round(ecomValue * (0.93 + Math.random() * 0.09)) : 0;
       return {
         portal,
-        bank: bankValue,
+        bank: 0,
         ecommerce: ecomValue,
-        difference: ecomValue - bankValue,
+        difference: ecomValue,
       };
     });
   }, [settlements]);
@@ -291,8 +295,11 @@ export function FinancialOverview({ orders, settlements, expenses, invoices }: F
                 { label: 'Upcoming', count: paymentBatch.upcoming.count, amount: paymentBatch.upcoming.amount, color: 'amber', icon: '⏳' },
                 { label: 'Settled', count: paymentBatch.settled.count, amount: paymentBatch.settled.amount, color: 'emerald', icon: '✅' },
                 { label: 'Pending', count: paymentBatch.pending.count, amount: paymentBatch.pending.amount, color: 'rose', icon: '⚠️' },
-              ].map(b => (
-                <div key={b.label} className={`p-3 rounded-lg border border-${b.color}-500/20 bg-${b.color}-500/5`}>
+              ].map(b => {
+                const borderColor = b.color === 'amber' ? 'border-amber-500/20' : b.color === 'emerald' ? 'border-emerald-500/20' : 'border-rose-500/20';
+                const bgColor = b.color === 'amber' ? 'bg-amber-500/5' : b.color === 'emerald' ? 'bg-emerald-500/5' : 'bg-rose-500/5';
+                return (
+                <div key={b.label} className={`p-3 rounded-lg border ${borderColor} ${bgColor}`}>
                   <div className="flex items-center gap-1.5 mb-1">
                     <span className="text-sm">{b.icon}</span>
                     <p className="text-xs font-medium text-muted-foreground">{b.label}</p>
@@ -300,7 +307,7 @@ export function FinancialOverview({ orders, settlements, expenses, invoices }: F
                   <p className="text-lg font-bold">{b.count}</p>
                   <p className="text-xs text-muted-foreground">{formatCurrency(b.amount)}</p>
                 </div>
-              ))}
+              )})}
             </div>
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={[

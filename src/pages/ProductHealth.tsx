@@ -100,7 +100,7 @@ export default function ProductHealth() {
     return <Badge variant="outline" className={`${config.className} gap-1 font-medium`}><Icon className="w-3 h-3" />{config.label}</Badge>;
   };
 
-  const liveCount = products.filter(p => Object.values(p.portal_status || {}).every((s: any) => s === 'live')).length;
+  const liveCount = products.filter(p => getOverallStatus((p.portal_status || {}) as Record<string, string>) === 'live').length;
   const partialCount = products.filter(p => {
     const values = Object.values(p.portal_status || {}) as string[];
     return values.some(s => s === 'live') && values.some(s => s !== 'live');

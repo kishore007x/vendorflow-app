@@ -89,13 +89,33 @@ export default function SocialInsights() {
   const [selectedMessage, setSelectedMessage] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [aiAutoReply, setAiAutoReply] = useState(true);
-  const [aiConfidenceThreshold, setAiConfidenceThreshold] = useState(50);
-  const [flowTriggers, setFlowTriggers] = useState(DEFAULT_FLOW_TRIGGERS);
+  const [aiAutoReply, setAiAutoReply] = useState<boolean>(() => {
+    const stored = localStorage.getItem('social_ai_auto_reply');
+    return stored === null ? true : stored === 'true';
+  });
+  const [aiConfidenceThreshold, setAiConfidenceThreshold] = useState<number>(() => {
+    const stored = localStorage.getItem('social_ai_confidence');
+    const n = stored === null ? 50 : Number(stored);
+    return Number.isFinite(n) ? n : 50;
+  });
+  const [flowTriggers, setFlowTriggers] = useState(() => {
+    try {
+      const stored = localStorage.getItem('social_flow_triggers');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch { /* ignore */ }
+    return DEFAULT_FLOW_TRIGGERS;
+  });
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [manualReply, setManualReply] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
   const [activeTab, setActiveTab] = useState('inbox');
+
+  useEffect(() => { localStorage.setItem('social_ai_auto_reply', String(aiAutoReply)); }, [aiAutoReply]);
+  useEffect(() => { localStorage.setItem('social_ai_confidence', String(aiConfidenceThreshold)); }, [aiConfidenceThreshold]);
+  useEffect(() => { localStorage.setItem('social_flow_triggers', JSON.stringify(flowTriggers)); }, [flowTriggers]);
 
   const fetchMessages = async () => {
     try {

@@ -170,11 +170,34 @@ export default function FinanceTaxation() {
     (async () => {
       try {
         const db = await import('@/services/database');
-        const inv = await db.invoicesDb.getAll().catch(() => []);
-        const pb = await db.purchaseInvoicesDb.getAll().catch(() => []);
+        const [inv, pb, vendors] = await Promise.all([
+          db.invoicesDb.getAll().catch(() => []),
+          db.purchaseInvoicesDb.getAll().catch(() => []),
+          db.vendorsDb.getAll().catch(() => []),
+        ]);
         if (!mounted) return;
         setInvoices(inv || []);
         setPurchaseBills(pb || []);
+
+        // Populate GSTIN lookup from known vendors, invoices, and purchase bills
+        const map: typeof gstinDatabase = {};
+        const fillFromGstin = (gstin: string, name?: string | null, address?: string | null, state?: string | null) => {
+          if (!gstin || gstin.length < 15) return;
+          const key = gstin.toUpperCase();
+          if (map[key]) return;
+          const stateCode = key.substring(0, 2);
+          map[key] = {
+            name: name || map[key]?.name || 'Unknown',
+            address: address || map[key]?.address || '',
+            state: state || map[key]?.state || '',
+            stateCode,
+            taxStatus: 'Regular',
+          };
+        };
+        (vendors || []).forEach((v: any) => fillFromGstin(v.gstin || v.gst_number, v.company_name || v.name, v.gst_address || v.address, v.state));
+        (inv || []).forEach((i: any) => fillFromGstin(i.gstin, i.customer || i.party_name || i.customer_name, i.address, i.state));
+        (pb || []).forEach((b: any) => fillFromGstin(b.gstin, b.supplier || b.party_name, b.address, b.state));
+        Object.assign(gstinDatabase, map);
       } catch (e) { console.debug('load invoices failed', e); }
     })();
     return () => { mounted = false; };

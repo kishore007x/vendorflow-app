@@ -23,7 +23,10 @@ export default function Vendors() {
       setLoading(true);
       const data = await vendorsDb.getAll();
       setVendors(data);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+      toast({ title: 'Failed to load vendors', variant: 'destructive' });
+    }
     finally { setLoading(false); }
   };
 

@@ -82,27 +82,62 @@ export default function ReviewRatingAnalytics() {
           change: Math.round((data.five - data.one) / Math.max(data.total, 1) * 100),
         })));
 
-        // Build negative issues from returns
-        setNegativeIssues(rets.slice(0, 10).map((r: any, i: number) => ({
-          id: i + 1,
-          product: r.product_name || r.product || `Product ${i + 1}`,
-          sku: r.sku || r.sku_id || `SKU-${i}`,
-          issue: r.reason || r.return_reason || 'Quality issue',
-          mentions: Math.max(1, Math.round(Math.random() * 10)),
-          severity: r.priority === 'high' || r.amount > 5000 ? 'critical' : r.amount > 2000 ? 'high' : 'medium',
-          channels: [r.portal || 'Amazon'],
-          trend: ['rising', 'stable', 'declining'][Math.floor(Math.random() * 3)],
-          impact: Math.round(Number(r.refund_amount || r.amount || 0)),
-        })));
+        // Build negative issues from returns — group by product+reason to count real mentions
+        const issueMap: Record<string, { product: string; sku: string; issue: string; count: number; amount: number; portal: string; days: number[] }> = {};
+        rets.forEach((r: any) => {
+          const key = `${r.product_name || r.product || 'Unknown'}|${r.reason || r.return_reason || 'Quality'}`;
+          if (!issueMap[key]) {
+            issueMap[key] = {
+              product: r.product_name || r.product || 'Unknown product',
+              sku: r.sku || r.sku_id || `SKU-${key.slice(0, 6)}`,
+              issue: r.reason || r.return_reason || 'Quality issue',
+              count: 0,
+              amount: 0,
+              portal: r.portal || 'Unknown',
+              days: [],
+            };
+          }
+          issueMap[key].count += 1;
+          issueMap[key].amount += Number(r.refund_amount || r.amount || 0);
+          const days = Math.floor((Date.now() - new Date(r.requested_at || r.created_at || Date.now()).getTime()) / 86400000);
+          if (!isNaN(days)) issueMap[key].days.push(days);
+        });
+        const sortedIssues = Object.values(issueMap).sort((a, b) => b.count - a.count).slice(0, 10);
+        setNegativeIssues(sortedIssues.map((it, i) => {
+          const recent = it.days.filter(d => d <= 30).length;
+          const older = it.days.filter(d => d > 30 && d <= 60).length;
+          const trend: 'rising' | 'stable' | 'declining' = recent > older ? 'rising' : recent < older ? 'declining' : 'stable';
+          const severity = it.amount > 5000 || it.count >= 5 ? 'critical' : it.amount > 2000 || it.count >= 3 ? 'high' : 'medium';
+          return { id: i + 1, product: it.product, sku: it.sku, issue: it.issue, mentions: it.count, severity, channels: [it.portal], trend, impact: Math.round(it.amount) };
+        }));
 
-        // Build keyword data from products
-        setKeywordData(prds.slice(0, 15).map((p: any, i: number) => ({
-          keyword: p.category || p.name || p.product_name || `Keyword ${i + 1}`,
-          positive: Math.round(Math.random() * 30),
-          negative: Math.round(Math.random() * 10),
-          total: 0,
-          sentiment: 0.5 + Math.random() * 0.5,
-        })).map((k: any) => ({ ...k, total: k.positive + k.negative })));
+        // Build keyword data from real product names — split into words, count by product occurrence
+        const wordMap: Record<string, { count: number; orderCount: number }> = {};
+        prds.slice(0, 50).forEach((p: any) => {
+          const name = (p.name || p.product_name || '').toString();
+          const words = name.toLowerCase().split(/\s+/).filter((w: string) => w.length > 3);
+          words.forEach((w: string) => {
+            if (!wordMap[w]) wordMap[w] = { count: 0, orderCount: 0 };
+            wordMap[w].count += 1;
+          });
+        });
+        // Cross-reference words with return reasons (count of negative occurrences)
+        const negMap: Record<string, number> = {};
+        rets.forEach((r: any) => {
+          const reason = (r.reason || r.return_reason || '').toString().toLowerCase();
+          Object.keys(wordMap).forEach((w: string) => {
+            if (reason.includes(w)) negMap[w] = (negMap[w] || 0) + 1;
+          });
+        });
+        const topKeywords = Object.entries(wordMap)
+          .sort((a, b) => b[1].count - a[1].count)
+          .slice(0, 15)
+          .map(([w, d]) => {
+            const neg = negMap[w] || 0;
+            const total = d.count + neg;
+            return { keyword: w, positive: d.count, negative: neg, total, sentiment: total > 0 ? +(d.count / total).toFixed(2) : 0 };
+          });
+        setKeywordData(topKeywords);
 
         // Build monthly trends from orders
         const monthMap: Record<string, { amazon: number[]; flipkart: number[]; meesho: number[]; myntra: number[] }> = {};
@@ -121,23 +156,38 @@ export default function ReviewRatingAnalytics() {
           return { month: k, amazon: avg(d.amazon), flipkart: avg(d.flipkart), meesho: avg(d.meesho), myntra: avg(d.myntra), overall: 0 };
         }).map(m => ({ ...m, overall: +((m.amazon + m.flipkart + m.meesho + m.myntra) / 4).toFixed(1) })));
 
-        // Build SEO suggestions from products
-        setSeoSuggestions(prds.slice(0, 8).map((p: any, i: number) => ({
-          keyword: (p.name || p.product_name || `Product ${i + 1}`).split(' ').slice(0, 3).join(' '),
-          volume: Math.round(1000 + Math.random() * 9000),
-          difficulty: Math.round(20 + Math.random() * 60),
-          current: ['Page 1', 'Page 2', 'Not ranking'][Math.floor(Math.random() * 3)],
-          suggestion: `Optimize listing with better keywords for ${p.category || 'this product'} category.`,
-          priority: i < 3 ? 'high' : i < 6 ? 'medium' : 'low',
-        })));
+        // Build SEO suggestions from products — derive rank from order count
+        setSeoSuggestions(prds.slice(0, 8).map((p: any, i: number) => {
+          const orderCount = Number(p.order_count || 0);
+          const rank = orderCount > 100 ? 'Page 1' : orderCount > 20 ? 'Page 2' : 'Not ranking';
+          const difficulty = Math.min(90, 30 + Math.floor((1 / Math.max(orderCount, 1)) * 500));
+          const volume = Math.max(100, orderCount * 50);
+          return {
+            keyword: (p.name || p.product_name || `Product ${i + 1}`).split(' ').slice(0, 3).join(' '),
+            volume,
+            difficulty,
+            current: rank,
+            suggestion: p.portals_enabled && p.portals_enabled.length > 0
+              ? `Listed on ${p.portals_enabled.length} channels. ${orderCount < 20 ? 'Increase visibility by enabling more portals.' : 'Maintain current listings.'}`
+              : `Product not listed on any portal. Onboard to Amazon, Flipkart, etc. for visibility.`,
+            priority: orderCount > 100 ? 'low' : orderCount > 20 ? 'medium' : 'high',
+          };
+        }));
 
-        // Build improvement actions
-        setImprovementActions(rets.slice(0, 6).map((r: any, i: number) => ({
-          action: `Fix ${r.reason || r.return_reason || 'quality'} issues in ${r.product_name || r.product || 'products'}`,
-          impact: i < 2 ? 'High' : i < 4 ? 'Medium' : 'Low',
-          estimatedRating: `+${(0.1 + Math.random() * 0.4).toFixed(1)}★`,
-          status: i < 2 ? 'urgent' : i < 4 ? 'planned' : 'backlog',
-          cost: i < 2 ? '₹50,000' : i < 4 ? '₹20,000' : '₹5,000',
+        // Build improvement actions from grouped return reasons — count by reason
+        const reasonMap: Record<string, { reason: string; count: number; amount: number }> = {};
+        rets.forEach((r: any) => {
+          const reason = (r.reason || r.return_reason || 'quality').toString();
+          if (!reasonMap[reason]) reasonMap[reason] = { reason, count: 0, amount: 0 };
+          reasonMap[reason].count += 1;
+          reasonMap[reason].amount += Number(r.refund_amount || r.amount || 0);
+        });
+        setImprovementActions(Object.values(reasonMap).sort((a, b) => b.count - a.count).slice(0, 6).map((it, i) => ({
+          action: `Address "${it.reason}" — ${it.count} returns (₹${Math.round(it.amount).toLocaleString()} impact)`,
+          impact: it.count >= 10 ? 'High' : it.count >= 3 ? 'Medium' : 'Low',
+          estimatedRating: `+${(0.1 + (it.count / 50)).toFixed(1)}★`,
+          status: i < 2 && it.count >= 10 ? 'urgent' : i < 4 ? 'planned' : 'backlog',
+          cost: it.count >= 10 ? '₹50,000' : it.count >= 3 ? '₹20,000' : '₹5,000',
         })));
 
       } catch (e) { console.debug('load review analytics failed', e); }

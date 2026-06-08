@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -58,9 +58,33 @@ export default function Broadcast() {
   const [composeContent, setComposeContent] = useState('');
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
 
-  const whatsappStats = { subscribers: 4280, sent: 156, delivered: 148, read: 112 };
-  const youtubeStats = { subscribers: 12400, videos: 34, views: 89200, likes: 4500 };
-  const communityStats = { members: 1860, posts: 245, activeToday: 78, newThisWeek: 32 };
+  const whatsappStats = useMemo(() => {
+    const sent = broadcasts.filter(b => b.channel === 'whatsapp' && b.status === 'sent').length;
+    const reach = broadcasts.filter(b => b.channel === 'whatsapp').reduce((s, b) => s + (b.reach || 0), 0);
+    return { subscribers: reach, sent, delivered: reach, read: 0 };
+  }, [broadcasts]);
+  const youtubeStats = useMemo(() => {
+    const sent = broadcasts.filter(b => b.channel === 'youtube' && b.status === 'sent').length;
+    const views = broadcasts.filter(b => b.channel === 'youtube').reduce((s, b) => s + (b.reach || 0), 0);
+    return { subscribers: 0, videos: sent, views, likes: 0 };
+  }, [broadcasts]);
+  const communityStats = useMemo(() => {
+    const sent = broadcasts.filter(b => b.channel === 'community' && b.status === 'sent').length;
+    const reach = broadcasts.filter(b => b.channel === 'community').reduce((s, b) => s + (b.reach || 0), 0);
+    return { members: reach, posts: sent, activeToday: 0, newThisWeek: 0 };
+  }, [broadcasts]);
+
+  const performanceSummary = useMemo(() => {
+    const last7Cutoff = Date.now() - 7 * 86400000;
+    const last7 = broadcasts.filter(b => {
+      const ts = b.sentAt ? new Date(b.sentAt).getTime() : 0;
+      return ts >= last7Cutoff;
+    });
+    const totalReach = last7.reduce((s, b) => s + (b.reach || 0), 0);
+    const totalOpens = last7.reduce((s, b) => s + (b.opens || 0), 0);
+    const engagementRate = totalReach > 0 ? Math.round((totalOpens / totalReach) * 1000) / 10 : 0;
+    return { totalReach, engagementRate, broadcastsSent: last7.length, newSubscribers: 0 };
+  }, [broadcasts]);
 
   const handleSend = () => {
     if (!composeTitle || !composeContent) {
@@ -124,8 +148,8 @@ export default function Broadcast() {
               </div>
             </div>
             <div className="mt-3 flex gap-4 text-xs text-muted-foreground">
-              <span>📬 {whatsappStats.delivered} delivered</span>
-              <span>👀 {whatsappStats.read} read</span>
+              <span>• {whatsappStats.delivered} delivered</span>
+              <span>• {whatsappStats.read} read</span>
             </div>
           </CardContent>
         </Card>
@@ -148,8 +172,8 @@ export default function Broadcast() {
               </div>
             </div>
             <div className="mt-3 flex gap-4 text-xs text-muted-foreground">
-              <span>👁 {youtubeStats.views.toLocaleString()} views</span>
-              <span>❤️ {youtubeStats.likes.toLocaleString()} likes</span>
+              <span>• {youtubeStats.views.toLocaleString()} views</span>
+              <span>• {youtubeStats.likes.toLocaleString()} likes</span>
             </div>
           </CardContent>
         </Card>
@@ -172,8 +196,8 @@ export default function Broadcast() {
               </div>
             </div>
             <div className="mt-3 flex gap-4 text-xs text-muted-foreground">
-              <span>🟢 {communityStats.activeToday} active today</span>
-              <span>🆕 +{communityStats.newThisWeek} this week</span>
+              <span>• {communityStats.activeToday} active today</span>
+              <span>• +{communityStats.newThisWeek} this week</span>
             </div>
           </CardContent>
         </Card>
@@ -182,10 +206,10 @@ export default function Broadcast() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">📋 Overview</TabsTrigger>
-          <TabsTrigger value="compose">✍️ Compose</TabsTrigger>
-          <TabsTrigger value="history">📊 History</TabsTrigger>
-          <TabsTrigger value="join">🔗 Join Links</TabsTrigger>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="compose">Compose</TabsTrigger>
+          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="join">Join Links</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
@@ -211,7 +235,7 @@ export default function Broadcast() {
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5 truncate">{msg.content}</p>
-                        {msg.sentAt && (
+                          {msg.sentAt && (
                           <p className="text-[10px] text-muted-foreground mt-1">
                             Sent: {new Date(msg.sentAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                             {msg.reach ? ` • ${msg.reach.toLocaleString()} reached` : ''}
@@ -264,19 +288,19 @@ export default function Broadcast() {
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30">
                     <span className="text-sm text-muted-foreground">Total Reach (7d)</span>
-                    <span className="text-sm font-bold text-foreground">18,630</span>
+                    <span className="text-sm font-bold text-foreground">{performanceSummary.totalReach.toLocaleString()}</span>
                   </div>
                   <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30">
                     <span className="text-sm text-muted-foreground">Engagement Rate</span>
-                    <span className="text-sm font-bold text-emerald-600">68.4%</span>
+                    <span className="text-sm font-bold text-emerald-600">{performanceSummary.engagementRate}%</span>
                   </div>
                   <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30">
                     <span className="text-sm text-muted-foreground">New Subscribers (7d)</span>
-                    <span className="text-sm font-bold text-foreground">+247</span>
+                    <span className="text-sm font-bold text-foreground">+{performanceSummary.newSubscribers}</span>
                   </div>
                   <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30">
                     <span className="text-sm text-muted-foreground">Broadcasts Sent (7d)</span>
-                    <span className="text-sm font-bold text-foreground">12</span>
+                    <span className="text-sm font-bold text-foreground">{performanceSummary.broadcastsSent}</span>
                   </div>
                 </CardContent>
               </Card>

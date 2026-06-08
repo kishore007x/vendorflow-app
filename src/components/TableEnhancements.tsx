@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 
 // Date Filter
 const dateOptions = [
+  { value: 'all', label: 'All Time' },
   { value: 'today', label: 'Today' },
   { value: '7days', label: 'Last 7 Days' },
   { value: '30days', label: 'Last 30 Days' },

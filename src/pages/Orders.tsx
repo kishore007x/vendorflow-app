@@ -132,29 +132,11 @@ interface VideoRecord {
   status: VideoStatus;
 }
 
-// Generate initial video records for all orders
+// Generate initial video records for all orders (all not_captured — no fake data)
 function generateVideoRecords(orders: Order[]): Record<string, VideoRecord> {
   const records: Record<string, VideoRecord> = {};
   orders.forEach(o => {
-    const isReturn = ['returned', 'rto', 'customer_return', 'courier_return'].includes(o.status);
-    const daysSinceOrder = Math.floor((Date.now() - new Date(o.orderDate).getTime()) / (1000 * 60 * 60 * 24));
-    const captured = Math.random() > 0.2; // 80% captured
-    let status: VideoStatus = 'not_captured';
-    if (captured) {
-      if (isReturn) {
-        status = 'retained_for_return';
-      } else if (daysSinceOrder > 30) {
-        status = 'eligible_for_delete';
-      } else {
-        status = 'captured';
-      }
-    }
-    records[o.orderId] = {
-      captured,
-      quality: captured ? (['360', '720', '1000'] as VideoQuality[])[Math.floor(Math.random() * 3)] : '720',
-      capturedAt: captured ? new Date(new Date(o.orderDate).getTime() + 3600000).toISOString() : undefined,
-      status,
-    };
+    records[o.orderId] = { captured: false, quality: '720', status: 'not_captured' };
   });
   return records;
 }
@@ -176,11 +158,11 @@ function normalizePortal(rawPortal: unknown, orderNumber: unknown): Portal {
   if (portalValue === 'in') return 'firstcry';
   if (portalValue === 'own website' || portalValue === 'website') return 'own_website';
   if (portalValue === 'own_website') return 'own_website';
-  if (portalValue === 'amazon' || portalValue === 'flipkart' || portalValue === 'meesho' || portalValue === 'blinkit') {
+  if (portalValue === 'amazon' || portalValue === 'flipkart' || portalValue === 'meesho' || portalValue === 'blinkit' || portalValue === 'myntra' || portalValue === 'nykaa' || portalValue === 'ajio') {
     return portalValue as Portal;
   }
 
-  return (portalValue || 'firstcry') as Portal;
+  return (portalValue || 'unknown') as Portal;
 }
 
 function normalizeStatus(rawStatus: unknown): OrderStatus {
@@ -204,6 +186,37 @@ function normalizeStatus(rawStatus: unknown): OrderStatus {
   return 'pending';
 }
 
+function getDateRangeFromFilter(filter: string): { from: Date | null; to: Date | null } {
+  const now = new Date();
+  const to = now;
+  let from: Date | null = null;
+  switch (filter) {
+    case 'today': from = new Date(now.getFullYear(), now.getMonth(), now.getDate()); break;
+    case '7days': from = new Date(now.getTime() - 7 * 86400000); break;
+    case '30days': from = new Date(now.getTime() - 30 * 86400000); break;
+    case '90days': from = new Date(now.getTime() - 90 * 86400000); break;
+    case 'this_month': from = new Date(now.getFullYear(), now.getMonth(), 1); break;
+    case 'last_month': {
+      const d = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      from = d;
+      return { from, to: new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59) };
+    }
+    case 'this_year': from = new Date(now.getFullYear(), 0, 1); break;
+    default: return { from: null, to: null };
+  }
+  return { from, to };
+}
+
+function orderInDateRange(orderDate: string | null | undefined, from: Date | null, to: Date | null): boolean {
+  if (!from && !to) return true;
+  if (!orderDate) return false;
+  const d = new Date(orderDate);
+  if (isNaN(d.getTime())) return false;
+  if (from && d < from) return false;
+  if (to && d > to) return false;
+  return true;
+}
+
 export default function Orders() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -213,7 +226,7 @@ export default function Orders() {
   const [customerTypeFilter, setCustomerTypeFilter] = useState<CustomerTypeFilter>('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
-  const [dateFilter, setDateFilter] = useState('30days');
+  const [dateFilter, setDateFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('orders');
   const [globalDateRange, setGlobalDateRange] = useState<DateRange>({ from: undefined, to: undefined });
   const [currentPage, setCurrentPage] = useState(1);
@@ -255,15 +268,19 @@ export default function Orders() {
             customerEmail: o.customer_email || o.customerEmail || '',
             customerPhone: o.customer_phone || o.customerPhone || '',
             shippingAddress: o.customer_address || o.shipping_address || '',
-            customerPinCode: o.customer_pincode || o.customer_pincode || '',
+            customerPinCode: o.customer_pincode || o.customerPinCode || '',
             customerCity: o.customer_city || o.customerCity || '',
             customerState: o.customer_state || o.customerState || '',
             deliveryDate: o.delivered_date || o.delivery_date || null,
             portalOrderId: o.order_number || o.portal_order_id || null,
             items,
+            statusTimeline: [],
           };
         }));
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error('Failed to fetch orders:', e);
+        toast({ title: 'Failed to load orders', description: 'Check your connection and try again.', variant: 'destructive' });
+      }
     };
 
     fetchOrders();
@@ -298,22 +315,30 @@ export default function Orders() {
   const isHighValue = (customerId: string) => (customerProfiles[customerId]?.totalSpend ?? 0) >= 7000;
 
   const filteredOrders = useMemo(() => {
+    const effectiveFrom = globalDateRange.from || null;
+    const effectiveTo = globalDateRange.to || null;
+    const { from: presetFrom, to: presetTo } = getDateRangeFromFilter(dateFilter);
+    const dateFrom = effectiveFrom || presetFrom;
+    const dateTo = effectiveTo || presetTo;
+
     return allOrders.filter(order => {
       const matchesPortal = selectedPortal === 'all' || order.portal === selectedPortal;
       const searchTerm = deferredSearchQuery.toLowerCase();
-      const matchesSearch = order.orderId.toLowerCase().includes(searchTerm) ||
-                           order.customerName.toLowerCase().includes(searchTerm) ||
-                           order.portalOrderId.toLowerCase().includes(searchTerm);
+      const matchesSearch = !searchTerm ||
+        String(order.orderId || '').toLowerCase().includes(searchTerm) ||
+        String(order.customerName || '').toLowerCase().includes(searchTerm) ||
+        String(order.portalOrderId || '').toLowerCase().includes(searchTerm);
       const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+      const matchesDate = orderInDateRange(order.orderDate, dateFrom, dateTo);
       const custType = getCustomerType(order.customerId);
       const matchesCustomerType = customerTypeFilter === 'all' ||
         (customerTypeFilter === 'new' && custType === 'new') ||
         (customerTypeFilter === 'repeat' && custType === 'repeat') ||
         (customerTypeFilter === 'high_value' && isHighValue(order.customerId));
-      
-      return matchesPortal && matchesSearch && matchesStatus && matchesCustomerType;
+
+      return matchesPortal && matchesSearch && matchesStatus && matchesDate && matchesCustomerType;
     });
-  }, [allOrders, selectedPortal, deferredSearchQuery, statusFilter, customerTypeFilter, customerProfiles]);
+  }, [allOrders, selectedPortal, deferredSearchQuery, statusFilter, customerTypeFilter, customerProfiles, dateFilter, globalDateRange.from, globalDateRange.to]);
 
   const totalPages = Math.max(1, Math.ceil(filteredOrders.length / ORDERS_PAGE_SIZE));
   const safeCurrentPage = Math.min(currentPage, totalPages);
@@ -334,7 +359,13 @@ export default function Orders() {
   const rowSelection = useRowSelection(paginatedOrders.map(o => o.orderId));
 
   useEffect(() => {
-    const orders = selectedPortal === 'all' ? allOrders : allOrders.filter(o => o.portal === selectedPortal);
+    const effectiveFrom = globalDateRange.from || null;
+    const effectiveTo = globalDateRange.to || null;
+    const { from: presetFrom, to: presetTo } = getDateRangeFromFilter(dateFilter);
+    const dateFrom = effectiveFrom || presetFrom;
+    const dateTo = effectiveTo || presetTo;
+    const portalScoped = selectedPortal === 'all' ? allOrders : allOrders.filter(o => o.portal === selectedPortal);
+    const orders = portalScoped.filter(o => orderInDateRange(o.orderDate, dateFrom, dateTo));
     setProcessingStats({
       total: orders.length,
       withinCutoff: orders.filter(o => ['pending', 'confirmed'].includes(o.status) && getOrderCutoffStatus(o) === 'within').length,
@@ -346,7 +377,7 @@ export default function Orders() {
       delivered: orders.filter(o => o.status === 'delivered').length,
       shipped: orders.filter(o => o.status === 'shipped').length,
     });
-  }, [allOrders, selectedPortal]);
+  }, [allOrders, selectedPortal, dateFilter, globalDateRange.from, globalDateRange.to]);
 
   // Video stats
   const videoStats = useMemo(() => {

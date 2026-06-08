@@ -21,8 +21,8 @@ import {
   DollarSign, ShoppingCart, Package, AlertTriangle, RotateCcw, CreditCard,
   TrendingUp, TrendingDown, Star, Users, UserPlus, UserCheck, Percent,
   Plus, ShieldCheck, ShieldAlert, Hash, UserX, CheckCircle2, BarChart3,
-  ArrowUpRight, ArrowDownRight, Clock, ShieldX, PackageCheck, PackageX,
-  CalendarClock, Truck, Upload,
+  ArrowUpRight, ArrowDownRight,   Clock, ShieldX, PackageCheck, PackageX,
+  CalendarClock, Truck, Upload, Rocket,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -123,7 +123,14 @@ export default function Dashboard() {
           supabase.from('invoices').select('*').then(r => r.data || []),
         ]);
         const normalizedOrders = ordersData.map((o: any) => {
-          const items = o.order_items || o.orderItems || [];
+          const rawItems = o.order_items || o.orderItems || [];
+          const items = rawItems.map((it: any) => ({
+            productName: it.product_name || it.productName || it.name || it.sku || 'Unknown',
+            brand: it.brand || 'Unbranded',
+            quantity: Number(it.quantity ?? it.qty ?? 1) || 0,
+            price: Number(it.price ?? it.unit_price ?? it.total ?? 0) || 0,
+            sku: it.sku || it.sku_id || '',
+          }));
           const totalAmount = Number(o.total_amount ?? o.totalAmount ?? o.total ?? o.amount ?? 0) || 0;
 
           return {
@@ -215,10 +222,20 @@ export default function Dashboard() {
           setSalesData(revenueNormalizedOrders.map((o: any) => ({ date: o.orderDate, revenue: Number(o.totalAmount || 0), orders: 1, portal: o.portal })));
         }
         if (cancelled) return;
-        setReturns(returnsData.map((r: any) => ({
-          ...r, orderId: r.order_number, requestDate: r.requested_at, items: [],
-          claimEligible: false,
-        })));
+        setReturns(returnsData.map((r: any) => {
+          const rItems = r.items || r.return_items || [];
+          const items = rItems.map((it: any) => ({
+            productName: it.product_name || it.productName || it.name || it.sku || 'Unknown',
+            brand: it.brand || 'Unbranded',
+            quantity: Number(it.quantity ?? it.qty ?? 1) || 0,
+            price: Number(it.price ?? it.unit_price ?? it.total ?? 0) || 0,
+            sku: it.sku || it.sku_id || '',
+          }));
+          return {
+            ...r, orderId: r.order_number, requestDate: r.requested_at, items,
+            claimEligible: false,
+          };
+        }));
         setInventoryItems(inventoryData.map((i: any) => ({
           ...i, skuId: i.sku_id, productName: i.product_name,
           availableQuantity: i.available_quantity ?? 0,
@@ -230,7 +247,10 @@ export default function Dashboard() {
         })));
         setExpenses(expensesData);
         setInvoices(invoicesData);
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error('Dashboard data fetch failed:', e);
+        toast({ title: 'Failed to load dashboard data', description: 'Check your connection and try again.', variant: 'destructive' });
+      }
       if (!cancelled) setIsLoading(false);
     };
     fetchData();
@@ -241,10 +261,11 @@ export default function Dashboard() {
   }, [authLoading, userId]);
 
   const formatCurrency = (value: number) => {
-    if (value >= 10000000) return `₹${(value / 10000000).toFixed(2)}Cr`;
-    if (value >= 100000) return `₹${(value / 100000).toFixed(2)}L`;
-    if (value >= 1000) return `₹${(value / 1000).toFixed(1)}K`;
-    return `₹${value}`;
+    const safe = Number.isFinite(value) ? value : 0;
+    if (safe >= 10000000) return `₹${(safe / 10000000).toFixed(2)}Cr`;
+    if (safe >= 100000) return `₹${(safe / 100000).toFixed(2)}L`;
+    if (safe >= 1000) return `₹${(safe / 1000).toFixed(1)}K`;
+    return `₹${safe}`;
   };
 
   // Filtered orders by portal & date
@@ -310,23 +331,29 @@ export default function Dashboard() {
   // ─── TOP 5 PRODUCTS BY ORDER COUNT ───
   const topProductsByOrders = useMemo(() => {
     const map: Record<string, { name: string; units: number; revenue: number }> = {};
-    filteredOrders.forEach(o => o.items.forEach(item => {
-      if (!map[item.productName]) map[item.productName] = { name: item.productName, units: 0, revenue: 0 };
-      map[item.productName].units += item.quantity;
-      map[item.productName].revenue += item.price * item.quantity;
+    filteredOrders.forEach(o => o.items.forEach((item: any) => {
+      const key = item.productName || item.product_name || item.sku || 'Unknown';
+      if (!map[key]) map[key] = { name: key, units: 0, revenue: 0 };
+      const qty = Number(item.quantity ?? item.qty ?? 1) || 0;
+      const price = Number(item.price ?? item.unit_price ?? 0) || 0;
+      map[key].units += qty;
+      map[key].revenue += price * qty;
     }));
-    return Object.values(map).sort((a, b) => b.units - a.units).slice(0, 5);
+    return Object.values(map).filter(p => p.name && p.name !== 'Unknown' && p.units > 0).sort((a, b) => b.units - a.units).slice(0, 5);
   }, [filteredOrders]);
 
   // ─── TOP 5 BRANDS BY REVENUE ───
   const topBrandsByRevenue = useMemo(() => {
     const map: Record<string, { brand: string; units: number; revenue: number }> = {};
-    filteredOrders.forEach(o => o.items.forEach(item => {
-      if (!map[item.brand]) map[item.brand] = { brand: item.brand, units: 0, revenue: 0 };
-      map[item.brand].units += item.quantity;
-      map[item.brand].revenue += item.price * item.quantity;
+    filteredOrders.forEach(o => o.items.forEach((item: any) => {
+      const key = item.brand || 'Unbranded';
+      if (!map[key]) map[key] = { brand: key, units: 0, revenue: 0 };
+      const qty = Number(item.quantity ?? item.qty ?? 1) || 0;
+      const price = Number(item.price ?? item.unit_price ?? 0) || 0;
+      map[key].units += qty;
+      map[key].revenue += price * qty;
     }));
-    const arr = Object.values(map).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+    const arr = Object.values(map).filter(b => b.revenue > 0).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
     const totalRev = arr.reduce((s, b) => s + b.revenue, 0);
     return arr.map(b => ({ ...b, contribution: totalRev > 0 ? +((b.revenue / totalRev) * 100).toFixed(1) : 0 }));
   }, [filteredOrders]);
@@ -405,11 +432,12 @@ export default function Dashboard() {
         grouped[dateKey].orders += d.orders;
       });
     return Object.values(grouped).slice(-10);
-  }, [selectedPortal]);
+  }, [salesData, selectedPortal]);
 
   const totalUnitsSold = useMemo(() =>
-    salesData.filter(d => selectedPortal === 'all' || d.portal === selectedPortal).reduce((s, d) => s + (d.orders || 0), 0),
-  [salesData, selectedPortal]);
+    orders.filter(o => selectedPortal === 'all' || o.portal === selectedPortal)
+      .reduce((s, o) => s + (o.items || []).reduce((si: number, it: any) => si + Number(it.quantity ?? it.qty ?? 0), 0), 0),
+  [orders, selectedPortal]);
 
   const duplicateCustomerCount = useMemo(() => {
     const m: Record<string, number> = {};
@@ -424,7 +452,7 @@ export default function Dashboard() {
       { name: 'Low Stock', value: items.filter(i => i.availableQuantity <= i.lowStockThreshold && i.availableQuantity > 0).length, color: CHART_COLORS.warning },
       { name: 'Out of Stock', value: items.filter(i => i.availableQuantity === 0).length, color: CHART_COLORS.destructive },
     ];
-  }, [selectedPortal]);
+  }, [selectedPortal, inventoryItems]);
 
   const portalRevenueData = useMemo(() =>
     getChannels().map(portal => ({
@@ -434,7 +462,7 @@ export default function Dashboard() {
   [salesData]);
 
   const kpiData = useMemo(() => {
-    const defaultKpi = { totalSales: orders.reduce((s, o) => s + (o.totalAmount || 0), 0), ordersToday: orders.filter(o => new Date(o.orderDate).toDateString() === new Date().toDateString()).length, inventoryValue: inventoryItems.reduce((s, i) => s + (i.availableQuantity * 500), 0), lowStockItems: inventoryItems.filter(i => i.availableQuantity <= i.lowStockThreshold).length, pendingReturns: returns.filter(r => r.status === 'requested' || r.status === 'pending').length, pendingSettlements: settlements.filter(s => s.status === 'pending').length, salesGrowth: 0, ordersGrowth: 0 };
+    const defaultKpi = { totalSales: orders.reduce((s, o) => s + (o.totalAmount || 0), 0), ordersToday: orders.filter(o => new Date(o.orderDate).toDateString() === new Date().toDateString()).length, inventoryValue: inventoryItems.reduce((s, i) => s + (i.availableQuantity * Number(i.base_price || i.price || 0)), 0), lowStockItems: inventoryItems.filter(i => i.availableQuantity <= i.lowStockThreshold).length, pendingReturns: returns.filter(r => r.status === 'requested' || r.status === 'pending').length, pendingSettlements: settlements.filter(s => s.status === 'pending').length, salesGrowth: 0, ordersGrowth: 0 };
     if (selectedPortal === 'all') return defaultKpi;
     const po = orders.filter(o => o.portal === selectedPortal);
     const pi = inventoryItems.filter(i => i.portal === selectedPortal);
@@ -443,11 +471,11 @@ export default function Dashboard() {
     return {
       totalSales: po.reduce((s, o) => s + o.totalAmount, 0),
       ordersToday: po.filter(o => new Date(o.orderDate).toDateString() === new Date().toDateString()).length,
-      inventoryValue: pi.reduce((s, i) => s + (i.availableQuantity * 500), 0),
+      inventoryValue: pi.reduce((s, i) => s + (i.availableQuantity * Number(i.base_price || i.price || 0)), 0),
       lowStockItems: pi.filter(i => i.availableQuantity <= i.lowStockThreshold).length,
       pendingReturns: pr.filter(r => r.status === 'pending').length,
       pendingSettlements: ps.filter(s => s.status === 'pending').length,
-      salesGrowth: 8.2, ordersGrowth: 5.4,
+      salesGrowth: 0, ordersGrowth: 0,
     };
   }, [orders, inventoryItems, returns, settlements, selectedPortal]);
 
@@ -666,7 +694,7 @@ export default function Dashboard() {
             <CardContent>
               <div className="space-y-3">
                 {topProductsByOrders.map((p, idx) => (
-                  <div key={p.name} className="space-y-1.5">
+                  <div key={p.name || `prod-${idx}`} className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">{idx + 1}</span>
@@ -696,7 +724,7 @@ export default function Dashboard() {
             <CardContent>
               <div className="space-y-3">
                 {topBrandsByRevenue.map((b, idx) => (
-                  <div key={b.brand} className="space-y-1.5">
+                  <div key={b.brand || `brand-${idx}`} className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="w-6 h-6 rounded bg-amber-500/10 flex items-center justify-center text-xs font-bold text-amber-600">{idx + 1}</span>
