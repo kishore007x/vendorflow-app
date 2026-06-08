@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { isSupabaseConfigured, supabase } from '@/integrations/supabase/client';
-import { User as SupabaseUser, Session } from '@supabase/supabase-js';
+import { Session } from '@supabase/supabase-js';
 
 export type UserRole = 'admin' | 'vendor' | 'operations';
 
@@ -25,31 +25,36 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const withTimeout = <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`${label} timed out`)), ms)),
+  ]);
+};
+
 async function fetchUserRole(userId: string): Promise<UserRole> {
-  const { data } = await supabase
+  const { data } = await withTimeout(supabase
     .from('user_roles')
     .select('role')
     .eq('user_id', userId)
     .order('role', { ascending: true })
     .limit(1)
-    .maybeSingle();
+    .maybeSingle(), 10000, 'fetchUserRole');
   return (data?.role as UserRole) || 'vendor';
 }
 
 async function fetchProfile(userId: string): Promise<{ name: string; avatar_url: string | null } | null> {
-  const { data } = await supabase
+  const { data } = await withTimeout(supabase
     .from('profiles')
     .select('name, avatar_url')
     .eq('id', userId)
-    .single();
+    .single(), 10000, 'fetchProfile');
   return data;
 }
 
 async function buildAppUser(session: Session): Promise<AppUser | null> {
   const supaUser = session.user;
-  // Fetch role first so admins can be allowed even if email isn't confirmed
   const role = await fetchUserRole(supaUser.id);
-  // Block unverified email users for non-admins
   if (!supaUser.email_confirmed_at && role !== 'admin') {
     return null;
   }
@@ -66,7 +71,6 @@ async function buildAppUser(session: Session): Promise<AppUser | null> {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
   const [emailNotVerified, setEmailNotVerified] = useState(false);
 
   useEffect(() => {
@@ -81,23 +85,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const initializeAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await withTimeout(supabase.auth.getSession(), 10000, 'getSession');
         if (!mounted) return;
 
         if (session) {
-          try {
-            const appUser = await buildAppUser(session);
-            if (appUser) {
-              setUser(appUser);
-              setEmailNotVerified(false);
-            } else {
-              setUser(null);
-              setEmailNotVerified(true);
-            }
-          } catch {
+          const appUser = await withTimeout(buildAppUser(session), 20000, 'buildAppUser');
+          if (!mounted) return;
+          if (appUser) {
+            setUser(appUser);
+            setEmailNotVerified(false);
+          } else {
             setUser(null);
+            setEmailNotVerified(true);
           }
         }
+      } catch (e) {
+        console.error('Auth initialization failed:', e);
       } finally {
         if (mounted) setIsLoading(false);
       }
@@ -110,7 +113,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (session) {
         try {
-          const appUser = await buildAppUser(session);
+          const appUser = await withTimeout(buildAppUser(session), 20000, 'buildAppUser');
+          if (!mounted) return;
           if (appUser) {
             setUser(appUser);
             setEmailNotVerified(false);
@@ -118,8 +122,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(null);
             setEmailNotVerified(true);
           }
-        } catch {
+        } catch (e) {
+          console.error('Auth state change failed:', e);
+          if (!mounted) return;
           setUser(null);
+          setEmailNotVerified(false);
         }
       } else {
         setUser(null);
@@ -135,24 +142,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     if (!isSupabaseConfigured) {
-      throw new Error('Supabase authentication is not configured for this deployment.');
+      throw new Error('Supabase is not configured for this deployment.');
     }
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await withTimeout(supabase.auth.signInWithPassword({ email, password }), 15000, 'Login');
     if (error) throw new Error(error.message);
   }, []);
 
   const signup = useCallback(async (email: string, password: string, name: string) => {
     if (!isSupabaseConfigured) {
-      throw new Error('Supabase authentication is not configured for this deployment.');
+      throw new Error('Supabase is not configured for this deployment.');
     }
-    const { error } = await supabase.auth.signUp({
+    const { error } = await withTimeout(supabase.auth.signUp({
       email,
       password,
       options: {
         data: { name },
         emailRedirectTo: window.location.origin,
       },
-    });
+    }), 15000, 'Sign up');
     if (error) throw new Error(error.message);
   }, []);
 
@@ -161,7 +168,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       return;
     }
-    await supabase.auth.signOut();
+    try {
+      await withTimeout(supabase.auth.signOut(), 8000, 'Logout');
+    } catch {
+      // Sign out locally even if network fails
+    }
     setUser(null);
   }, []);
 

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, UserRole } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -45,26 +44,10 @@ export default function Login() {
     setIsLoading(true);
     try {
       await login(email, password);
-      await new Promise(resolve => setTimeout(resolve, 100));
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: roleData } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', selectedRole)
-          .maybeSingle();
-        if (!roleData) {
-          await supabase.auth.signOut();
-          setError('Role mismatch. Contact administrator.');
-          setIsLoading(false);
-          return;
-        }
-      }
     } catch (err: any) {
       setError(err.message || 'Invalid credentials. Please try again.');
-      setIsLoading(false);
     }
+    setIsLoading(false);
   };
 
   const handleSignup = async (e: React.FormEvent) => {
