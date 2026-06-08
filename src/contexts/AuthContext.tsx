@@ -77,10 +77,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Set up auth listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session) {
-        setTimeout(async () => {
+    let mounted = true;
+
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!mounted) return;
+
+        if (session) {
           try {
             const appUser = await buildAppUser(session);
             if (appUser) {
@@ -93,17 +97,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           } catch {
             setUser(null);
           }
-          setIsLoading(false);
-        }, 0);
-      } else {
-        setUser(null);
-        setEmailNotVerified(false);
-        setIsLoading(false);
+        }
+      } finally {
+        if (mounted) setIsLoading(false);
       }
-    });
+    };
 
-    // THEN check existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    initializeAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+
       if (session) {
         try {
           const appUser = await buildAppUser(session);
@@ -117,11 +121,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch {
           setUser(null);
         }
+      } else {
+        setUser(null);
+        setEmailNotVerified(false);
       }
-      setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
