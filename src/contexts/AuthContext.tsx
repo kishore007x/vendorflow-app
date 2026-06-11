@@ -25,12 +25,40 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const AUTH_CACHE_KEY = 'vf_auth_cache';
+const AUTH_CACHE_TTL = 5 * 60_000; // 5 min
+
 const withTimeout = <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
   return Promise.race([
     promise,
     new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`${label} timed out`)), ms)),
   ]);
 };
+
+function readAuthCache(): AppUser | null {
+  try {
+    const raw = localStorage.getItem(AUTH_CACHE_KEY);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    if (Date.now() - ts > AUTH_CACHE_TTL) {
+      localStorage.removeItem(AUTH_CACHE_KEY);
+      return null;
+    }
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function writeAuthCache(user: AppUser) {
+  try {
+    localStorage.setItem(AUTH_CACHE_KEY, JSON.stringify({ data: user, ts: Date.now() }));
+  } catch { /* quota exceeded */ }
+}
+
+function clearAuthCache() {
+  try { localStorage.removeItem(AUTH_CACHE_KEY); } catch { /* ignore */ }
+}
 
 async function fetchUserRole(userId: string): Promise<UserRole> {
   try {
@@ -64,18 +92,22 @@ async function fetchProfile(userId: string): Promise<{ name: string; avatar_url:
 
 async function buildAppUser(session: Session): Promise<AppUser | null> {
   const supaUser = session.user;
-  const role = await fetchUserRole(supaUser.id);
+  const [role, profile] = await Promise.all([
+    fetchUserRole(supaUser.id),
+    fetchProfile(supaUser.id),
+  ]);
   if (!supaUser.email_confirmed_at && role !== 'admin') {
     return null;
   }
-  const profile = await fetchProfile(supaUser.id);
-  return {
+  const user: AppUser = {
     id: supaUser.id,
     name: profile?.name || supaUser.user_metadata?.name || supaUser.email?.split('@')[0] || 'User',
     email: supaUser.email || '',
     role,
     avatar: profile?.avatar_url || undefined,
   };
+  writeAuthCache(user);
+  return user;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -99,6 +131,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!mounted) return;
 
         if (session) {
+          // Fast path: use cached auth while refreshing in background
+          const cached = readAuthCache();
+          if (cached && cached.id === session.user.id && mounted) {
+            setUser(cached);
+            setEmailNotVerified(false);
+            setIsLoading(false);
+          }
+
           const appUser = await withTimeout(buildAppUser(session), 15000, 'buildAppUser');
           if (!mounted) return;
           if (appUser) {
@@ -109,13 +149,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setEmailNotVerified(true);
           }
         } else {
-          // No session - user not logged in
           setUser(null);
           setEmailNotVerified(false);
         }
       } catch (e) {
         console.error('Auth initialization failed:', e);
-        // Don't log out on init failure - keep previous state or null
         if (mounted) {
           setUser(null);
           setEmailNotVerified(false);
@@ -214,6 +252,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     if (!isSupabaseConfigured) {
       setUser(null);
+      clearAuthCache();
       return;
     }
     try {
@@ -222,6 +261,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Sign out locally even if network fails
     }
     setUser(null);
+    clearAuthCache();
   }, []);
 
   const switchRole = useCallback((role: UserRole) => {

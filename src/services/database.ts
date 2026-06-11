@@ -6,7 +6,7 @@ type OrdersCacheEntry = {
   data: any[];
 };
 
-const ORDERS_CACHE_TTL_MS = 60_000;
+const ORDERS_CACHE_TTL_MS = 300_000; // 5 minutes
 const ORDERS_CACHE_VERSION = 3; // Increment to bust cache after schema/query changes
 const ordersCache = new Map<string, OrdersCacheEntry>();
 const ordersInFlight = new Map<string, Promise<any[]>>();
