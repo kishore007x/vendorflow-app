@@ -311,7 +311,8 @@ export const vendorsApi = {
   getById: async (vendorId: string): Promise<ApiResponse<Vendor | null>> => {
     try {
       const db = await import('./database');
-      const v = await db.vendorsDb.getById(vendorId);
+      const all = await db.vendorsDb.getAll();
+      const v = (all || []).find((x: any) => x.id === vendorId);
       return { data: v || null, success: !!v };
     } catch (err) {
       return { data: null, success: false, message: String(err) };
@@ -334,8 +335,13 @@ export const vendorsApi = {
 // Warehouses API
 export const warehousesApi = {
   getAll: async (): Promise<ApiResponse<Warehouse[]>> => {
-    await delay(API_DELAY);
-    return { data: mockWarehouses, success: true };
+    try {
+      const db = await import('./database');
+      const data = await db.warehousesDb.getAll();
+      return { data: data as Warehouse[], success: true };
+    } catch (err) {
+      return { data: [], success: false, message: String(err) };
+    }
   },
 };
 
@@ -394,7 +400,7 @@ export const tasksApi = {
   updateStatus: async (taskId: string, status: string): Promise<ApiResponse<Task | null>> => {
     try {
       const db = await import('./database');
-      const updated = await db.tasksDb.updateStatus(taskId, status).catch(() => null);
+      const updated = await db.tasksDb.update(taskId, { status }).catch(() => null);
       return { data: updated as Task, success: !!updated };
     } catch (err) {
       return { data: null, success: false, message: String(err) };

@@ -33,23 +33,33 @@ const withTimeout = <T,>(promise: Promise<T>, ms: number, label: string): Promis
 };
 
 async function fetchUserRole(userId: string): Promise<UserRole> {
-  const { data } = await withTimeout(supabase
-    .from('user_roles')
-    .select('role')
-    .eq('user_id', userId)
-    .order('role', { ascending: true })
-    .limit(1)
-    .maybeSingle(), 10000, 'fetchUserRole');
-  return (data?.role as UserRole) || 'vendor';
+  try {
+    const { data } = await withTimeout(supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .order('role', { ascending: true })
+      .limit(1)
+      .maybeSingle(), 8000, 'fetchUserRole');
+    return (data?.role as UserRole) || 'vendor';
+  } catch (e) {
+    console.warn('fetchUserRole failed, defaulting to vendor:', e);
+    return 'vendor';
+  }
 }
 
 async function fetchProfile(userId: string): Promise<{ name: string; avatar_url: string | null } | null> {
-  const { data } = await withTimeout(supabase
-    .from('profiles')
-    .select('name, avatar_url')
-    .eq('id', userId)
-    .single(), 10000, 'fetchProfile');
-  return data;
+  try {
+    const { data } = await withTimeout(supabase
+      .from('profiles')
+      .select('name, avatar_url')
+      .eq('id', userId)
+      .single(), 8000, 'fetchProfile');
+    return data;
+  } catch (e) {
+    console.warn('fetchProfile failed:', e);
+    return null;
+  }
 }
 
 async function buildAppUser(session: Session): Promise<AppUser | null> {
@@ -89,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!mounted) return;
 
         if (session) {
-          const appUser = await withTimeout(buildAppUser(session), 20000, 'buildAppUser');
+          const appUser = await withTimeout(buildAppUser(session), 15000, 'buildAppUser');
           if (!mounted) return;
           if (appUser) {
             setUser(appUser);
@@ -98,9 +108,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(null);
             setEmailNotVerified(true);
           }
+        } else {
+          // No session - user not logged in
+          setUser(null);
+          setEmailNotVerified(false);
         }
       } catch (e) {
         console.error('Auth initialization failed:', e);
+        // Don't log out on init failure - keep previous state or null
+        if (mounted) {
+          setUser(null);
+          setEmailNotVerified(false);
+        }
       } finally {
         if (mounted) setIsLoading(false);
       }
@@ -111,9 +130,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
+      // Ignore token refresh events - they don't indicate actual auth state change
+      if (event === 'TOKEN_REFRESHED') {
+        return;
+      }
+
       if (session) {
         try {
-          const appUser = await withTimeout(buildAppUser(session), 20000, 'buildAppUser');
+          const appUser = await withTimeout(buildAppUser(session), 15000, 'buildAppUser');
           if (!mounted) return;
           if (appUser) {
             setUser(appUser);
@@ -124,11 +148,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         } catch (e) {
           console.error('Auth state change failed:', e);
+          // Don't log out on temporary failures - keep existing user
           if (!mounted) return;
-          setUser(null);
-          setEmailNotVerified(false);
         }
       } else {
+        // Explicit sign out or session expired
         setUser(null);
         setEmailNotVerified(false);
       }

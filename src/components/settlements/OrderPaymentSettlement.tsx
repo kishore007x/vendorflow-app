@@ -399,7 +399,7 @@ export default function OrderPaymentSettlement() {
                         </TableCell>
                         {col('Product') && (
                           <TableCell>
-                            <img src={item.productImage} alt="" className="w-8 h-8 rounded object-cover" />
+                            <img src={item.productImage} alt={item.productName || 'Product image'} className="w-8 h-8 rounded object-cover" />
                           </TableCell>
                         )}
                         {col('SKU ID') && <TableCell className="font-mono text-xs">{item.skuId}</TableCell>}

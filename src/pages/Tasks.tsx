@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { tasksDb } from '@/services/database';
+import { useAuth } from '@/contexts/AuthContext';
 import { ListTodo, Plus, CheckCircle2, Clock, AlertCircle, Loader2, Eye, GripVertical, Filter, History, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +38,7 @@ const assignees = [
 
 export default function Tasks() {
   const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuth();
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [draggedTask, setDraggedTask] = useState<string | null>(null);
@@ -51,6 +53,7 @@ export default function Tasks() {
   const [newDueDate, setNewDueDate] = useState('');
 
   const fetchTasks = async () => {
+    if (authLoading || !user?.id) return;
     try {
       setLoading(true);
       const data = await tasksDb.getAll();
@@ -59,7 +62,7 @@ export default function Tasks() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchTasks(); }, []);
+  useEffect(() => { fetchTasks(); }, [authLoading, user?.id]);
 
   const filteredTasks = useMemo(() => tasks.filter(t => {
     if (filterAssignee !== 'all' && t.assigned_to !== filterAssignee) return false;

@@ -14,6 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { employeesDb, attendanceDb, tailorWorkDb, leaveRequestsDb } from '@/services/database';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Plus, Download, Search, Users, IndianRupee, Calendar, Clock, Fingerprint,
@@ -25,6 +26,7 @@ const fmt = (n: number) => '₹' + n.toLocaleString('en-IN');
 
 export default function StaffManagement() {
   const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuth();
   const [employees, setEmployees] = useState<any[]>([]);
   const [attendance, setAttendance] = useState<any[]>([]);
   const [tailorWork, setTailorWork] = useState<any[]>([]);
@@ -75,6 +77,7 @@ export default function StaffManagement() {
   };
 
   const fetchData = async () => {
+    if (authLoading || !user?.id) return;
     try {
       setLoading(true);
       const [empData, attData, twData, lrData] = await Promise.all([
@@ -90,7 +93,7 @@ export default function StaffManagement() {
     } catch (e) { console.error(e); } finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchData(); }, [search, attendanceDateFilter]);
+  useEffect(() => { fetchData(); }, [authLoading, user?.id, search, attendanceDateFilter]);
 
   const empMap = useMemo(() => {
     const m: Record<string, string> = {};

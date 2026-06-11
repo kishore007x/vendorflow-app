@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { IndianRupee, TrendingUp, Download, FileSpreadsheet, FileDown, FileText, AlertTriangle, CheckCircle2, XCircle, Shield, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { IndianRupee, TrendingUp, Download, FileSpreadsheet, FileDown, FileText, AlertTriangle, CheckCircle2, XCircle, Shield, ArrowUpDown, ArrowUp, ArrowDown, Loader2 } from 'lucide-react';
 import PriceAuditEngine from '@/components/settlements/PriceAuditEngine';
 import { GlobalDateFilter, type DateRange } from '@/components/GlobalDateFilter';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { getChannels } from '@/services/channelManager';
 import { reconciliationDb, settlementsDb } from '@/services/database';
 
@@ -52,49 +53,52 @@ const channelMeta = (portal?: string) => getChannels().find(ch => ch.id === port
 const mapSettlementRow = (row: any): PriceBreakdown => {
   const portal = row.portal || 'firstcry';
   const meta = channelMeta(portal);
-  const gross = Number(row.amount ?? row.gross_amount ?? row.total_amount ?? 0);
-  const commission = Number(row.commission ?? row.commission_amount ?? 0);
-  const shipping = Number(row.shipping_fee ?? row.logistics_fee ?? row.shipping_amount ?? 0);
-  const gst = Number(row.tax ?? row.gst ?? row.tcs ?? 0);
-  const tcs = Number(row.tcs ?? row.tcs_amount ?? 0);
-  const platformFees = Number(row.platform_fee ?? row.fee ?? 0);
-  const netPayout = Number(row.net_amount ?? row.net_settlement ?? row.payout_amount ?? gross - commission - shipping - gst - tcs - platformFees);
+  const gross = Number(row.amount ?? 0);
+  const commission = Number(row.commission ?? 0);
+  const gst = Number(row.tax ?? 0);
+  const netPayout = Number(row.net_amount ?? gross - commission - gst);
 
   return {
-    productName: row.product_name || row.order_number || row.reference_id || row.settlement_id || 'Settlement row',
-    productId: row.product_id || row.order_id || row.id || '—',
+    productName: row.settlement_id || `Settlement ${row.id?.slice(0, 8) || ''}`,
+    productId: row.reference_orders?.length ? `${row.reference_orders.length} orders` : row.id || '—',
     portal: meta.name,
     portalIcon: meta.icon,
     channel: meta.name,
     marketplacePrice: gross,
     commission,
     commissionPct: gross > 0 ? Math.round((commission / gross) * 100) : 0,
-    platformFees,
-    shippingFees: shipping,
+    platformFees: 0,
+    shippingFees: 0,
     gst,
-    tcs,
+    tcs: 0,
     netPayout,
   };
 };
 
-const mapReconRow = (row: any): ReconEntry => ({
-  id: row.id || `${row.portal}-${row.date || row.created_at || Date.now()}`,
-  productId: row.order_id || row.reference_id || row.id || '—',
-  productName: row.notes || row.order_id || row.portal || 'Reconciliation row',
-  channel: channelMeta(row.portal).name,
-  channelIcon: channelMeta(row.portal).icon,
-  expectedSettlement: Number(row.expected_amount ?? row.expected_settlement ?? row.expected_orders ?? 0),
-  actualSettlement: Number(row.actual_amount ?? row.actual_settlement ?? row.processed_orders ?? 0),
-  commissionExpected: Number(row.commission_expected ?? 0),
-  commissionActual: Number(row.commission_actual ?? 0),
-  refundExpected: Number(row.refund_expected ?? 0),
-  refundActual: Number(row.refund_actual ?? 0),
-  penaltyAmount: Number(row.penalty_amount ?? 0),
-  status: (row.status === 'matched' || row.status === 'mismatch' || row.status === 'pending') ? row.status : 'pending',
-});
+const mapReconRow = (row: any): ReconEntry => {
+  const expectedOrders = Number(row.expected_orders ?? 0);
+  const processedOrders = Number(row.processed_orders ?? 0);
+  const diff = Number(row.difference ?? expectedOrders - processedOrders);
+  return {
+    id: row.id || `recon-${row.date || Date.now()}`,
+    productId: row.portal || '—',
+    productName: row.notes || `Reconciliation ${row.date || ''}`,
+    channel: channelMeta(row.portal).name,
+    channelIcon: channelMeta(row.portal).icon,
+    expectedSettlement: expectedOrders,
+    actualSettlement: processedOrders,
+    commissionExpected: 0,
+    commissionActual: 0,
+    refundExpected: 0,
+    refundActual: 0,
+    penaltyAmount: Math.abs(diff) > 0 && row.status === 'mismatch' ? Math.abs(diff) : 0,
+    status: (row.status === 'matched' || row.status === 'mismatch' || row.status === 'pending') ? row.status : 'pending',
+  };
+};
 
 export default function PricePayout() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [priceRows, setPriceRows] = useState<PriceBreakdown[]>([]);
   const [reconRows, setReconRows] = useState<ReconEntry[]>([]);
   const [selectedChannel, setSelectedChannel] = useState('All Channels');
@@ -103,24 +107,41 @@ export default function PricePayout() {
   const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
   const [sortField, setSortField] = useState<string>('default');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
+      setLoading(true);
       try {
+        const filters: any = {};
+        if (dateRange.from) filters.from = dateRange.from;
+        if (dateRange.to) filters.to = dateRange.to;
+
         const [settlements, recon] = await Promise.all([
-          settlementsDb.getAll().catch(() => []),
-          reconciliationDb.getAll().catch(() => []),
+          settlementsDb.getAll(filters).catch(() => []),
+          reconciliationDb.getAll(filters).catch(() => []),
         ]);
         if (!mounted) return;
-        setPriceRows((settlements || []).map(mapSettlementRow));
-        setReconRows((recon || []).map(mapReconRow));
+
+        let filteredSettlements = settlements || [];
+        let filteredRecon = recon || [];
+
+        if (user?.role === 'vendor' && user?.id) {
+          filteredSettlements = filteredSettlements.filter((s: any) => s.vendor_id === user.id);
+          filteredRecon = filteredRecon.filter((r: any) => r.vendor_id === user.id);
+        }
+
+        setPriceRows(filteredSettlements.map(mapSettlementRow));
+        setReconRows(filteredRecon.map(mapReconRow));
       } catch (error) {
         console.error('Failed to load price/payout data', error);
+      } finally {
+        if (mounted) setLoading(false);
       }
     })();
     return () => { mounted = false; };
-  }, []);
+  }, [dateRange.from, dateRange.to, user?.role, user?.id]);
 
   // Payout data
   const filteredData = useMemo(() => {
@@ -245,7 +266,22 @@ export default function PricePayout() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredData.map((row, i) => {
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={10} className="text-center py-12">
+                          <Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground mt-2">Loading payout data...</p>
+                        </TableCell>
+                      </TableRow>
+                    ) : filteredData.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={10} className="text-center py-12">
+                          <IndianRupee className="w-8 h-8 mx-auto text-muted-foreground/50" />
+                          <p className="text-sm text-muted-foreground mt-2">No payout data found</p>
+                          <p className="text-xs text-muted-foreground/70">Settlements will appear here once synced from channels</p>
+                        </TableCell>
+                      </TableRow>
+                    ) : filteredData.map((row, i) => {
                       const margin = Math.round((row.netPayout / row.marketplacePrice) * 100);
                       return (
                         <TableRow key={i}>
@@ -327,7 +363,22 @@ export default function PricePayout() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredRecon.map(r => {
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={10} className="text-center py-12">
+                          <Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground mt-2">Loading reconciliation data...</p>
+                        </TableCell>
+                      </TableRow>
+                    ) : filteredRecon.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={10} className="text-center py-12">
+                          <Shield className="w-8 h-8 mx-auto text-muted-foreground/50" />
+                          <p className="text-sm text-muted-foreground mt-2">No reconciliation data found</p>
+                          <p className="text-xs text-muted-foreground/70">Reconciliation records will appear here once channels report orders</p>
+                        </TableCell>
+                      </TableRow>
+                    ) : filteredRecon.map(r => {
                       const diff = r.expectedSettlement - r.actualSettlement;
                       const commDiff = r.commissionActual - r.commissionExpected;
                       const refDiff = r.refundActual - r.refundExpected;

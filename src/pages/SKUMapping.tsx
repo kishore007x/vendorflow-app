@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { skuMappingsDb } from '@/services/database';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Plus, Edit2, Link, Unlink, Search, AlertCircle, Loader2, Globe, Activity, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -52,6 +53,7 @@ const PORTAL_URL_FIELDS = [
 ];
 
 export default function SKUMapping() {
+  const { user, isLoading: authLoading } = useAuth();
   const [mappings, setMappings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<MappingStatus | 'all'>('all');
@@ -67,6 +69,7 @@ export default function SKUMapping() {
   const { toast } = useToast();
 
   const fetchMappings = async () => {
+    if (authLoading || !user?.id) return;
     try {
       setLoading(true);
       const data = await skuMappingsDb.getAll(searchQuery || undefined);
@@ -78,7 +81,7 @@ export default function SKUMapping() {
     }
   };
 
-  useEffect(() => { fetchMappings(); }, [searchQuery]);
+  useEffect(() => { fetchMappings(); }, [authLoading, user?.id, searchQuery]);
 
   const filteredMappings = useMemo(() => mappings.filter(m => {
     const status = getMappingStatus(m);

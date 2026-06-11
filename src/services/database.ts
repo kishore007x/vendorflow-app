@@ -7,11 +7,12 @@ type OrdersCacheEntry = {
 };
 
 const ORDERS_CACHE_TTL_MS = 60_000;
+const ORDERS_CACHE_VERSION = 3; // Increment to bust cache after schema/query changes
 const ordersCache = new Map<string, OrdersCacheEntry>();
 const ordersInFlight = new Map<string, Promise<any[]>>();
 
 function buildOrdersCacheKey(filters?: { portal?: string; status?: string; from?: string; to?: string; search?: string }) {
-  return JSON.stringify(filters || {});
+  return JSON.stringify({ v: ORDERS_CACHE_VERSION, ...(filters || {}) });
 }
 
 // Helper to get current user id for vendor_id
@@ -20,10 +21,56 @@ async function getCurrentUserId(): Promise<string | null> {
   return data.user?.id ?? null;
 }
 
+// Supabase PostgREST caps responses at ~1000 rows by default (max_rows project setting).
+// This helper paginates through all results using Range headers.
+// buildQuery(pageFrom, pageTo) must return a Supabase query that already has .select() applied.
+// Fetches pages in parallel batches of 4 for speed.
+const PAGE_SIZE = 1000;
+const PARALLEL_BATCH = 4;
+async function fetchAllPaginated(
+  buildQuery: (pageFrom: number, pageTo: number) => any,
+): Promise<any[]> {
+  // First page to discover total count
+  const firstResult = await buildQuery(0, PAGE_SIZE - 1);
+  if (firstResult.error) throw firstResult.error;
+  const firstRows = firstResult.data || [];
+  if (firstRows.length < PAGE_SIZE) return firstRows; // all fits in one page
+
+  const allRows: any[] = [...firstRows];
+  let from = PAGE_SIZE;
+
+  // Fetch remaining pages in parallel batches
+  while (true) {
+    const batch = Array.from({ length: PARALLEL_BATCH }, (_, i) => {
+      const pageFrom = from + i * PAGE_SIZE;
+      const pageTo = pageFrom + PAGE_SIZE - 1;
+      return buildQuery(pageFrom, pageTo);
+    });
+
+    const results = await Promise.all(batch);
+    let hitEnd = false;
+
+    for (const { data, error } of results) {
+      if (error) throw error;
+      const rows = data || [];
+      allRows.push(...rows);
+      if (rows.length < PAGE_SIZE) {
+        hitEnd = true;
+        break;
+      }
+    }
+
+    if (hitEnd) break;
+    from += PARALLEL_BATCH * PAGE_SIZE;
+  }
+
+  return allRows;
+}
+
 // ==================== PRODUCTS ====================
 export const productsDb = {
   async getAll(search?: string) {
-    let query = supabase.from('products').select('*').order('created_at', { ascending: false });
+    let query = supabase.from('products').select('*').order('created_at', { ascending: false }).limit(10000);
     if (search) query = query.or(`name.ilike.%${search}%,sku.ilike.%${search}%,brand.ilike.%${search}%`);
     const { data, error } = await query;
     if (error) throw error;
@@ -92,31 +139,34 @@ export const ordersDb = {
       return cached.data;
     }
 
-    const inFlight = ordersInFlight.get(cacheKey);
-    if (inFlight) {
-      return inFlight;
+    // Check if we have a superset cache with items (avoids re-fetching)
+    const itemsKey = buildOrdersCacheKey({ ...(filters || {}), includeItems: true });
+    const itemsCached = ordersCache.get(itemsKey);
+    if (itemsCached && Date.now() - itemsCached.fetchedAt < ORDERS_CACHE_TTL_MS) {
+      return itemsCached.data.map(({ order_items, ...rest }: any) => rest);
     }
 
-    let query = supabase.from('orders').select('*').order('created_at', { ascending: false });
-    if (filters?.portal) query = query.eq('portal', filters.portal);
-    if (filters?.status) query = query.eq('status', filters.status as any);
-    if (filters?.from) query = query.gte('order_date', filters.from);
-    if (filters?.to) query = query.lte('order_date', filters.to);
-    if (filters?.search) query = query.or(`order_number.ilike.%${filters.search}%,customer_name.ilike.%${filters.search}%`);
-    const request = query.then(({ data, error }) => {
-      if (error) throw error;
-      const result = data || [];
+    const inFlight = ordersInFlight.get(cacheKey);
+    if (inFlight) return inFlight;
+
+    const request = fetchAllPaginated((pageFrom, pageTo) => {
+      let q = supabase.from('orders').select('*');
+      if (filters?.portal) q = q.eq('portal', filters.portal);
+      if (filters?.status) q = q.eq('status', filters.status as any);
+      if (filters?.from) q = q.gte('order_date', filters.from);
+      if (filters?.to) q = q.lte('order_date', filters.to);
+      if (filters?.search) q = q.or(`order_number.ilike.%${filters.search}%,customer_name.ilike.%${filters.search}%`);
+      return q.order('created_at', { ascending: false }).range(pageFrom, pageTo);
+    }).then((result) => {
       ordersCache.set(cacheKey, { fetchedAt: Date.now(), data: result });
       return result;
-    }).finally(() => {
-      ordersInFlight.delete(cacheKey);
-    });
+    }).finally(() => ordersInFlight.delete(cacheKey));
 
     ordersInFlight.set(cacheKey, request);
     return request;
   },
   async getAllWithItems(filters?: { portal?: string; status?: string; from?: string; to?: string; search?: string }) {
-    // Similar to getAll but also fetches related order_items in a single query
+    // Two fast flat queries in parallel instead of one heavy JOIN per page
     const cacheKey = buildOrdersCacheKey({ ...(filters || {}), includeItems: true });
     const cached = ordersCache.get(cacheKey);
     if (cached && Date.now() - cached.fetchedAt < ORDERS_CACHE_TTL_MS) {
@@ -126,16 +176,39 @@ export const ordersDb = {
     const inFlight = ordersInFlight.get(cacheKey);
     if (inFlight) return inFlight;
 
-    let query = supabase.from('orders').select('*, order_items(*)').order('created_at', { ascending: false });
-    if (filters?.portal) query = query.eq('portal', filters.portal);
-    if (filters?.status) query = query.eq('status', filters.status as any);
-    if (filters?.from) query = query.gte('order_date', filters.from);
-    if (filters?.to) query = query.lte('order_date', filters.to);
-    if (filters?.search) query = query.or(`order_number.ilike.%${filters.search}%,customer_name.ilike.%${filters.search}%`);
+    const request = (async () => {
+      const buildOrderQuery = (pageFrom: number, pageTo: number) => {
+        let q = supabase.from('orders').select('*');
+        if (filters?.portal) q = q.eq('portal', filters.portal);
+        if (filters?.status) q = q.eq('status', filters.status as any);
+        if (filters?.from) q = q.gte('order_date', filters.from);
+        if (filters?.to) q = q.lte('order_date', filters.to);
+        if (filters?.search) q = q.or(`order_number.ilike.%${filters.search}%,customer_name.ilike.%${filters.search}%`);
+        return q.order('created_at', { ascending: false }).range(pageFrom, pageTo);
+      };
 
-    const request = query.then(({ data, error }) => {
-      if (error) throw error;
-      const result = data || [];
+      // Fetch orders + items in parallel — both are flat, no JOINs
+      const [orders, orderItems] = await Promise.all([
+        fetchAllPaginated(buildOrderQuery),
+        fetchAllPaginated((pageFrom, pageTo) =>
+          supabase.from('order_items').select('*').range(pageFrom, pageTo)
+        ),
+      ]);
+
+      // Index items by order_id and attach to orders
+      const itemsByOrder = new Map<string, any[]>();
+      for (const item of orderItems) {
+        const oid = item.order_id;
+        if (!oid) continue;
+        if (!itemsByOrder.has(oid)) itemsByOrder.set(oid, []);
+        itemsByOrder.get(oid)!.push(item);
+      }
+
+      return orders.map((o: any) => ({
+        ...o,
+        order_items: itemsByOrder.get(o.id) || [],
+      }));
+    })().then((result) => {
       ordersCache.set(cacheKey, { fetchedAt: Date.now(), data: result });
       return result;
     }).finally(() => ordersInFlight.delete(cacheKey));
@@ -189,7 +262,7 @@ export const orderItemsDb = {
 // ==================== RETURNS ====================
 export const returnsDb = {
   async getAll(filters?: { portal?: string; status?: string; from?: string; to?: string }) {
-    let query = supabase.from('returns').select('*').order('created_at', { ascending: false });
+    let query = supabase.from('returns').select('*').order('created_at', { ascending: false }).limit(10000);
     if (filters?.portal) query = query.eq('portal', filters.portal);
     if (filters?.status) query = query.eq('status', filters.status as any);
     if (filters?.from) query = query.gte('requested_at', filters.from);
@@ -286,7 +359,7 @@ export const creditNotesDb = {
 // ==================== SETTLEMENTS ====================
 export const settlementsDb = {
   async getAll(filters?: { portal?: string; status?: string; from?: string; to?: string }) {
-    let query = supabase.from('settlements').select('*').order('created_at', { ascending: false });
+    let query = supabase.from('settlements').select('*').order('created_at', { ascending: false }).limit(10000);
     if (filters?.portal) query = query.eq('portal', filters.portal);
     if (filters?.status) query = query.eq('status', filters.status as any);
     if (filters?.from) query = query.gte('settlement_date', filters.from);
@@ -626,7 +699,7 @@ export const customersDb = {
 // ==================== INVENTORY ====================
 export const inventoryDb = {
   async getAll(filters?: { portal?: string; warehouse?: string; search?: string }) {
-    let query = supabase.from('inventory' as any).select('*').order('updated_at', { ascending: false });
+    let query = supabase.from('inventory' as any).select('*').order('updated_at', { ascending: false }).limit(10000);
     if (filters?.portal) query = query.eq('portal', filters.portal);
     if (filters?.warehouse) query = query.eq('warehouse', filters.warehouse);
     if (filters?.search) query = query.or(`sku.ilike.%${filters.search}%`);
@@ -663,7 +736,7 @@ export const inventoryDb = {
 // ==================== SKU MAPPINGS ====================
 export const skuMappingsDb = {
   async getAll(search?: string) {
-    let query = supabase.from('sku_mappings' as any).select('*').order('created_at', { ascending: false });
+    let query = supabase.from('sku_mappings' as any).select('*').order('created_at', { ascending: false }).limit(10000);
     if (search) query = query.or(`master_sku_id.ilike.%${search}%,product_name.ilike.%${search}%`);
     const { data, error } = await query;
     if (error) throw error;

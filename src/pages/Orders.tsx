@@ -26,7 +26,7 @@ import { Switch } from '@/components/ui/switch';
 import { 
   Search, Download, ShoppingCart, Package, Truck, CheckCircle, Clock,
   X, Eye, Users, UserPlus, UserCheck, Star, Layers, RotateCcw, AlertTriangle,
-  MapPin, Timer, ArrowDownToLine, Ban, Video, Trash2, Shield, Printer,
+  MapPin, Timer, ArrowDownToLine, Ban, Video, Trash2, Shield, Printer, Loader2,
 } from 'lucide-react';
 import { DateFilter, ExportButton, useRowSelection, SelectAllCheckbox, RowCheckbox } from '@/components/TableEnhancements';
 import { GlobalDateFilter, type DateRange } from '@/components/GlobalDateFilter';
@@ -234,25 +234,30 @@ export default function Orders() {
 
   // DB-backed orders state
   const [allOrders, setAllOrders] = useState<Order[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
 
   useEffect(() => {
     if (authLoading || !user) return;
 
+    let cancelled = false;
     const fetchOrders = async () => {
+      setOrdersLoading(true);
       try {
         const rawOrders = await ordersDb.getAllWithItems();
+        if (cancelled) return;
 
         setAllOrders(rawOrders.map((o: any) => {
           const orderDate = o.order_date ?? o.orderDate ?? o.created_at ?? o.createdAt ?? null;
           const items = o.order_items || o.orderItems || [];
           const portal = normalizePortal(o.portal, o.order_number);
           const status = normalizeStatus(o.status);
-          // compute total from DB field if present, otherwise derive from order_items
+          // compute total from DB field if present (> 0), otherwise derive from order_items
           const rawTotal = o.total_amount ?? o.totalAmount ?? o.total ?? o.amount ?? null;
+          const hasValidRawTotal = rawTotal !== null && rawTotal !== undefined && String(rawTotal).trim() !== '' && Number(rawTotal) > 0;
           const computedFromItems = items.length > 0
             ? items.reduce((s: number, it: any) => s + (Number(it.quantity ?? it.qty ?? 0) * Number(it.unit_price ?? it.price ?? it.selling_price ?? it.total_price ?? 0)), 0)
             : 0;
-          const totalAmount = (rawTotal !== null && rawTotal !== undefined && String(rawTotal).trim() !== '')
+          const totalAmount = hasValidRawTotal
             ? Number(rawTotal)
             : computedFromItems || 0;
 
@@ -279,11 +284,14 @@ export default function Orders() {
         }));
       } catch (e) {
         console.error('Failed to fetch orders:', e);
-        toast({ title: 'Failed to load orders', description: 'Check your connection and try again.', variant: 'destructive' });
+        if (!cancelled) toast({ title: 'Failed to load orders', description: 'Check your connection and try again.', variant: 'destructive' });
+      } finally {
+        if (!cancelled) setOrdersLoading(false);
       }
     };
 
     fetchOrders();
+    return () => { cancelled = true; };
   }, [authLoading, user]);
 
   // Video reconciliation state (only for visible page to avoid heavy computation)
@@ -557,6 +565,36 @@ export default function Orders() {
             <ExportButton label={rowSelection.count > 0 ? undefined : exportLabel} selectedCount={rowSelection.count} data={filteredOrders} filename="orders" />
           </div>
         </div>
+
+        {/* Loading skeleton while orders are being fetched */}
+        {ordersLoading && allOrders.length === 0 && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-10 gap-3">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <Card key={i} className="bg-card">
+                  <CardContent className="p-3">
+                    <div className="flex flex-col items-center gap-2 animate-pulse">
+                      <div className="w-5 h-5 bg-muted rounded" />
+                      <div className="w-12 h-6 bg-muted rounded" />
+                      <div className="w-16 h-3 bg-muted rounded" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-center gap-3 py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  <div>
+                    <p className="font-medium">Loading orders...</p>
+                    <p className="text-sm text-muted-foreground">Fetching data from all channels</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Processing Dashboard */}
         <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-10 gap-3">

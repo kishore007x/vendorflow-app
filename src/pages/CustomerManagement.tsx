@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { customersDb } from '@/services/database';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import {
   Users, Search, Download, Eye, AlertTriangle, ShieldAlert, UserCheck, UserPlus,
@@ -40,6 +41,7 @@ const getSourceConfig = (source: string) => SOURCE_CONFIG[source] || { label: so
 
 export default function CustomerManagement() {
   const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuth();
   const [customers, setCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -53,6 +55,7 @@ export default function CustomerManagement() {
   const [blockReason, setBlockReason] = useState('');
 
   const fetchCustomers = async () => {
+    if (authLoading || !user?.id) return;
     try {
       setLoading(true);
       const data = await customersDb.getAll(search ? { search } : undefined);
@@ -61,7 +64,7 @@ export default function CustomerManagement() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchCustomers(); }, [search]);
+  useEffect(() => { fetchCustomers(); }, [authLoading, user?.id, search]);
 
   const enriched = useMemo(() => customers.map(c => {
     const returnRate = c.total_orders > 0 ? (c.total_returns / c.total_orders) * 100 : 0;

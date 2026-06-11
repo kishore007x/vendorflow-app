@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { productHealthDb } from '@/services/database';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { getChannels } from '@/services/channelManager';
 import { ChannelIcon } from '@/components/ChannelIcon';
@@ -40,6 +41,7 @@ function getOverallStatus(portalStatus: Record<string, string>): ProductHealthSt
 }
 
 export default function ProductHealth() {
+  const { user, isLoading: authLoading } = useAuth();
   const [products, setProducts] = useState<any[]>([]);
   const [skuMappings, setSkuMappings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,6 +54,7 @@ export default function ProductHealth() {
   const { toast } = useToast();
 
   const fetchData = async () => {
+    if (authLoading || !user?.id) return;
     try {
       setLoading(true);
       const [healthData, mappingsData] = await Promise.all([
@@ -67,7 +70,7 @@ export default function ProductHealth() {
     }
   };
 
-  useEffect(() => { fetchData(); }, [searchQuery]);
+  useEffect(() => { fetchData(); }, [authLoading, user?.id, searchQuery]);
 
   const triggerHealthCheck = async () => {
     setCheckingHealth(true);

@@ -185,6 +185,7 @@ function ExecutiveDashboard() {
   const [dailySales, setDailySales] = useState(defaultDaily);
   const [activeVendorCount, setActiveVendorCount] = useState(0);
   const [alertsCount, setAlertsCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   const priceLookup = useMemo(() => buildPriceLookup(products), [products]);
 
@@ -219,6 +220,8 @@ function ExecutiveDashboard() {
         setDailySales(ds.length ? ds : defaultDaily);
       } catch (e) {
         console.debug('Failed to load executive data', e);
+      } finally {
+        if (mounted) setLoading(false);
       }
     })();
     return () => { mounted = false; };
@@ -252,6 +255,12 @@ function ExecutiveDashboard() {
 
   return (
     <div className="space-y-6">
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground mr-2" />
+          <span className="text-sm text-muted-foreground">Loading executive data...</span>
+        </div>
+      )}
       <InsightsFilterBar channel={channel} onChannelChange={setChannel} sortBy={sortBy} onSortChange={setSortBy} />
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatCard icon={IndianRupee} label="Total Revenue" value={fmt(totalRevenue)} variant="success" />
@@ -308,6 +317,7 @@ function SalesDashboard() {
   const [sortedProducts, setSortedProducts] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [period, setPeriod] = useState<SalesPeriod>('day');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -359,6 +369,7 @@ function SalesDashboard() {
         });
         setSortedProducts(top);
       } catch (e) { console.debug('failed load products & orders', e); }
+      finally { if (mounted) setLoading(false); }
     })();
     return () => { mounted = false; };
   }, []);
@@ -387,6 +398,12 @@ function SalesDashboard() {
 
   return (
     <div className="space-y-6">
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground mr-2" />
+          <span className="text-sm text-muted-foreground">Loading sales data...</span>
+        </div>
+      )}
       <InsightsFilterBar channel={channel} onChannelChange={setChannel} sortBy={sortBy} onSortChange={setSortBy}>
         <Select value={period} onValueChange={(v) => setPeriod(v as SalesPeriod)}>
           <SelectTrigger className="w-[140px] h-8 text-xs">
@@ -572,6 +589,7 @@ function FinancialDashboard() {
   const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -588,6 +606,7 @@ function FinancialDashboard() {
         setProducts(prds || []);
         setExpenses(exps || []);
       } catch (e) { console.debug('failed financial load', e); }
+      finally { if (mounted) setLoading(false); }
     })();
     return () => { mounted = false; };
   }, []);
@@ -657,6 +676,12 @@ function FinancialDashboard() {
 
   return (
     <div className="space-y-6">
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground mr-2" />
+          <span className="text-sm text-muted-foreground">Loading financial data...</span>
+        </div>
+      )}
       <InsightsFilterBar channel={channel} onChannelChange={setChannel} sortBy={sortBy} onSortChange={setSortBy} />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard icon={IndianRupee} label="Total Revenue" value={fmt(totals.revenue)} change={revenueGrowth} variant={revenueGrowth >= 0 ? 'success' : 'danger'} />
@@ -728,6 +753,7 @@ function OperationsDashboard() {
   const [channel, setChannel] = useState('all');
   const [sortBy, setSortBy] = useState('date');
   const [opsDataLocal, setOpsDataLocal] = useState<{ automationRate: number; workflowLoad: number; processingVolume: number; bottlenecks: any[]; dailyChartData: any[] }>({ automationRate: 0, workflowLoad: 0, processingVolume: 0, bottlenecks: [], dailyChartData: [] });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -766,12 +792,19 @@ function OperationsDashboard() {
         ];
         setOpsDataLocal({ automationRate: rate, workflowLoad: load, processingVolume: total, bottlenecks, dailyChartData: dailyData });
       } catch (e) { console.debug('failed ops', e); }
+      finally { if (mounted) setLoading(false); }
     })();
     return () => { mounted = false; };
   }, []);
 
   return (
     <div className="space-y-6">
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground mr-2" />
+          <span className="text-sm text-muted-foreground">Loading operations data...</span>
+        </div>
+      )}
       <InsightsFilterBar channel={channel} onChannelChange={setChannel} sortBy={sortBy} onSortChange={setSortBy} />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard icon={Zap} label="Automation Rate" value={`${opsDataLocal.automationRate}%`} change={5} variant="success" />
@@ -835,6 +868,14 @@ function OperationsDashboard() {
 // ---- Main Page ----
 export default function Insights() {
   const { user, isLoading: authLoading } = useAuth();
+
+  // Prefetch orders data in background so sub-dashboards load faster
+  useEffect(() => {
+    if (authLoading || !user) return;
+    // Warm the cache by triggering a background fetch
+    ordersDb.getAllWithItems().catch(() => {});
+    productsDb.getAll().catch(() => {});
+  }, [authLoading, user]);
 
   if (authLoading) {
     return (

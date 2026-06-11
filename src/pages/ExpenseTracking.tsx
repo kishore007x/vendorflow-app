@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { expensesDb } from '@/services/database';
+import { useAuth } from '@/contexts/AuthContext';
 import { useDropdownOptions } from '@/hooks/useDropdownOptions';
 import {
   Plus, Download, Search, IndianRupee, TrendingUp, TrendingDown,
@@ -30,6 +31,7 @@ const colorMap: Record<string, string> = {
 
 export default function ExpenseTracking() {
   const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuth();
   const [expenses, setExpenses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -46,6 +48,7 @@ export default function ExpenseTracking() {
   const { options: paidByOptions } = useDropdownOptions('paid_by');
 
   const fetchExpenses = async () => {
+    if (authLoading || !user?.id) return;
     try {
       setLoading(true);
       const data = await expensesDb.getAll(filterCategory !== 'all' ? { category: filterCategory, search } : { search });
@@ -57,7 +60,7 @@ export default function ExpenseTracking() {
     }
   };
 
-  useEffect(() => { fetchExpenses(); }, [filterCategory, search]);
+  useEffect(() => { fetchExpenses(); }, [authLoading, user?.id, filterCategory, search]);
 
   const totalExpense = expenses.reduce((s, e) => s + Number(e.amount), 0);
   const categoryTotals = categoryOptions.map(cat => ({

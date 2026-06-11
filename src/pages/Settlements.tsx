@@ -41,7 +41,7 @@ function SectionBadge() {
 }
 
 export default function Settlements() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [selectedPortal, setSelectedPortal] = useState<Portal | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState('30days');
@@ -66,20 +66,24 @@ export default function Settlements() {
   const bankEcomDiff = bankTotal - ecomTotal;
 
   useEffect(() => {
+    if (authLoading || !user?.id) return;
     const fetchSettlements = async () => {
       try {
         const data = await settlementsDb.getAll();
         setAllSettlements(data.map((s: any) => ({
           ...s, settlementId: s.settlement_id, netAmount: s.net_amount,
           settlementDate: s.settlement_date, amount: s.amount ?? 0,
-          commission: s.commission ?? 0,
+          commission: s.commission ?? 0, fees: s.fees ?? 0,
+          cycleStart: s.cycle_start || s.settlement_date, cycleEnd: s.cycle_end || s.settlement_date,
+          ordersCount: s.orders_count ?? 0, expectedDate: s.expected_date || s.settlement_date,
         })));
-      } catch (e) { console.error(e); }
+      } catch (e) { console.warn('Settlements fetch failed (expected on slow networks):', e); }
     };
     fetchSettlements();
-  }, []);
+  }, [authLoading, user?.id]);
 
   useEffect(() => {
+    if (authLoading || !user?.id) return;
     let mounted = true;
     (async () => {
       try {
@@ -141,7 +145,7 @@ export default function Settlements() {
       } catch (e) { console.debug('Settlements derived data fetch failed', e); }
     })();
     return () => { mounted = false; };
-  }, []);
+  }, [authLoading, user?.id]);
 
   const filteredSettlements = useMemo(() => {
     return allSettlements.filter(settlement => {

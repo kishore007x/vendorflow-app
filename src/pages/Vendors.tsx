@@ -7,18 +7,21 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { vendorsDb } from '@/services/database';
+import { useAuth } from '@/contexts/AuthContext';
 import { Users, Plus, MapPin, Package, ShoppingCart, ShieldCheck, ShieldX, Loader2, Download, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Vendors() {
   const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuth();
   const [vendors, setVendors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', phone: '', address: '', gst_number: '' });
 
   const fetchVendors = async () => {
+    if (authLoading || !user?.id) return;
     try {
       setLoading(true);
       const data = await vendorsDb.getAll();
@@ -30,7 +33,7 @@ export default function Vendors() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchVendors(); }, []);
+  useEffect(() => { fetchVendors(); }, [authLoading, user?.id]);
 
   const activeCount = vendors.filter(v => v.status === 'active').length;
   const verifiedCount = vendors.filter(v => v.gst_verified).length;

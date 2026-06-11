@@ -16,14 +16,14 @@ import {
   Search, RotateCcw, CheckCircle, XCircle, Clock, AlertTriangle, IndianRupee,
   ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, Package, Truck, Ban,
   FileSpreadsheet, FileDown, ShieldCheck, Warehouse, Link2,
-  MessageSquare, PackageX, PackageMinus, Eye,
+  MessageSquare, PackageX, PackageMinus, Eye, Loader2,
 } from 'lucide-react';
 import { DateFilter, ExportButton, useRowSelection, SelectAllCheckbox, RowCheckbox } from '@/components/TableEnhancements';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { GlobalDateFilter, type DateRange } from '@/components/GlobalDateFilter';
 import { useAuth } from '@/contexts/AuthContext';
-import { returnsDb } from '@/services/database';
+import { returnsDb, ordersDb } from '@/services/database';
 
 // Return types
 type ReturnType = 'customer_return' | 'courier_return' | 'rto' | 'before_pickup_cancel' | 'pending_return' | 'upcoming_return' | 'damaged_product' | 'missing_product' | 'partial_received';
@@ -125,40 +125,44 @@ const mapStageFromStatus = (status?: string | null): LifecycleStage => {
   return 'return_initiated';
 };
 
-const mapAppReturn = (row: any): ReturnLifecycle => {
-  const quantity = Number(row.quantity ?? 1);
-  const stage = mapStageFromStatus(row.status);
+const mapAppReturn = (row: any, orderMap?: Map<string, any>): ReturnLifecycle => {
   const portal = (row.portal || 'firstcry') as Portal;
-  const returnId = row.return_number || row.id;
+  const returnId = row.order_number || row.id;
   const returnDate = row.requested_at || row.created_at || new Date().toISOString();
-  const productName = row.metadata?.product_name || row.product_name || 'Firstcry return';
-  const skuId = row.metadata?.vendor_style_code || row.product_id || returnId;
-  const returnType = getReturnType(row.reason || row.metadata?.subreason || row.metadata?.subtype_reason);
+  const returnType = getReturnType(row.reason);
+
+  let productName = 'Unknown Product';
+  let skuId = returnId;
+  if (row.order_id && orderMap?.has(row.order_id)) {
+    const order = orderMap.get(row.order_id);
+    productName = order?.customer_name || order?.order_number || productName;
+    skuId = order?.order_number || skuId;
+  }
 
   return {
     returnId: String(returnId || ''),
-    orderId: String(row.order_id || row.metadata?.poid || returnId || ''),
+    orderId: String(row.order_id || returnId || ''),
     portal,
     productName,
     skuId,
-    reason: getReturnReason(row.reason || row.metadata?.subreason || row.metadata?.subtype_reason),
+    reason: getReturnReason(row.reason),
     returnType,
-    refundAmount: Number(row.refund_amount ?? row.amount ?? 0),
-    currentStage: stage,
+    refundAmount: Number(row.refund_amount ?? 0),
+    currentStage: mapStageFromStatus(row.status),
     responsibleUser: 'System',
-    warehouseReceived: ['warehouse_received', 'physical_verification', 'claim_raised', 'claim_approved', 'claim_rejected', 'refund_approved', 'settlement_adjusted'].includes(stage),
-    physicalVerification: stage === 'physical_verification' || stage === 'claim_raised' || stage === 'claim_approved' || stage === 'refund_approved' || stage === 'settlement_adjusted' ? 'passed' : 'pending',
-    refundApproved: ['refund_approved', 'settlement_adjusted'].includes(stage),
+    warehouseReceived: ['warehouse_received', 'physical_verification', 'claim_raised', 'claim_approved', 'claim_rejected', 'refund_approved', 'settlement_adjusted'].includes(mapStageFromStatus(row.status)),
+    physicalVerification: ['physical_verification', 'claim_raised', 'claim_approved', 'refund_approved', 'settlement_adjusted'].includes(mapStageFromStatus(row.status)) ? 'passed' : 'pending',
+    refundApproved: ['refund_approved', 'settlement_adjusted'].includes(mapStageFromStatus(row.status)),
     claimEligibility: {
-      status: 'pending_review',
+      status: row.claim_status === 'approved' ? 'eligible' as const : row.claim_status === 'rejected' ? 'ineligible' as const : 'pending_review' as const,
       withinWindow: true,
       conditionEligible: true,
       categoryRestricted: false,
     },
-    linkedSettlementId: stage === 'settlement_adjusted' && row.linked_settlement_id ? row.linked_settlement_id : (stage === 'settlement_adjusted' ? `STL-${returnId}` : undefined),
+    linkedSettlementId: mapStageFromStatus(row.status) === 'settlement_adjusted' ? `STL-${returnId}` : undefined,
     returnDate,
-    customerReturnNote: row.reason || row.metadata?.subreason || row.metadata?.subtype_reason || undefined,
-    timeline: [{ stage, timestamp: returnDate, user: 'System', note: row.reason || row.metadata?.subreason || undefined }],
+    customerReturnNote: row.reason || undefined,
+    timeline: [{ stage: mapStageFromStatus(row.status), timestamp: returnDate, user: 'System', note: row.reason || undefined }],
   };
 };
 
@@ -183,23 +187,58 @@ export default function Returns() {
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [confirmAdvance, setConfirmAdvance] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('returns');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (authLoading || !user?.id) return;
 
     let mounted = true;
     (async () => {
+      setLoading(true);
       try {
         const rows = await returnsDb.getAll();
-        if (mounted) setLifecycleData((Array.isArray(rows) ? rows : []).map(mapAppReturn));
+        if (!mounted) return;
+
+        const uniqueOrderIds = [...new Set((rows || []).map((r: any) => r.order_id).filter(Boolean))];
+        let orderMap = new Map<string, any>();
+        if (uniqueOrderIds.length > 0) {
+          try {
+            const orders = await ordersDb.getAll();
+            if (orders) {
+              orders.forEach((o: any) => orderMap.set(o.id, o));
+            }
+          } catch {}
+        }
+
+        let mapped = (Array.isArray(rows) ? rows : []).map((r: any) => mapAppReturn(r, orderMap));
+
+        if (user.role === 'vendor') {
+          mapped = mapped.filter(r => {
+            const row = rows.find((x: any) => (x.order_number || x.id) === r.returnId);
+            return row?.vendor_id === user.id || !row?.vendor_id;
+          });
+        }
+
+        if (globalDateRange.from || globalDateRange.to) {
+          mapped = mapped.filter(r => {
+            const d = new Date(r.returnDate);
+            if (globalDateRange.from && d < new Date(globalDateRange.from)) return false;
+            if (globalDateRange.to && d > new Date(globalDateRange.to + 'T23:59:59')) return false;
+            return true;
+          });
+        }
+
+        if (mounted) setLifecycleData(mapped);
       } catch (error) {
         console.error('Failed to load returns', error);
+      } finally {
+        if (mounted) setLoading(false);
       }
     })();
     return () => {
       mounted = false;
     };
-  }, [authLoading, user?.id]);
+  }, [authLoading, user?.id, user?.role, globalDateRange.from, globalDateRange.to]);
 
   const toggleSort = (field: SortField) => {
     if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
@@ -345,7 +384,22 @@ export default function Returns() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.map(r => {
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={12} className="text-center py-12">
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground mt-2">Loading returns data...</p>
+                  </TableCell>
+                </TableRow>
+              ) : data.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={12} className="text-center py-12">
+                    <RotateCcw className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+                    <p className="text-muted-foreground">No returns found</p>
+                    <p className="text-xs text-muted-foreground/70">Returns will appear here once synced from channels</p>
+                  </TableCell>
+                </TableRow>
+              ) : data.map(r => {
                 const stage = stageConfig[r.currentStage] || { label: 'Unknown Stage', color: 'bg-muted', icon: Clock };
                 const StageIcon = stage.icon;
                 const portal = getChannels().find(p => p.id === r.portal);
@@ -428,9 +482,6 @@ export default function Returns() {
             </TableBody>
           </Table>
         </div>
-        {data.length === 0 && (
-          <div className="text-center py-12"><RotateCcw className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" /><p className="text-muted-foreground">No items found</p></div>
-        )}
       </CardContent>
     </Card>
   );

@@ -5,15 +5,18 @@ import Reconciliation from './Reconciliation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BoxIcon, AlertTriangle } from 'lucide-react';
 import { inventoryDb } from '@/services/database';
+import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 
 function StockReconciliation() {
+  const { user, isLoading: authLoading } = useAuth();
   const [inventory, setInventory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
+      if (authLoading || !user?.id) return;
       try {
         const rows = await inventoryDb.getAll().catch(() => []);
         if (mounted) setInventory(Array.isArray(rows) ? rows : []);
@@ -21,7 +24,7 @@ function StockReconciliation() {
       finally { if (mounted) setLoading(false); }
     })();
     return () => { mounted = false; };
-  }, []);
+  }, [authLoading, user?.id]);
 
   const metrics = useMemo(() => {
     const total = inventory.length;

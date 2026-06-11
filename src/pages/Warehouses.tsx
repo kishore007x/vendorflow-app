@@ -8,11 +8,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { warehousesDb, inventoryDb } from '@/services/database';
+import { useAuth } from '@/contexts/AuthContext';
 import { Warehouse, MapPin, Package, Clock, IndianRupee, Plus, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Warehouses() {
   const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuth();
   const [warehouses, setWarehouses] = useState<any[]>([]);
   const [inventory, setInventory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,6 +22,7 @@ export default function Warehouses() {
   const [form, setForm] = useState({ name: '', location: '', capacity: '', storage_cost_per_day: '0.5' });
 
   const fetchData = async () => {
+    if (authLoading || !user?.id) return;
     try {
       setLoading(true);
       const [wh, inv] = await Promise.all([warehousesDb.getAll(), inventoryDb.getAll()]);
@@ -29,7 +32,7 @@ export default function Warehouses() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [authLoading, user?.id]);
 
   const totalCapacity = warehouses.reduce((s, w) => s + (w.capacity || 0), 0);
   const totalUtilized = warehouses.reduce((s, w) => s + (w.utilized || 0), 0);

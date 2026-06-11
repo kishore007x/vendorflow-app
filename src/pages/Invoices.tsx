@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { invoicesDb } from '@/services/database';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Invoices() {
+  const { user, isLoading: authLoading } = useAuth();
   const [invoices, setInvoices] = useState<any[]>([]);
   useEffect(() => {
     let mounted = true;
     (async () => {
+      if (authLoading || !user?.id) return;
       try {
         const data = await invoicesDb.getAll();
         if (mounted) setInvoices(data || []);
@@ -15,7 +18,7 @@ export default function Invoices() {
       }
     })();
     return () => { mounted = false; };
-  }, []);
+  }, [authLoading, user?.id]);
 
   return (
     <div className="space-y-6">
