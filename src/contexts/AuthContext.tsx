@@ -168,23 +168,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!isSupabaseConfigured) {
       throw new Error('Supabase is not configured for this deployment.');
     }
-    const { error } = await withTimeout(supabase.auth.signInWithPassword({ email, password }), 15000, 'Login');
-    if (error) throw new Error(error.message);
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const { error } = await withTimeout(supabase.auth.signInWithPassword({ email, password }), 15000, 'Login');
+        if (error) throw new Error(error.message);
+        return;
+      } catch (e: any) {
+        if (attempt === 2) throw e;
+        if (e?.message?.includes('Failed to fetch') || e?.message?.includes('NetworkError') || e?.message?.includes('timed out')) {
+          await new Promise(r => setTimeout(r, 2000));
+          continue;
+        }
+        throw e;
+      }
+    }
   }, []);
 
   const signup = useCallback(async (email: string, password: string, name: string) => {
     if (!isSupabaseConfigured) {
       throw new Error('Supabase is not configured for this deployment.');
     }
-    const { error } = await withTimeout(supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { name },
-        emailRedirectTo: window.location.origin,
-      },
-    }), 15000, 'Sign up');
-    if (error) throw new Error(error.message);
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const { error } = await withTimeout(supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { name },
+            emailRedirectTo: window.location.origin,
+          },
+        }), 15000, 'Sign up');
+        if (error) throw new Error(error.message);
+        return;
+      } catch (e: any) {
+        if (attempt === 2) throw e;
+        if (e?.message?.includes('Failed to fetch') || e?.message?.includes('NetworkError') || e?.message?.includes('timed out')) {
+          await new Promise(r => setTimeout(r, 2000));
+          continue;
+        }
+        throw e;
+      }
+    }
   }, []);
 
   const logout = useCallback(async () => {

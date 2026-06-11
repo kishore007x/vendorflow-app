@@ -45,7 +45,14 @@ export default function Login() {
     try {
       await login(email, password);
     } catch (err: any) {
-      setError(err.message || 'Invalid credentials. Please try again.');
+      const msg = err?.message || '';
+      if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Network request failed') || msg.includes('ERR_NAME_NOT_RESOLVED')) {
+        setError('Cannot reach the server. Please check your internet connection or try running: ipconfig /flushdns');
+      } else if (msg.includes('timed out')) {
+        setError('Request timed out. The server may be slow or unreachable. Please try again.');
+      } else {
+        setError(msg || 'Invalid credentials. Please try again.');
+      }
     }
     setIsLoading(false);
   };
@@ -59,7 +66,14 @@ export default function Login() {
       await signup(email, password, name);
       setShowVerifyScreen(true);
     } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
+      const msg = err?.message || '';
+      if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Network request failed')) {
+        setError('Cannot reach the server. Please check your internet connection.');
+      } else if (msg.includes('timed out')) {
+        setError('Request timed out. The server may be slow. Please try again.');
+      } else {
+        setError(msg || 'Registration failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
